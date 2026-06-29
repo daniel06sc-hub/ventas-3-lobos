@@ -1,0 +1,2289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 Lobos Cervecería - SaaS Portal</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Outfit & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    h1, h2, h3, .font-outfit {
+      font-family: 'Outfit', sans-serif;
+    }
+    .glassmorphism {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    /* PRINT STYLES FOR PDF GENERATION */
+    @media print {
+      body {
+        background-color: white !important;
+        color: #000000 !important;
+        font-size: 11pt !important;
+        padding: 0 !important;
+      }
+      header, nav, footer, button, .no-print, input, select, #toast-container, .mobile-nav {
+        display: none !important;
+      }
+      main, .max-w-7xl, .w-full {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .tab-content {
+        display: none !important;
+      }
+      #print-report-section {
+        display: block !important;
+        visibility: visible !important;
+      }
+      .glassmorphism {
+        background: transparent !important;
+        backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #000000 !important;
+        padding: 0 !important;
+      }
+      table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin-top: 15px !important;
+      }
+      th, td {
+        border: 1px solid #1e293b !important;
+        padding: 6px 10px !important;
+        color: #000000 !important;
+        background: transparent !important;
+      }
+      th {
+        background-color: #f1f5f9 !important;
+        font-weight: bold !important;
+      }
+      h1, h2, h3 {
+        color: #000000 !important;
+      }
+      .text-slate-400, .text-slate-500, .text-slate-300, .text-brand-500 {
+        color: #000000 !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+    }
+    .print-only {
+      display: none;
+    }
+    /* Estilos para que el indicador de fecha/mes sea visible en temas oscuros */
+    input[type="month"]::-webkit-calendar-picker-indicator,
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+    input[type="month"]::-webkit-calendar-picker-indicator:hover,
+    input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              900: '#78350f',
+            },
+            slate: {
+              950: '#020617',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- TOAST ALERTS SYSTEM -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3"></div>
+
+  <!-- VIEW: LOGIN (Shown when not authenticated) -->
+  <div id="view-login" class="flex-1 flex items-center justify-center p-4 no-print">
+    <div class="glassmorphism p-8 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden">
+      <!-- Decorative background glow -->
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-brand-500 rounded-full filter blur-[80px] opacity-20"></div>
+      
+      <!-- Brand Logo / Header -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center mb-3">
+          <img src="/logo.png" alt="3 Lobos Logo" class="w-36 h-36 object-contain">
+        </div>
+        <p class="text-slate-400 text-sm mt-1">Cervecería Artesanal &bull; SaaS de Gestión</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Nombre de Usuario</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <input type="text" id="login-username" required 
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder-slate-500" 
+                   placeholder="ej: vendedor">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Contraseña</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+            <input type="password" id="login-password" required 
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 placeholder-slate-500" 
+                   placeholder="••••••••">
+          </div>
+        </div>
+
+        <button type="submit" 
+                class="w-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-slate-950 font-semibold py-3 px-4 rounded-xl transition duration-200 shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
+          <span>Ingresar al Sistema</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- VIEW: DASHBOARD (Shown when authenticated) -->
+  <div id="view-dashboard" class="hidden flex-1 flex flex-col">
+    
+    <!-- Top Navbar -->
+    <header class="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+          <img src="/logo.png" alt="3 Lobos Logo" class="h-10 w-auto object-contain">
+          <span class="hidden md:inline px-2 py-0.5 text-[10px] font-bold tracking-widest bg-brand-500/10 text-brand-500 border border-brand-500/20 rounded-md">SAAS</span>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex gap-1">
+          <button onclick="switchTab('pos')" id="tab-pos" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300">
+            <i class="fa-solid fa-cash-register"></i>
+            <span>Punto de Venta (POS)</span>
+          </button>
+          
+          <!-- Removed admin-only from catalog because sellers can access it to edit stock -->
+          <button onclick="switchTab('inventory')" id="tab-inventory" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <span>Catálogo e Inventario</span>
+          </button>
+          
+          <button onclick="switchTab('customers')" id="tab-customers" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300">
+            <i class="fa-solid fa-store"></i>
+            <span>Clientes Restaurantes</span>
+          </button>
+
+          <button onclick="switchTab('users')" id="tab-users" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300 admin-only">
+            <i class="fa-solid fa-users-gear"></i>
+            <span>Personal (Vendedores)</span>
+          </button>
+          
+          <button onclick="switchTab('reports')" id="tab-reports" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300 admin-only">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Reportes & Auditoría</span>
+          </button>
+        </nav>
+
+        <!-- User profile / logout -->
+        <div class="flex items-center gap-4">
+          <div class="text-right hidden sm:block">
+            <div id="user-name" class="text-sm font-semibold text-white">Cargando...</div>
+            <div id="user-role-badge" class="inline-block text-[11px] font-medium text-slate-400 capitalize">...</div>
+          </div>
+          <button onclick="handleLogout()" 
+                  class="w-10 h-10 rounded-lg hover:bg-red-500/10 border border-slate-700 hover:border-red-500/30 text-slate-400 hover:text-red-500 transition duration-150 flex items-center justify-center" 
+                  title="Cerrar Sesión">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Mobile Navigation Tab Bar -->
+    <div class="md:hidden bg-slate-900 border-b border-slate-800 flex justify-around p-2 mobile-nav no-print">
+      <button onclick="switchTab('pos')" id="tab-pos-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400">
+        <i class="fa-solid fa-cash-register text-lg"></i>
+        <span>POS</span>
+      </button>
+      <button onclick="switchTab('inventory')" id="tab-inventory-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400">
+        <i class="fa-solid fa-boxes-stacked text-lg"></i>
+        <span>Catálogo</span>
+      </button>
+      <button onclick="switchTab('customers')" id="tab-customers-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400">
+        <i class="fa-solid fa-store text-lg"></i>
+        <span>Clientes</span>
+      </button>
+      <button onclick="switchTab('users')" id="tab-users-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 admin-only">
+        <i class="fa-solid fa-users-gear text-lg"></i>
+        <span>Personal</span>
+      </button>
+      <button onclick="switchTab('reports')" id="tab-reports-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 admin-only">
+        <i class="fa-solid fa-chart-line text-lg"></i>
+        <span>Reportes</span>
+      </button>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      
+      <!-- ======================================================== -->
+      <!-- TAB: POS (Punto de Venta) -->
+      <!-- ======================================================== -->
+      <section id="section-pos" class="tab-content hidden space-y-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Column 1 & 2: Styles Catalog -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-2xl font-bold font-outfit text-white flex items-center gap-2">
+                <i class="fa-solid fa-beer-mug-empty text-brand-500"></i>
+                <span>Catálogo de Ventas</span>
+              </h2>
+              <div class="flex gap-2">
+                <!-- Create Mixed Pack Button -->
+                <button onclick="openMixedPackModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-5 rounded-xl text-sm transition duration-150 flex items-center gap-2 shadow-lg shadow-brand-500/20 shadow-md">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  <span>🍺 Armar Pedido / Pack</span>
+                </button>
+                <button onclick="fetchPOSInventory()" class="text-slate-400 hover:text-white transition duration-150 p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                  <i class="fa-solid fa-rotate"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div id="pos-beer-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Dynamically populated style cards -->
+              <div class="col-span-full py-8 text-center text-slate-500">Cargando catálogo de cervezas...</div>
+            </div>
+          </div>
+
+          <!-- Column 3: POS Shopping Cart & Transaction -->
+          <div class="space-y-6">
+            <div class="glassmorphism p-6 rounded-2xl border border-slate-800 flex flex-col sticky top-24">
+              <h2 class="text-xl font-bold font-outfit text-white border-b border-slate-800 pb-3 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-cart-shopping text-brand-500"></i>
+                <span>Carrito de Compra</span>
+              </h2>
+
+              <!-- Sale Type Selector (General Public vs Corporate Restaurant) -->
+              <div class="mb-4 bg-slate-900/60 p-1 rounded-xl border border-slate-850 flex text-xs font-semibold">
+                <button type="button" onclick="setSaleType('public')" id="btn-sale-public"
+                        class="flex-1 py-2 text-center rounded-lg transition duration-150 text-slate-950 bg-brand-500 cursor-pointer">
+                  Público General
+                </button>
+                <button type="button" onclick="setSaleType('restaurant')" id="btn-sale-restaurant"
+                        class="flex-1 py-2 text-center rounded-lg transition duration-150 text-slate-400 hover:text-white cursor-pointer">
+                  Restaurante / Mayorista
+                </button>
+              </div>
+
+              <!-- Customer Dropdown (Visible only for Restaurant tab) -->
+              <div id="pos-customer-wrapper" class="hidden mb-4">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Restaurante Registrado (Obligatorio)</label>
+                <select id="pos-customer-select" onchange="handlePOSCustomerSelect(this.value)"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-brand-500">
+                  <option value="">-- Seleccionar Restaurante --</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <!-- Payment Status Selector -->
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Estado de Pago</label>
+                <select id="pos-payment-status" onchange="validateCheckoutRequirements()"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                  <option value="pagado">Pagado de inmediato (Efectivo/Transferencia/Caja)</option>
+                  <option value="pendiente">Pendiente de Pago (Crédito a acumular en el mes)</option>
+                </select>
+                <div id="pos-payment-warning" class="hidden mt-1.5 p-2 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-lg text-[10px] leading-tight">
+                  <i class="fa-solid fa-triangle-exclamation"></i> Para ventas al crédito, es obligatorio asociar un restaurante del directorio.
+                </div>
+              </div>
+
+              <!-- Cart List -->
+              <div id="pos-cart-items" class="flex-1 overflow-y-auto max-h-[250px] divide-y divide-slate-800/50 pr-1">
+                <div class="py-8 text-center text-slate-500 text-sm">
+                  <i class="fa-solid fa-basket-shopping text-3xl mb-2 block"></i>
+                  El carrito está vacío
+                </div>
+              </div>
+
+              <!-- Totals & Checkout -->
+              <div class="border-t border-slate-800 pt-4 mt-4 space-y-4">
+                <div class="flex items-center justify-between text-slate-400 text-sm">
+                  <span>Formato Mayorista (Unidades)</span>
+                  <span class="font-bold text-white" id="pos-wholesale-units-badge">23</span>
+                </div>
+                <div class="flex items-center justify-between text-lg font-bold border-b border-slate-800/50 pb-4">
+                  <span class="text-slate-300">Total Venta</span>
+                  <span class="text-brand-500 text-xl" id="pos-cart-total">$0</span>
+                </div>
+
+                <button onclick="processPOSCheckout()" id="btn-checkout" disabled
+                        class="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-slate-950 font-bold py-3 rounded-xl transition duration-150 flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-receipt"></i>
+                  <span>Registrar y Despachar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB: CATALOG & INVENTORY (Admin & Vendedores only to edit stock) -->
+      <!-- ======================================================== -->
+      <section id="section-inventory" class="tab-content hidden space-y-6">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold font-outfit text-white">Catálogo de Cervezas e Inventario</h2>
+            <p class="text-slate-400 text-sm mt-0.5">CRUD de Estilos (Solo Administrador) y alimentación directa de stocks.</p>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <!-- Global Wholesale units configuration is restricted to Admins -->
+            <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-2 gap-2 admin-only">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider pl-1">Formato Mayorista:</span>
+              <input type="number" id="setting-wholesale-units" min="1" class="w-16 bg-slate-950 border border-slate-700 text-center text-brand-500 font-bold rounded-lg py-1 focus:outline-none focus:border-brand-500" value="23">
+              <button onclick="saveWholesaleSettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs transition animate-pulse">
+                Guardar
+              </button>
+            </div>
+
+            <!-- Creation of styles is restricted to Admins -->
+            <button onclick="openStyleModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-500/10 admin-only">
+              <i class="fa-solid fa-plus"></i>
+              <span>Nuevo Estilo</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                  <th class="py-4 px-6">Estilo de Cerveza</th>
+                  <th class="py-4 px-6 text-center">Stock Actual</th>
+                  <th class="py-4 px-6">Precio Unidad</th>
+                  <th class="py-4 px-6">Pack de 2</th>
+                  <th class="py-4 px-6">Pack de 3</th>
+                  <th class="py-4 px-6">Pack de 4</th>
+                  <th class="py-4 px-6">Mayorista (Pack)</th>
+                  <th class="py-4 px-6 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body" class="divide-y divide-slate-800/50 text-sm">
+                <tr>
+                  <td colspan="8" class="py-12 text-center text-slate-500">Cargando inventario...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB: CUSTOMERS -->
+      <!-- ======================================================== -->
+      <section id="section-customers" class="tab-content hidden space-y-6">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Add Corporate Customer Form -->
+          <div class="space-y-4">
+            <div class="glassmorphism p-6 rounded-2xl border border-slate-800">
+              <h2 class="text-xl font-bold font-outfit text-white border-b border-slate-800 pb-4 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-plus text-brand-500"></i>
+                <span>Nuevo Restaurante</span>
+              </h2>
+              
+              <form id="form-customer" onsubmit="handleSaveCustomer(event)" class="space-y-4">
+                <input type="hidden" id="customer-id">
+                
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre del Negocio</label>
+                  <input type="text" id="customer-name" required
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="ej: Restobar El Lobo Rojo">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Identificación Fiscal / RUT</label>
+                  <input type="text" id="customer-rut" required
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="ej: 76.123.456-7">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Teléfono</label>
+                  <input type="text" id="customer-phone"
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="ej: +56912345678">
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                  <button type="button" onclick="resetCustomerForm()"
+                          class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-xl transition text-sm cursor-pointer">
+                    Limpiar
+                  </button>
+                  <button type="submit" 
+                          class="flex-1 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm cursor-pointer">
+                    Guardar Ficha
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Customer List Table -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="text-2xl font-bold font-outfit text-white">Directorio de Restaurantes (Mayoristas)</h2>
+              <div class="relative w-64">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
+                  <i class="fa-solid fa-search"></i>
+                </span>
+                <input type="text" id="customer-search-input" oninput="fetchCustomers(this.value)"
+                       class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-brand-500" 
+                       placeholder="Buscar clientes por nombre o RUT...">
+              </div>
+            </div>
+
+            <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                    <th class="py-4 px-6">Nombre de Negocio</th>
+                    <th class="py-4 px-6">Identificación Fiscal / RUT</th>
+                    <th class="py-4 px-6">Teléfono</th>
+                    <th class="py-4 px-6 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="customers-table-body" class="divide-y divide-slate-800/50 text-sm">
+                  <tr>
+                    <td colspan="4" class="py-12 text-center text-slate-500">Cargando directorio...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB: USERS/STAFF MANAGEMENT (Admin Only) -->
+      <!-- ======================================================== -->
+      <section id="section-users" class="tab-content hidden space-y-6 admin-only">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Add/Edit Staff Form -->
+          <div class="space-y-4">
+            <div class="glassmorphism p-6 rounded-2xl border border-slate-800">
+              <h2 id="form-user-title" class="text-xl font-bold font-outfit text-white border-b border-slate-800 pb-4 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-plus text-brand-500"></i>
+                <span>Nuevo Vendedor / Administrador</span>
+              </h2>
+              
+              <form id="form-user" onsubmit="handleSaveUser(event)" class="space-y-4">
+                <input type="hidden" id="user-id-field">
+                
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre Completo</label>
+                  <input type="text" id="user-fullname" required
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="ej: Victor Ortiz">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre de Usuario (Para Login)</label>
+                  <input type="text" id="user-username" required
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="ej: victor.ortiz">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Contraseña (Mínimo 6 carac.)</label>
+                  <input type="password" id="user-password"
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="•••••• (Vacío para mantener)">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Rol / Permisos</label>
+                  <select id="user-role" required
+                          class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm">
+                    <option value="vendedor" selected>Vendedor (Solo POS / Clientes / Caja)</option>
+                    <option value="admin">Administrador (Acceso Total)</option>
+                  </select>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                  <button type="button" onclick="resetUserForm()"
+                          class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-xl transition text-sm cursor-pointer">
+                    Limpiar
+                  </button>
+                  <button type="submit" 
+                          class="flex-1 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm cursor-pointer">
+                    Guardar Ficha
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Staff list Table -->
+          <div class="lg:col-span-2 space-y-4">
+            <h2 class="text-2xl font-bold font-outfit text-white">Registro Oficial de Personal (Vendedores)</h2>
+            
+            <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                    <th class="py-4 px-6">Nombre del Personal</th>
+                    <th class="py-4 px-6">Nombre de Usuario</th>
+                    <th class="py-4 px-6">Rol asignado</th>
+                    <th class="py-4 px-6 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body" class="divide-y divide-slate-800/50 text-sm">
+                  <tr>
+                    <td colspan="4" class="py-12 text-center text-slate-500">Cargando personal...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB: REPORTS & AUDIT (Admin Only) -->
+      <!-- ======================================================== -->
+      <section id="section-reports" class="tab-content hidden space-y-8 admin-only">
+        
+        <!-- Part 1: Seller Performance Reports -->
+        <div class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-bold font-outfit text-white">Rendimiento Mensual por Vendedor</h2>
+              <p class="text-slate-400 text-sm mt-0.5">Reporte de recaudación y transacciones agrupado mensualmente por vendedor.</p>
+            </div>
+            
+            <!-- Month filter picker -->
+            <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-2 gap-2">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider pl-1">Filtrar por Mes:</span>
+              <input type="month" id="report-seller-month" onchange="fetchSellersPerformance()" onclick="this.showPicker()"
+                     class="bg-slate-950 border border-slate-700 text-center text-brand-500 font-bold rounded-lg py-1 px-2.5 focus:outline-none focus:border-brand-500 text-xs cursor-pointer">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="seller-reports-cards">
+            <div class="col-span-full py-8 text-center text-slate-500">Generando reporte de rendimiento...</div>
+          </div>
+        </div>
+
+        <!-- Part 1.5: Print PDF Report Generator Panel & Live On-Screen History Filter -->
+        <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+          <h3 class="text-xl font-bold font-outfit text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-pdf text-brand-500"></i>
+            <span>Generador de Reportes de Caja y Filtros en Pantalla</span>
+          </h3>
+          <p class="text-xs text-slate-400">Selecciona los filtros para actualizar la bitácora en tiempo real. Presiona "Imprimir PDF" para archivar físicamente el arqueo filtrado.</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Rango del Reporte</label>
+              <select id="report-range-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                <option value="all" selected>Histórico Completo</option>
+                <option value="today">Reporte Diario (Hoy)</option>
+                <option value="weekly">Reporte Semanal (Últimos 7 días)</option>
+                <option value="monthly">Reporte Mensual (Mes actual)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Filtro de Pago</label>
+              <select id="report-payment-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                <option value="all" selected>Todos los registros</option>
+                <option value="pagado">Solo transacciones pagadas</option>
+                <option value="pendiente">Solo créditos acumulados (Pendientes)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Filtrar por Cliente</label>
+              <select id="report-customer-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                <option value="all" selected>Todos los clientes</option>
+                <!-- Dynamically loaded corporate customers -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Filtrar por Vendedor</label>
+              <select id="report-seller-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                <option value="all" selected>Todos los vendedores</option>
+                <!-- Dynamically loaded system sellers -->
+              </select>
+            </div>
+            <div class="flex items-end">
+              <button onclick="compilePrintReport()" class="w-full bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-brand-500/10 cursor-pointer">
+                <i class="fa-solid fa-print"></i>
+                <span>Imprimir PDF</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Part 2: Audit Transaction History Logs -->
+        <div class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold font-outfit text-white">Historial de Auditoría de Ventas (Filtrado en Pantalla)</h2>
+              <p class="text-slate-400 text-sm">Registro inmutable permanente de transacciones del POS.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="fetchReportsAndAudit()" class="text-slate-400 hover:text-white transition duration-150 p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs flex items-center gap-1 cursor-pointer">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Refrescar</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                    <th class="py-4 px-6">ID Venta / Correlativo</th>
+                    <th class="py-4 px-6">Fecha / Hora</th>
+                    <th class="py-4 px-6">Vendedor</th>
+                    <th class="py-4 px-6">Cliente (Restaurante)</th>
+                    <th class="py-4 px-6">Cerveza</th>
+                    <th class="py-4 px-6">Format</th>
+                    <th class="py-4 px-6 text-center">Unidades</th>
+                    <th class="py-4 px-6 text-right">Monto</th>
+                    <th class="py-4 px-6 text-center">Estado de Pago</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-table-body" class="divide-y divide-slate-800/50 text-sm">
+                  <tr>
+                    <td colspan="9" class="py-12 text-center text-slate-500">Cargando registros de auditoría...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900/40 border-t border-slate-800/50 py-6 mt-12 text-center text-slate-500 text-xs no-print">
+      <div class="max-w-7xl mx-auto px-4">
+        &copy; 2026 Cervecería 3 Lobos &bull; Todos los derechos reservados. SaaS Backend v1.0.0
+      </div>
+    </footer>
+
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- PREVIEW DE REPORTE IMPRIMIBLE (PDF VIEW CONTAINER) -->
+  <!-- ======================================================== -->
+  <div id="print-report-section" class="print-only hidden max-w-4xl mx-auto p-8 bg-white text-black">
+    <div class="flex items-center justify-between border-b-2 border-slate-800 pb-4 mb-6">
+      <div class="flex items-center gap-3">
+        <img src="/logo.png" alt="3 Lobos Logo" class="h-14 w-auto object-contain">
+        <div>
+          <h1 class="text-2xl font-extrabold tracking-tight font-outfit uppercase">Cervecería 3 Lobos</h1>
+          <p class="text-[10px] text-slate-600 mt-0.5">SaaS Portal de Cierre de Caja & Ventas</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <h2 class="text-xl font-bold font-outfit uppercase">Informe de Auditoría</h2>
+        <p class="text-xs text-slate-600 mt-1" id="print-report-date-compiled">Fecha: 28/06/2026</p>
+      </div>
+    </div>
+
+    <!-- Filters summary -->
+    <div class="grid grid-cols-2 gap-4 mb-6 text-xs bg-slate-100 p-3 rounded">
+      <div>Rango del Reporte: <span id="print-summary-range" class="font-bold">Diario</span></div>
+      <div>Filtro de Pago: <span id="print-summary-status" class="font-bold">Todos</span></div>
+      <div>Filtro de Cliente: <span id="print-summary-customer" class="font-bold">Todos los clientes</span></div>
+      <div>Filtro de Vendedor: <span id="print-summary-seller" class="font-bold">Todos los vendedores</span></div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+      <div class="border border-slate-300 p-3 rounded">
+        <div class="text-[10px] font-bold text-slate-500 uppercase">Recaudación Total</div>
+        <div class="text-xl font-extrabold font-outfit mt-1" id="print-stat-revenue">$0</div>
+      </div>
+      <div class="border border-slate-300 p-3 rounded">
+        <div class="text-[10px] font-bold text-slate-500 uppercase">Botellas Despachadas</div>
+        <div class="text-xl font-extrabold font-outfit mt-1" id="print-stat-bottles">0 u.</div>
+      </div>
+      <div class="border border-slate-300 p-3 rounded bg-red-50">
+        <div class="text-[10px] font-bold text-slate-500 uppercase">Total Cuentas Pendientes</div>
+        <div class="text-xl font-extrabold font-outfit text-red-700 mt-1" id="print-stat-pending">$0</div>
+      </div>
+    </div>
+
+    <!-- Transactions table -->
+    <div class="space-y-2">
+      <h3 class="text-sm font-bold uppercase border-b border-slate-300 pb-1">Detalle de Ventas</h3>
+      <table class="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr class="bg-slate-200 border border-slate-300">
+            <th class="py-2 px-3">Correlativo</th>
+            <th class="py-2 px-3">Fecha/Hora</th>
+            <th class="py-2 px-3">Vendedor</th>
+            <th class="py-2 px-3">Cliente</th>
+            <th class="py-2 px-3">Cerveza</th>
+            <th class="py-2 px-3">Formato</th>
+            <th class="py-2 px-3 text-center">Cantidad</th>
+            <th class="py-2 px-3 text-right">Subtotal</th>
+            <th class="py-2 px-3 text-center">Estado</th>
+          </tr>
+        </thead>
+        <tbody id="print-report-table-body" class="divide-y divide-slate-200">
+          <!-- Dynamically populated printed logs -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Signature lines -->
+    <div class="grid grid-cols-2 gap-12 mt-20 text-center text-xs">
+      <div class="border-t border-slate-400 pt-3">
+        Firma Responsable de Caja
+      </div>
+      <div class="border-t border-slate-400 pt-3">
+        Firma Administrador General
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ADD/EDIT BEER STYLE (Sellers can only modify stock) -->
+  <!-- ======================================================== -->
+  <div id="modal-style" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeStyleModal()"></div>
+    
+    <div class="glassmorphism p-6 rounded-2xl w-full max-w-lg border border-slate-700 relative z-10 space-y-4 shadow-2xl">
+      <h3 id="modal-style-title" class="text-xl font-bold font-outfit text-white">Nuevo Estilo de Cerveza</h3>
+      
+      <form id="form-style" onsubmit="handleSaveStyle(event)" class="space-y-4">
+        <input type="hidden" id="style-id">
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre del Estilo</label>
+          <input type="text" id="style-name" required
+                 class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                 placeholder="ej: 3 Lobos Pale Ale">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Stock Disponible (Botellas)</label>
+            <input type="number" id="style-stock" min="0" required
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                   placeholder="ej: 100">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Precio Unidad Suelta</label>
+            <input type="number" id="style-price-unit" min="0" required
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                   placeholder="1500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Precio Pack de 2</label>
+            <input type="number" id="style-price-pack2" min="0" required
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                   placeholder="2800">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Precio Pack de 3</label>
+            <input type="number" id="style-price-pack3" min="0" required
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                   placeholder="4000">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Precio Pack de 4</label>
+            <input type="number" id="style-price-pack4" min="0" required
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                   placeholder="5000">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Precio Formato Mayorista</label>
+            <input type="number" id="style-price-wholesale" min="0" required
+                   class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                   placeholder="25000">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeStyleModal()"
+                  class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-xl transition text-sm cursor-pointer">
+            Cancelar
+          </button>
+          <button type="submit" 
+                  class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-6 rounded-xl transition text-sm cursor-pointer">
+            Guardar Estilo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- MODAL: ARMADOR DE PACK MIXTO / UNIDAD -->
+  <!-- ======================================================== -->
+  <div id="modal-mixed-pack" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeMixedPackModal()"></div>
+    
+    <div class="glassmorphism p-6 rounded-2xl w-full max-w-lg border border-slate-700 relative z-10 space-y-4 shadow-2xl">
+      <h3 class="text-xl font-bold font-outfit text-white flex items-center gap-2 border-b border-slate-850 pb-3">
+        <i class="fa-solid fa-wand-magic-sparkles text-brand-500"></i>
+        <span>Armar Pedido / Pack</span>
+      </h3>
+      
+      <!-- Select Format -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Formato del Pedido</label>
+        <select id="mixed-pack-format" onchange="updateMixedPackLimit()"
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-white focus:outline-none focus:border-brand-500 text-sm">
+          <option value="unit" selected>Unidad (1 botella)</option>
+          <option value="pack2">Pack de 2 botellas</option>
+          <option value="pack3">Pack de 3 botellas</option>
+          <option value="pack4">Pack de 4 botellas</option>
+          <option value="wholesale" id="opt-mixed-wholesale">Formato Mayorista (dinámico)</option>
+        </select>
+      </div>
+
+      <!-- Styles Breakdown List -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Desglose de botellas por Estilo</label>
+        <div id="mixed-pack-styles-list" class="max-h-60 overflow-y-auto space-y-2 pr-1 divide-y divide-slate-800/40">
+        </div>
+      </div>
+
+      <!-- Live Counter & Status -->
+      <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-xl flex items-center justify-between text-sm mt-4">
+        <div>
+          <span class="text-slate-400">Total Seleccionado:</span>
+          <span id="mixed-pack-total-counter" class="font-extrabold text-white ml-1">0</span>
+          <span class="text-slate-500">de</span>
+          <span id="mixed-pack-limit-counter" class="font-extrabold text-brand-500">1</span>
+          <span class="text-slate-500">botellas</span>
+        </div>
+        <div id="mixed-pack-status-badge">
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button type="button" onclick="closeMixedPackModal()"
+                class="bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 px-4 rounded-xl transition text-sm cursor-pointer">
+          Cancelar
+        </button>
+        <button type="button" id="btn-add-mixed-pack" onclick="addMixedPackToCart()" disabled
+                class="bg-brand-500 hover:bg-brand-600 disabled:bg-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-slate-950 font-bold py-2.5 px-6 rounded-xl transition text-sm cursor-pointer">
+          Agregar al Carrito
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT FRONTEND CONTROLLER -->
+  <!-- ======================================================== -->
+  <script>
+    // State variables
+    let token = localStorage.getItem('token') || '';
+    let user = JSON.parse(localStorage.getItem('user')) || null;
+    
+    // Core loaded structures
+    let beerCatalog = [];
+    let customerList = [];
+    let systemUsersList = [];
+    let rawAuditLogs = [];
+    let shoppingCart = [];
+    let wholesaleUnitsCount = 23;
+    
+    let selectedCustomer = null;
+    let posSaleType = 'public';
+
+    // Toast alerts
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-emerald-500 text-white border-emerald-400',
+        error: 'bg-red-500 text-white border-red-400',
+        warning: 'bg-amber-500 text-slate-950 border-amber-400',
+        info: 'bg-blue-500 text-white border-blue-400'
+      };
+
+      const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-circle-exclamation',
+        warning: 'fa-triangle-exclamation',
+        info: 'fa-info-circle'
+      };
+
+      toast.className = `p-4 rounded-xl border shadow-xl flex items-center gap-3 transition-all duration-300 transform translate-x-20 opacity-0 ${colors[type]}`;
+      toast.innerHTML = `
+        <i class="fa-solid ${icons[type]} text-lg"></i>
+        <span class="font-medium text-sm text-left">${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-x-20', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('translate-x-20', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // API fetch wrapper
+    async function apiFetch(endpoint, options = {}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(options.headers || {})
+      };
+
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(endpoint, { ...options, headers });
+      
+      if (res.status === 401 || res.status === 403) {
+        if (token) {
+          handleLogout();
+          showToast('Tu sesión ha expirado. Por favor ingresa de nuevo.', 'warning');
+        }
+        throw new Error('No autorizado');
+      }
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Ocurrió un error inesperado');
+      }
+      return data;
+    }
+
+    // --- AUTHENTICATION ---
+    async function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('login-username').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        const data = await apiFetch('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ username, password })
+        });
+
+        token = data.token;
+        user = data.user;
+        
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        showToast(`¡Bienvenido de vuelta, ${user.name}!`, 'success');
+        initApp();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function handleLogout() {
+      token = '';
+      user = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      shoppingCart = [];
+      selectedCustomer = null;
+      
+      document.getElementById('view-login').classList.remove('hidden');
+      document.getElementById('view-dashboard').classList.add('hidden');
+    }
+
+    // --- APPLICATION BOOTSTRAP ---
+    function initApp() {
+      if (!token) {
+        document.getElementById('view-login').classList.remove('hidden');
+        document.getElementById('view-dashboard').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById('view-dashboard').classList.remove('hidden');
+
+      document.getElementById('user-name').innerText = user.name;
+      document.getElementById('user-role-badge').innerText = user.role;
+
+      if (user.role === 'admin') {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+      } else {
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+      }
+
+      const now = new Date();
+      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      document.getElementById('report-seller-month').value = currentMonthStr;
+
+      fetchGlobalSettings();
+      loadPOSCustomersDropdown();
+      
+      setSaleType('public');
+      switchTab('pos');
+    }
+
+    // --- TAB SWITCHER ---
+    function switchTab(tabId) {
+      // Sellers are blocked only from users (Vendedores) and reports (Reportes). They CAN access inventory (Catálogo) now
+      const adminTabs = ['users', 'reports'];
+      if (adminTabs.includes(tabId) && (!user || user.role !== 'admin')) {
+        showToast('Acceso Denegado: Esta sección es exclusiva para Administradores.', 'error');
+        switchTab('pos');
+        return;
+      }
+
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`section-${tabId}`).classList.remove('hidden');
+
+      const tabs = ['pos', 'inventory', 'customers', 'users', 'reports'];
+      tabs.forEach(t => {
+        const tabEl = document.getElementById(`tab-${t}`);
+        const tabMobileEl = document.getElementById(`tab-${t}-mobile`);
+        
+        if (t === tabId) {
+          if (tabEl) tabEl.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-500 text-slate-950 transition duration-150 flex items-center gap-2";
+          if (tabMobileEl) tabMobileEl.className = "p-2 text-xs flex flex-col items-center gap-1 text-brand-500 font-bold";
+        } else {
+          if (tabEl) tabEl.className = "px-4 py-2 text-sm font-medium rounded-lg hover:bg-slate-800 text-slate-300 transition duration-150 flex items-center gap-2";
+          if (tabMobileEl) tabMobileEl.className = "p-2 text-xs flex flex-col items-center gap-1 text-slate-400";
+        }
+      });
+
+      if (tabId === 'pos') {
+        fetchPOSInventory();
+        loadPOSCustomersDropdown();
+      } else if (tabId === 'inventory') {
+        fetchInventoryTable();
+      } else if (tabId === 'customers') {
+        fetchCustomers();
+      } else if (tabId === 'users') {
+        fetchUsersTable();
+      } else if (tabId === 'reports') {
+        fetchReportsAndAudit();
+        fetchCustomersListForReports();
+        loadSellersDropdownForReports();
+      }
+    }
+
+    // --- GLOBAL SETTINGS ---
+    async function fetchGlobalSettings() {
+      try {
+        const data = await apiFetch('/api/inventory/settings');
+        wholesaleUnitsCount = data.wholesale_units;
+        document.getElementById('pos-wholesale-units-badge').innerText = wholesaleUnitsCount;
+        document.getElementById('setting-wholesale-units').value = wholesaleUnitsCount;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function saveWholesaleSettings() {
+      const val = parseInt(document.getElementById('setting-wholesale-units').value, 10);
+      try {
+        await apiFetch('/api/inventory/settings', {
+          method: 'PUT',
+          body: JSON.stringify({ wholesale_units: val })
+        });
+        showToast(`Formato Mayorista actualizado a ${val} botellas`, 'success');
+        fetchGlobalSettings();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- PUNTO DE VENTA (POS) LOGIC ---
+    async function fetchPOSInventory() {
+      const container = document.getElementById('pos-beer-list');
+      container.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500">Buscando cervezas en catálogo...</div>';
+
+      try {
+        beerCatalog = await apiFetch('/api/inventory');
+        container.innerHTML = '';
+
+        if (beerCatalog.length === 0) {
+          container.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500">No hay cervezas registradas. ¡Alimenta el catálogo primero!</div>';
+          return;
+        }
+
+        beerCatalog.forEach(style => {
+          const card = document.createElement('div');
+          card.className = 'glassmorphism p-5 rounded-2xl border border-slate-800 flex flex-col justify-between gap-4 shadow-md';
+          
+          let stockStatus = `<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 text-xs font-semibold">Stock: ${style.stockBottles} u.</span>`;
+          if (style.stockBottles === 0) {
+            stockStatus = `<span class="px-2 py-0.5 rounded bg-red-500/10 text-red-500 text-xs font-semibold">Agotado</span>`;
+          } else if (style.stockBottles < 15) {
+            stockStatus = `<span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 text-xs font-semibold">Stock Bajo: ${style.stockBottles} u.</span>`;
+          }
+
+          card.innerHTML = `
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="text-lg font-bold text-white font-outfit">${style.name}</h3>
+                ${stockStatus}
+              </div>
+              
+              <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-slate-400 mt-3 border-t border-slate-800/50 pt-2.5">
+                <div>Unidad: <span class="text-slate-200 font-bold">$${style.priceUnit}</span></div>
+                <div>Pack 2: <span class="text-slate-200 font-bold">$${style.pricePack2}</span></div>
+                <div>Pack 3: <span class="text-slate-200 font-bold">$${style.pricePack3}</span></div>
+                <div>Pack 4: <span class="text-slate-200 font-bold">$${style.pricePack4}</span></div>
+                <div class="col-span-2 mt-1 bg-slate-900/50 p-1.5 rounded border border-slate-800/40">
+                  Mayorista (${wholesaleUnitsCount} u.): <span class="text-brand-500 font-bold">$${style.priceWholesale}</span>
+                </div>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function setSaleType(type) {
+      posSaleType = type;
+      const btnPublic = document.getElementById('btn-sale-public');
+      const btnRest = document.getElementById('btn-sale-restaurant');
+      const customerWrapper = document.getElementById('pos-customer-wrapper');
+      const payStatusSelect = document.getElementById('pos-payment-status');
+      const mixedWholesaleOpt = document.getElementById('opt-mixed-wholesale');
+
+      if (type === 'public') {
+        btnPublic.className = "flex-1 py-2 text-center rounded-lg font-bold transition duration-150 text-slate-950 bg-brand-500 cursor-pointer";
+        btnRest.className = "flex-1 py-2 text-center rounded-lg font-bold transition duration-150 text-slate-400 hover:text-white cursor-pointer";
+        
+        customerWrapper.classList.add('hidden');
+        document.getElementById('pos-customer-select').value = "";
+        selectedCustomer = null;
+
+        payStatusSelect.value = "pagado";
+        payStatusSelect.disabled = true;
+
+        // Wholesale format is now ALLOWED for Público General, do not block wholesale option or remove items!
+        if (mixedWholesaleOpt) mixedWholesaleOpt.disabled = false;
+
+      } else {
+        btnPublic.className = "flex-1 py-2 text-center rounded-lg font-bold transition duration-150 text-slate-400 hover:text-white cursor-pointer";
+        btnRest.className = "flex-1 py-2 text-center rounded-lg font-bold transition duration-150 text-slate-950 bg-brand-500 cursor-pointer";
+        
+        customerWrapper.classList.remove('hidden');
+        payStatusSelect.disabled = false;
+
+        if (mixedWholesaleOpt) mixedWholesaleOpt.disabled = false;
+      }
+
+      validateCheckoutRequirements();
+      renderCart();
+    }
+
+    async function loadPOSCustomersDropdown() {
+      try {
+        const list = await apiFetch('/api/customers');
+        const select = document.getElementById('pos-customer-select');
+        select.innerHTML = '<option value="">-- Seleccionar Restaurante --</option>';
+        list.forEach(c => {
+          select.innerHTML += `<option value="${c.id}">${c.businessName} (RUT: ${c.fiscalId})</option>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function handlePOSCustomerSelect(id) {
+      if (!id) {
+        selectedCustomer = null;
+        showToast('Restaurante desasociado');
+      } else {
+        selectedCustomer = { id };
+        showToast('Restaurante asociado correctamente');
+      }
+      validateCheckoutRequirements();
+      renderCart();
+    }
+
+    function validateCheckoutRequirements() {
+      const paymentStatus = document.getElementById('pos-payment-status').value;
+      const warningEl = document.getElementById('pos-payment-warning');
+      const checkoutBtn = document.getElementById('btn-checkout');
+      
+      if (posSaleType === 'restaurant' && !selectedCustomer) {
+        checkoutBtn.disabled = true;
+        return false;
+      }
+      
+      if (paymentStatus === 'pendiente' && !selectedCustomer) {
+        warningEl.classList.remove('hidden');
+        checkoutBtn.disabled = true;
+        return false;
+      }
+
+      warningEl.classList.add('hidden');
+      if (shoppingCart.length > 0) {
+        checkoutBtn.disabled = false;
+      }
+      return true;
+    }
+
+    // --- SHOPPING CART LOGIC ---
+    let mixedPackBottleCounts = {};
+
+    function openMixedPackModal() {
+      if (beerCatalog.length === 0) {
+        showToast('No hay cervezas en catálogo para armar pedido.', 'warning');
+        return;
+      }
+
+      mixedPackBottleCounts = {};
+      beerCatalog.forEach(style => {
+        mixedPackBottleCounts[style.id] = 0;
+      });
+
+      document.getElementById('mixed-pack-format').value = 'unit';
+      
+      // Wholesale format is always allowed in modal now
+      const wholesaleOpt = document.getElementById('opt-mixed-wholesale');
+      if (wholesaleOpt) {
+        wholesaleOpt.disabled = false;
+      }
+
+      updateMixedPackLimit();
+      renderMixedPackStylesList();
+      document.getElementById('modal-mixed-pack').classList.remove('hidden');
+    }
+
+    function closeMixedPackModal() {
+      document.getElementById('modal-mixed-pack').classList.add('hidden');
+    }
+
+    function updateMixedPackLimit() {
+      const format = document.getElementById('mixed-pack-format').value;
+      let limit = 1;
+      
+      if (format === 'pack2') limit = 2;
+      else if (format === 'pack3') limit = 3;
+      else if (format === 'pack4') limit = 4;
+      else if (format === 'wholesale') limit = wholesaleUnitsCount;
+
+      document.getElementById('mixed-pack-limit-counter').innerText = limit;
+      validateMixedPackSum();
+    }
+
+    function renderMixedPackStylesList() {
+      const container = document.getElementById('mixed-pack-styles-list');
+      container.innerHTML = '';
+
+      beerCatalog.forEach(style => {
+        const count = mixedPackBottleCounts[style.id] || 0;
+        
+        const row = document.createElement('div');
+        row.className = 'py-3 flex items-center justify-between gap-4';
+        row.innerHTML = `
+          <div>
+            <span class="font-semibold text-sm text-white">${style.name}</span>
+            <span class="text-xs text-slate-400 block">Disponible: ${style.stockBottles} botellas</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="adjustMixedStyleQty('${style.id}', -1)"
+                    class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold transition">
+              <i class="fa-solid fa-minus text-xs"></i>
+            </button>
+            <span class="w-8 text-center text-sm font-bold text-white" id="mixed-qty-${style.id}">${count}</span>
+            <button type="button" onclick="adjustMixedStyleQty('${style.id}', 1)"
+                    class="w-8 h-8 rounded bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-bold transition">
+              <i class="fa-solid fa-plus text-xs"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function adjustMixedStyleQty(styleId, delta) {
+      const style = beerCatalog.find(s => s.id === styleId);
+      if (!style) return;
+
+      const currentSum = Object.values(mixedPackBottleCounts).reduce((a, b) => a + b, 0);
+      const limit = getSelectedMixedPackLimit();
+      
+      let currentVal = mixedPackBottleCounts[styleId] || 0;
+      let newVal = currentVal + delta;
+
+      if (newVal < 0) newVal = 0;
+      if (newVal > style.stockBottles) {
+        showToast(`No puedes seleccionar más del stock disponible (${style.stockBottles} botellas)`, 'warning');
+        return;
+      }
+      
+      if (delta > 0 && currentSum >= limit) {
+        showToast(`El cupo de este formato ya está completo (${limit} botellas).`, 'warning');
+        return;
+      }
+
+      mixedPackBottleCounts[styleId] = newVal;
+      document.getElementById(`mixed-qty-${styleId}`).innerText = newVal;
+      validateMixedPackSum();
+    }
+
+    function getSelectedMixedPackLimit() {
+      const format = document.getElementById('mixed-pack-format').value;
+      if (format === 'pack2') return 2;
+      if (format === 'pack3') return 3;
+      if (format === 'pack4') return 4;
+      if (format === 'wholesale') return wholesaleUnitsCount;
+      return 1;
+    }
+
+    function validateMixedPackSum() {
+      const sum = Object.values(mixedPackBottleCounts).reduce((a, b) => a + b, 0);
+      const limit = getSelectedMixedPackLimit();
+      
+      document.getElementById('mixed-pack-total-counter').innerText = sum;
+      
+      const badge = document.getElementById('mixed-pack-status-badge');
+      const addBtn = document.getElementById('btn-add-mixed-pack');
+
+      if (sum === limit) {
+        badge.innerHTML = `<span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-500 font-bold text-xs flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Pedido Completo</span>`;
+        addBtn.disabled = false;
+      } else if (sum < limit) {
+        badge.innerHTML = `<span class="px-2.5 py-1 rounded bg-amber-500/10 text-amber-500 font-semibold text-xs">Faltan ${limit - sum} botellas</span>`;
+        addBtn.disabled = true;
+      } else {
+        badge.innerHTML = `<span class="px-2.5 py-1 rounded bg-red-500/10 text-red-500 font-semibold text-xs">Sobran ${sum - limit} botellas</span>`;
+        addBtn.disabled = true;
+      }
+    }
+
+    function addMixedPackToCart() {
+      const format = document.getElementById('mixed-pack-format').value;
+      
+      const styles = [];
+      beerCatalog.forEach(style => {
+        const count = mixedPackBottleCounts[style.id] || 0;
+        if (count > 0) {
+          styles.push({
+            beerStyleId: style.id,
+            name: style.name,
+            bottlesCountPerPack: count,
+            bottlesCount: count
+          });
+        }
+      });
+
+      const prices = {};
+      beerCatalog.forEach(style => {
+        prices[style.id] = {
+          unit: style.priceUnit,
+          pack2: style.pricePack2,
+          pack3: style.pricePack3,
+          pack4: style.pricePack4,
+          wholesale: style.priceWholesale
+        };
+      });
+
+      const cartId = `mixed_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const isMixed = styles.length > 1;
+
+      shoppingCart.push({
+        id: cartId,
+        format,
+        quantity: 1,
+        isMixed: isMixed,
+        styles,
+        prices
+      });
+
+      showToast('Selección añadida al carrito', 'success');
+      closeMixedPackModal();
+      validateCheckoutRequirements();
+      renderCart();
+    }
+
+    function changeCartItemQuantity(index, quantity) {
+      const item = shoppingCart[index];
+      const qtyVal = parseInt(quantity, 10);
+      item.quantity = Math.max(1, isNaN(qtyVal) ? 1 : qtyVal);
+
+      item.styles.forEach(s => {
+        s.bottlesCount = s.bottlesCountPerPack * item.quantity;
+      });
+
+      renderCart();
+    }
+
+    function removeFromCart(index) {
+      shoppingCart.splice(index, 1);
+      validateCheckoutRequirements();
+      renderCart();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('pos-cart-items');
+      container.innerHTML = '';
+
+      if (shoppingCart.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-slate-500 text-sm">
+            <i class="fa-solid fa-basket-shopping text-3xl mb-2 block"></i>
+            El carrito está vacío
+          </div>
+        `;
+        document.getElementById('pos-cart-total').innerText = '$0';
+        return;
+      }
+
+      let totalCartPrice = 0;
+
+      shoppingCart.forEach((item, idx) => {
+        let bottlesPerFormat = 1;
+        if (item.format === 'pack2') bottlesPerFormat = 2;
+        else if (item.format === 'pack3') bottlesPerFormat = 3;
+        else if (item.format === 'pack4') bottlesPerFormat = 4;
+        else if (item.format === 'wholesale') bottlesPerFormat = wholesaleUnitsCount;
+
+        let itemTotalPrice = 0;
+        item.styles.forEach(s => {
+          const stylePrices = item.prices[s.beerStyleId];
+          let formatPrice = stylePrices.unit;
+          
+          if (item.format === 'pack2') formatPrice = stylePrices.pack2;
+          else if (item.format === 'pack3') formatPrice = stylePrices.pack3;
+          else if (item.format === 'pack4') formatPrice = stylePrices.pack4;
+          else if (item.format === 'wholesale') formatPrice = stylePrices.wholesale;
+
+          const pricePerBottle = formatPrice / bottlesPerFormat;
+          itemTotalPrice += pricePerBottle * s.bottlesCount;
+        });
+
+        totalCartPrice += itemTotalPrice;
+
+        const formatNames = {
+          unit: 'Unidad (1 botella)',
+          pack2: 'Pack de 2',
+          pack3: 'Pack de 3',
+          pack4: 'Pack de 4',
+          wholesale: 'Formato Mayorista'
+        };
+
+        const row = document.createElement('div');
+        row.className = 'py-4 flex flex-col gap-2.5';
+        
+        const breakdownHtml = item.styles.map(s => `
+          <div class="flex justify-between items-center text-[11px] text-slate-400 bg-slate-900/40 px-2 py-0.5 rounded">
+            <span>&bull; ${s.name}</span>
+            <span class="font-bold text-slate-200">${s.bottlesCount} botellas</span>
+          </div>
+        `).join('');
+
+        row.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${item.isMixed ? 'bg-amber-500/10 text-brand-500 border border-brand-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700'} mr-1.5">
+                ${item.isMixed ? 'MIXTO' : 'SIMPLE'}
+              </span>
+              <span class="font-semibold text-sm text-white">${formatNames[item.format]}</span>
+            </div>
+            <button onclick="removeFromCart(${idx})" class="text-slate-500 hover:text-red-500 transition duration-150">
+              <i class="fa-solid fa-trash-can text-sm"></i>
+            </button>
+          </div>
+          <div class="space-y-1 mt-1 pl-1">
+            ${breakdownHtml}
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <div class="flex-1 bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-2.5 text-xs text-slate-400 font-medium">
+              Formato: ${formatNames[item.format]}
+            </div>
+
+            <div class="flex items-center w-24 border border-slate-700 rounded-lg overflow-hidden bg-slate-900">
+              <span class="text-[10px] text-slate-500 uppercase tracking-wider px-2 font-bold">Cant</span>
+              <input type="number" min="1" value="${item.quantity}" onchange="changeCartItemQuantity(${idx}, this.value)"
+                     class="w-full bg-slate-900 text-center py-1.5 text-xs text-white focus:outline-none focus:bg-slate-800">
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center text-xs mt-0.5 px-0.5">
+            <span class="text-slate-400">Total Formato (${item.quantity} ped.)</span>
+            <span class="font-bold text-brand-500">$${itemTotalPrice.toFixed(2)}</span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('pos-cart-total').innerText = `$${totalCartPrice.toFixed(2)}`;
+    }
+
+    async function processPOSCheckout() {
+      if (!validateCheckoutRequirements()) return;
+
+      const checkoutBtn = document.getElementById('btn-checkout');
+      checkoutBtn.disabled = true;
+      checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Procesando...';
+
+      const paymentStatus = document.getElementById('pos-payment-status').value;
+
+      const checkoutPayload = {
+        customerId: (posSaleType === 'restaurant' && selectedCustomer) ? selectedCustomer.id : undefined,
+        paymentStatus: paymentStatus,
+        items: shoppingCart.map(item => ({
+          format: item.format,
+          quantity: item.quantity,
+          styles: item.styles.map(s => ({
+            beerStyleId: s.beerStyleId,
+            bottlesCount: s.bottlesCount
+          }))
+        }))
+      };
+
+      try {
+        const response = await apiFetch('/api/sales/checkout', {
+          method: 'POST',
+          body: JSON.stringify(checkoutPayload)
+        });
+
+        const statusMsg = paymentStatus === 'pendiente' ? 'Registrada al Crédito (Pendiente)' : 'Saldada (Pagada)';
+        showToast(`Venta registrada exitosamente. [${statusMsg}]. ID: ${response.correlationId}`, 'success');
+        
+        shoppingCart = [];
+        selectedCustomer = null;
+        document.getElementById('pos-customer-select').value = "";
+        document.getElementById('pos-payment-status').value = 'pagado';
+        
+        await fetchPOSInventory();
+        setSaleType('public');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        checkoutBtn.disabled = false;
+        checkoutBtn.innerHTML = '<i class="fa-solid fa-receipt"></i> <span>Registrar y Despachar</span>';
+      }
+    }
+
+    // --- BEER CATALOG & INVENTORY CRUD (Admin & Vendedores only to edit stock) ---
+    async function fetchInventoryTable() {
+      const tbody = document.getElementById('inventory-table-body');
+      tbody.innerHTML = '<tr><td colspan="8" class="py-12 text-center text-slate-500">Cargando inventario de estilos...</td></tr>';
+
+      try {
+        const styles = await apiFetch('/api/inventory');
+        tbody.innerHTML = '';
+
+        if (styles.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="py-12 text-center text-slate-500">No hay cervezas registradas en catálogo.</td></tr>';
+          return;
+        }
+
+        styles.forEach(style => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-slate-900/40 transition duration-150';
+          
+          const isAdmin = (user.role === 'admin');
+          const deleteBtnHtml = isAdmin ? `
+            <button onclick="deleteStyle('${style.id}')" class="p-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition cursor-pointer" title="Eliminar Estilo">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          ` : '';
+
+          row.innerHTML = `
+            <td class="py-4 px-6 font-semibold text-white">${style.name}</td>
+            <td class="py-4 px-6 text-center">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.stockBottles === 0 ? 'bg-red-500/10 text-red-500' : 'bg-brand-500/10 text-brand-500'}">
+                ${style.stockBottles} botellas
+              </span>
+            </td>
+            <td class="py-4 px-6 font-mono text-slate-300">$${style.priceUnit}</td>
+            <td class="py-4 px-6 font-mono text-slate-300">$${style.pricePack2}</td>
+            <td class="py-4 px-6 font-mono text-slate-300">$${style.pricePack3}</td>
+            <td class="py-4 px-6 font-mono text-slate-300">$${style.pricePack4}</td>
+            <td class="py-4 px-6 font-mono text-brand-500">$${style.priceWholesale}</td>
+            <td class="py-4 px-6 text-right">
+              <div class="flex justify-end gap-2">
+                <button onclick="editStyle('${style.id}')" class="p-2 rounded bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer" title="${isAdmin ? 'Editar Estilo' : 'Modificar Stock'}">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                ${deleteBtnHtml}
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function openStyleModal() {
+      document.getElementById('form-style').reset();
+      document.getElementById('style-id').value = '';
+      
+      // Enable fields for Admin
+      document.getElementById('style-name').disabled = false;
+      document.getElementById('style-price-unit').disabled = false;
+      document.getElementById('style-price-pack2').disabled = false;
+      document.getElementById('style-price-pack3').disabled = false;
+      document.getElementById('style-price-pack4').disabled = false;
+      document.getElementById('style-price-wholesale').disabled = false;
+
+      document.getElementById('modal-style-title').innerText = 'Nuevo Estilo de Cerveza';
+      document.getElementById('modal-style').classList.remove('hidden');
+    }
+
+    function closeStyleModal() {
+      document.getElementById('modal-style').classList.add('hidden');
+    }
+
+    async function editStyle(id) {
+      try {
+        const styles = await apiFetch('/api/inventory');
+        const style = styles.find(s => s.id === id);
+        if (!style) return;
+
+        document.getElementById('style-id').value = style.id;
+        document.getElementById('style-name').value = style.name;
+        document.getElementById('style-stock').value = style.stockBottles;
+        document.getElementById('style-price-unit').value = style.priceUnit;
+        document.getElementById('style-price-pack2').value = style.pricePack2;
+        document.getElementById('style-price-pack3').value = style.pricePack3;
+        document.getElementById('style-price-pack4').value = style.pricePack4;
+        document.getElementById('style-price-wholesale').value = style.priceWholesale;
+
+        // Vendedor can only edit stock, disable prices and name
+        const isVendedor = (user.role === 'vendedor');
+        document.getElementById('style-name').disabled = isVendedor;
+        document.getElementById('style-price-unit').disabled = isVendedor;
+        document.getElementById('style-price-pack2').disabled = isVendedor;
+        document.getElementById('style-price-pack3').disabled = isVendedor;
+        document.getElementById('style-price-pack4').disabled = isVendedor;
+        document.getElementById('style-price-wholesale').disabled = isVendedor;
+        
+        document.getElementById('modal-style-title').innerText = isVendedor ? 'Modificar Stock de Cerveza' : 'Editar Estilo de Cerveza';
+        document.getElementById('modal-style').classList.remove('hidden');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleSaveStyle(e) {
+      e.preventDefault();
+      const id = document.getElementById('style-id').value;
+      const name = document.getElementById('style-name').value;
+      const stockBottles = parseInt(document.getElementById('style-stock').value, 10);
+      const priceUnit = parseFloat(document.getElementById('style-price-unit').value);
+      const pricePack2 = parseFloat(document.getElementById('style-price-pack2').value);
+      const pricePack3 = parseFloat(document.getElementById('style-price-pack3').value);
+      const pricePack4 = parseFloat(document.getElementById('style-price-pack4').value);
+      const priceWholesale = parseFloat(document.getElementById('style-price-wholesale').value);
+
+      const payload = { name, stockBottles, priceUnit, pricePack2, pricePack3, pricePack4, priceWholesale };
+
+      try {
+        if (id) {
+          await apiFetch(`/api/inventory/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          showToast('Estilo de cerveza modificado con éxito');
+        } else {
+          await apiFetch('/api/inventory', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          showToast('Nuevo estilo creado con éxito');
+        }
+        closeStyleModal();
+        fetchInventoryTable();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteStyle(id) {
+      if (!confirm('¿Estás seguro de eliminar este estilo de cerveza del catálogo? Esta acción no se puede deshacer.')) return;
+      
+      try {
+        await apiFetch(`/api/inventory/${id}`, { method: 'DELETE' });
+        showToast('Estilo eliminado del catálogo');
+        fetchInventoryTable();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- CUSTOMERS MANAGEMENT ---
+    async function fetchCustomers(searchQuery = '') {
+      const tbody = document.getElementById('customers-table-body');
+      tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">Cargando directorio de restaurantes...</td></tr>';
+
+      try {
+        const queryParam = searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : '';
+        customerList = await apiFetch(`/api/customers${queryParam}`);
+        tbody.innerHTML = '';
+
+        if (customerList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">No se encontraron restaurantes registrados.</td></tr>';
+          return;
+        }
+
+        customerList.forEach(cust => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-slate-900/40 transition duration-150';
+          
+          const isAdmin = (user.role === 'admin');
+          const deleteBtnHtml = isAdmin ? `
+            <button onclick="deleteCustomer('${cust.id}')" class="p-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition cursor-pointer" title="Eliminar Cliente">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          ` : '';
+
+          row.innerHTML = `
+            <td class="py-4 px-6 font-semibold text-white">${cust.businessName}</td>
+            <td class="py-4 px-6 font-mono text-slate-300">${cust.fiscalId}</td>
+            <td class="py-4 px-6 text-slate-400">${cust.phone || '-'}</td>
+            <td class="py-4 px-6 text-right">
+              <div class="flex justify-end gap-2">
+                <button onclick="editCustomer('${cust.id}')" class="p-2 rounded bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer" title="Editar Ficha">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                ${deleteBtnHtml}
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function resetCustomerForm() {
+      document.getElementById('form-customer').reset();
+      document.getElementById('customer-id').value = '';
+    }
+
+    function editCustomer(id) {
+      const cust = customerList.find(c => c.id === id);
+      if (!cust) return;
+
+      document.getElementById('customer-id').value = cust.id;
+      document.getElementById('customer-name').value = cust.businessName;
+      document.getElementById('customer-rut').value = cust.fiscalId;
+      document.getElementById('customer-phone').value = cust.phone;
+    }
+
+    async function deleteCustomer(id) {
+      if (!confirm('¿Estás seguro de eliminar este restaurante del directorio?')) return;
+
+      try {
+        await apiFetch(`/api/customers/${id}`, { method: 'DELETE' });
+        showToast('Restaurante eliminado del directorio');
+        fetchCustomers();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleSaveCustomer(e) {
+      e.preventDefault();
+      const id = document.getElementById('customer-id').value;
+      const businessName = document.getElementById('customer-name').value;
+      const fiscalId = document.getElementById('customer-rut').value;
+      const phone = document.getElementById('customer-phone').value;
+
+      const payload = { businessName, fiscalId, phone };
+
+      try {
+        if (id) {
+          await apiFetch(`/api/customers/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          showToast('Ficha de restaurante actualizada');
+        } else {
+          await apiFetch('/api/customers', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          showToast('Nuevo restaurante registrado con éxito');
+        }
+        resetCustomerForm();
+        fetchCustomers();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- STAFF / USERS MANAGEMENT (Admin Only) ---
+    async function fetchUsersTable() {
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">Cargando personal...</td></tr>';
+
+      try {
+        systemUsersList = await apiFetch('/api/auth/users');
+        tbody.innerHTML = '';
+
+        if (systemUsersList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">No hay personal registrado.</td></tr>';
+          return;
+        }
+
+        systemUsersList.forEach(u => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-slate-900/40 transition duration-150';
+          row.innerHTML = `
+            <td class="py-4 px-6 font-semibold text-white">${u.name}</td>
+            <td class="py-4 px-6 font-mono text-slate-300">${u.username}</td>
+            <td class="py-4 px-6 text-slate-400 capitalize">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${u.role === 'admin' ? 'bg-brand-500/10 text-brand-500 border border-brand-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
+                ${u.role}
+              </span>
+            </td>
+            <td class="py-4 px-6 text-right">
+              <div class="flex justify-end gap-2">
+                <button onclick="editUser('${u.id}')" class="p-2 rounded bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer">
+                  <i class="fa-solid fa-pen text-xs"></i>
+                </button>
+                <button onclick="deleteUser('${u.id}')" class="p-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition cursor-pointer">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function resetUserForm() {
+      document.getElementById('form-user').reset();
+      document.getElementById('user-id-field').value = '';
+      document.getElementById('form-user-title').innerText = 'Nuevo Vendedor / Administrador';
+      document.getElementById('user-password').required = true;
+    }
+
+    function editUser(id) {
+      const u = systemUsersList.find(x => x.id === id);
+      if (!u) return;
+
+      document.getElementById('user-id-field').value = u.id;
+      document.getElementById('user-fullname').value = u.name;
+      document.getElementById('user-username').value = u.username;
+      document.getElementById('user-role').value = u.role;
+      document.getElementById('user-password').value = '';
+      
+      document.getElementById('user-password').required = false;
+      document.getElementById('form-user-title').innerText = 'Modificar Ficha de Personal';
+    }
+
+    async function handleSaveUser(e) {
+      e.preventDefault();
+      const id = document.getElementById('user-id-field').value;
+      const name = document.getElementById('user-fullname').value;
+      const username = document.getElementById('user-username').value;
+      const password = document.getElementById('user-password').value;
+      const role = document.getElementById('user-role').value;
+
+      try {
+        if (id) {
+          await apiFetch(`/api/auth/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ name, username, password: password || undefined, role })
+          });
+          showToast('Ficha de personal modificada correctamente', 'success');
+        } else {
+          if (!password || password.length < 6) {
+            showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
+            return;
+          }
+          await apiFetch('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({ name, username, password, role })
+          });
+          showToast('Nuevo personal registrado correctamente', 'success');
+        }
+        resetUserForm();
+        fetchUsersTable();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteUser(id) {
+      if (id === user.id) {
+        showToast('No puedes eliminarte a ti mismo del sistema', 'error');
+        return;
+      }
+      if (!confirm('¿Estás seguro de eliminar esta cuenta de personal del sistema?')) return;
+
+      try {
+        await apiFetch(`/api/auth/users/${id}`, { method: 'DELETE' });
+        showToast('Ficha de personal eliminada');
+        fetchUsersTable();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- REPORTS & AUDIT LOGS (Admin Only) ---
+    async function fetchCustomersListForReports() {
+      try {
+        const list = await apiFetch('/api/customers');
+        const select = document.getElementById('report-customer-select');
+        select.innerHTML = '<option value="all" selected>Todos los clientes</option>';
+        list.forEach(c => {
+          select.innerHTML += `<option value="${c.id}">${c.businessName}</option>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadSellersDropdownForReports() {
+      try {
+        const list = await apiFetch('/api/auth/users');
+        const select = document.getElementById('report-seller-select');
+        select.innerHTML = '<option value="all" selected>Todos los vendedores</option>';
+        list.forEach(u => {
+          select.innerHTML += `<option value="${u.id}">${u.name} (${u.role})</option>`;
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function fetchSellersPerformance() {
+      const performanceContainer = document.getElementById('seller-reports-cards');
+      performanceContainer.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500">Cargando reporte de rendimiento...</div>';
+
+      const monthVal = document.getElementById('report-seller-month').value;
+      
+      try {
+        const perfData = await apiFetch(`/api/reports/sellers?month=${monthVal}`);
+        performanceContainer.innerHTML = '';
+
+        if (perfData.length === 0) {
+          performanceContainer.innerHTML = `<div class="col-span-full py-8 text-center text-slate-500">No hay ventas registradas para el mes seleccionado (${monthVal}).</div>`;
+        } else {
+          perfData.forEach(perf => {
+            const card = document.createElement('div');
+            card.className = 'glassmorphism p-6 rounded-2xl border border-slate-800 flex items-center justify-between shadow-lg relative overflow-hidden';
+            card.innerHTML = `
+              <div class="space-y-1">
+                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vendedor</div>
+                <h3 class="text-lg font-bold text-white font-outfit">${perf.sellerName}</h3>
+                <div class="text-xs text-slate-400">Ventas en el Mes: <span class="font-bold text-slate-200">${perf.transactionCount}</span></div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Recaudado</div>
+                <div class="text-2xl font-black text-brand-500 font-outfit mt-1">$${Number(perf.totalRevenue).toFixed(2)}</div>
+              </div>
+              <!-- Decorative brand side line -->
+              <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-500"></div>
+            `;
+            performanceContainer.appendChild(card);
+          });
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function fetchReportsAndAudit() {
+      await fetchSellersPerformance();
+
+      const auditTbody = document.getElementById('audit-table-body');
+      auditTbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-500">Cargando bitácora de auditoría...</td></tr>';
+
+      try {
+        rawAuditLogs = await apiFetch('/api/sales/history');
+        filterAuditLogs();
+      } catch (err) {
+        showToast(err.message, 'error');
+        auditTbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-red-500">Error al cargar bitácora.</td></tr>';
+      }
+    }
+
+    function filterAuditLogs() {
+      const range = document.getElementById('report-range-select').value;
+      const paymentFilter = document.getElementById('report-payment-select').value;
+      const customerFilter = document.getElementById('report-customer-select').value;
+      const sellerFilter = document.getElementById('report-seller-select').value;
+
+      const tbody = document.getElementById('audit-table-body');
+      tbody.innerHTML = '';
+
+      const now = new Date();
+      let startDateLimit = new Date(0);
+
+      if (range === 'today') {
+        startDateLimit = new Date();
+        startDateLimit.setHours(0, 0, 0, 0);
+      } else if (range === 'weekly') {
+        startDateLimit = new Date();
+        startDateLimit.setDate(now.getDate() - 7);
+      } else if (range === 'monthly') {
+        startDateLimit = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      const filtered = rawAuditLogs.filter(log => {
+        const transDate = new Date(log.transactionDate);
+        if (transDate < startDateLimit) return false;
+        
+        if (paymentFilter !== 'all' && log.paymentStatus !== paymentFilter) return false;
+        if (customerFilter !== 'all' && log.customerId !== customerFilter) return false;
+        if (sellerFilter !== 'all' && log.sellerId !== sellerFilter) return false;
+
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-500">No se encontraron ventas para los filtros seleccionados.</td></tr>';
+        return;
+      }
+
+      const formatNames = {
+        unit: '1 Botella',
+        pack2: 'Pack de 2',
+        pack3: 'Pack de 3',
+        pack4: 'Pack de 4',
+        wholesale: 'Wholesale'
+      };
+
+      filtered.forEach(log => {
+        const date = new Date(log.transactionDate);
+        const formattedDate = date.toLocaleString('es-ES', { 
+          day: '2-digit', month: '2-digit', year: 'numeric',
+          hour: '2-digit', minute: '2-digit' 
+        });
+
+        let statusBadge = '';
+        let actionButton = '';
+
+        if (log.paymentStatus === 'pendiente') {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 uppercase">Pendiente</span>`;
+          actionButton = `
+            <button onclick="settlePendingSale(${log.id})" title="Registrar Pago" 
+                    class="ml-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-2 py-0.5 rounded text-[10px] uppercase transition cursor-pointer">
+              💰 Pagar
+            </button>
+          `;
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">Pagado</span>`;
+        }
+
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-900/40 transition duration-150 text-xs';
+        row.innerHTML = `
+          <td class="py-4 px-6 font-mono font-semibold text-slate-300 select-all">${log.correlationId}</td>
+          <td class="py-4 px-6 text-slate-400 whitespace-nowrap">${formattedDate}</td>
+          <td class="py-4 px-6 font-medium text-white">${log.sellerName}</td>
+          <td class="py-4 px-6">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${log.customerId ? 'bg-brand-500/10 text-brand-500' : 'bg-slate-800 text-slate-400'}">
+              ${log.customerName}
+            </span>
+          </td>
+          <td class="py-4 px-6 font-medium text-white">${log.beerStyleName}</td>
+          <td class="py-4 px-6 text-slate-300">${formatNames[log.formatSold] || log.formatSold}</td>
+          <td class="py-4 px-6 text-center font-bold text-slate-200">${log.unitsSold} u.</td>
+          <td class="py-4 px-6 text-right font-bold text-brand-500 font-mono text-sm">$${Number(log.totalAmount).toFixed(2)}</td>
+          <td class="py-4 px-6 text-center">
+            <div class="flex items-center justify-center">
+              ${statusBadge}
+              ${actionButton}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    async function settlePendingSale(saleId) {
+      if (!confirm('¿Deseas registrar el cobro de esta venta y marcarla como PAGADA?')) return;
+
+      try {
+        await apiFetch(`/api/sales/${saleId}/payment`, {
+          method: 'PUT',
+          body: JSON.stringify({ paymentStatus: 'pagado' })
+        });
+        showToast('Pago registrado correctamente. Transacción saldada.', 'success');
+        await fetchReportsAndAudit();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- COMPILE & PRINT PDF REPORTS ---
+    function compilePrintReport() {
+      const range = document.getElementById('report-range-select').value;
+      const statusFilter = document.getElementById('report-payment-select').value;
+      const customerFilter = document.getElementById('report-customer-select').value;
+      const sellerFilter = document.getElementById('report-seller-select').value;
+
+      const now = new Date();
+      let startDateLimit = new Date(0);
+
+      if (range === 'today') {
+        startDateLimit = new Date();
+        startDateLimit.setHours(0, 0, 0, 0);
+      } else if (range === 'weekly') {
+        startDateLimit = new Date();
+        startDateLimit.setDate(now.getDate() - 7);
+      } else if (range === 'monthly') {
+        startDateLimit = new Date(now.getFullYear(), now.getMonth(), 1);
+      }
+
+      const reportLogs = rawAuditLogs.filter(log => {
+        const transDate = new Date(log.transactionDate);
+        if (transDate < startDateLimit) return false;
+        if (statusFilter !== 'all' && log.paymentStatus !== statusFilter) return false;
+        if (customerFilter !== 'all' && log.customerId !== customerFilter) return false;
+        if (sellerFilter !== 'all' && log.sellerId !== sellerFilter) return false;
+        return true;
+      });
+
+      let totalRevenue = 0;
+      let totalBottles = 0;
+      let totalPendingDebt = 0;
+      
+      reportLogs.forEach(log => {
+        totalRevenue += log.totalAmount;
+        totalBottles += log.unitsSold;
+        if (log.paymentStatus === 'pendiente') {
+          totalPendingDebt += log.totalAmount;
+        }
+      });
+
+      document.getElementById('print-report-date-compiled').innerText = `Fecha: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+      
+      const rangeNames = { today: 'Diario (Hoy)', weekly: 'Semanal (7 Días)', monthly: 'Mensual (Mes Actual)', all: 'Histórico Completo' };
+      const statusNames = { all: 'Todos los registros', pagado: 'Solo Pagados', pendiente: 'Solo Crédito (Pendiente)' };
+      
+      document.getElementById('print-summary-range').innerText = rangeNames[range];
+      document.getElementById('print-summary-status').innerText = statusNames[statusFilter];
+      
+      const customerSelect = document.getElementById('report-customer-select');
+      document.getElementById('print-summary-customer').innerText = customerFilter === 'all' ? 'Todos los clientes' : customerSelect.options[customerSelect.selectedIndex].text;
+
+      const sellerSelect = document.getElementById('report-seller-select');
+      document.getElementById('print-summary-seller').innerText = sellerFilter === 'all' ? 'Todos los vendedores' : sellerSelect.options[sellerSelect.selectedIndex].text;
+
+      document.getElementById('print-stat-revenue').innerText = `$${totalRevenue.toFixed(2)}`;
+      document.getElementById('print-stat-bottles').innerText = `${totalBottles} u.`;
+      document.getElementById('print-stat-pending').innerText = `$${totalPendingDebt.toFixed(2)}`;
+
+      const printTbody = document.getElementById('print-report-table-body');
+      printTbody.innerHTML = '';
+
+      if (reportLogs.length === 0) {
+        printTbody.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-slate-500">Ningún registro coincide con los filtros.</td></tr>';
+      } else {
+        const formatNames = { unit: '1 Botella', pack2: 'Pack 2', pack3: 'Pack 3', pack4: 'Pack 4', wholesale: 'Wholesale' };
+        
+        reportLogs.forEach(log => {
+          const date = new Date(log.transactionDate);
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="py-2 px-3 font-mono">${log.correlationId}</td>
+            <td class="py-2 px-3">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+            <td class="py-2 px-3">${log.sellerName}</td>
+            <td class="py-2 px-3 font-semibold">${log.customerName}</td>
+            <td class="py-2 px-3">${log.beerStyleName}</td>
+            <td class="py-2 px-3">${formatNames[log.formatSold] || log.formatSold}</td>
+            <td class="py-2 px-3 text-center">${log.unitsSold} u.</td>
+            <td class="py-2 px-3 text-right font-mono font-bold">$${log.totalAmount.toFixed(2)}</td>
+            <td class="py-2 px-3 text-center uppercase font-bold text-[9px]">${log.paymentStatus}</td>
+          `;
+          printTbody.appendChild(row);
+        });
+      }
+
+      window.print();
+    }
+
+    // On Load Window
+    window.addEventListener('DOMContentLoaded', () => {
+      initApp();
+    });
+  </script>
+</body>
+</html>
