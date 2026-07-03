@@ -1,5 +1,4 @@
-import { Database } from 'sqlite';
-import { getDatabase } from '../../config/database';
+import { getDatabase, IDatabase } from '../../config/database';
 import { User, Customer, BeerStyle, Sale, UserRole, CustomerType, SalesFormat } from '../../domain/entities';
 import {
   IUserRepository,
@@ -70,7 +69,7 @@ function mapSaleRow(row: any): Sale {
 }
 
 export class SQLiteUserRepository implements IUserRepository {
-  private async getDb(): Promise<Database> {
+  private async getDb(): Promise<IDatabase> {
     return getDatabase();
   }
 
@@ -123,7 +122,7 @@ export class SQLiteUserRepository implements IUserRepository {
 }
 
 export class SQLiteCustomerRepository implements ICustomerRepository {
-  private async getDb(): Promise<Database> {
+  private async getDb(): Promise<IDatabase> {
     return getDatabase();
   }
 
@@ -187,7 +186,7 @@ export class SQLiteCustomerRepository implements ICustomerRepository {
 }
 
 export class SQLiteBeerStyleRepository implements IBeerStyleRepository {
-  private async getDb(): Promise<Database> {
+  private async getDb(): Promise<IDatabase> {
     return getDatabase();
   }
 
@@ -264,7 +263,7 @@ export class SQLiteBeerStyleRepository implements IBeerStyleRepository {
 }
 
 export class SQLiteSystemSettingsRepository implements ISystemSettingsRepository {
-  private async getDb(): Promise<Database> {
+  private async getDb(): Promise<IDatabase> {
     return getDatabase();
   }
 
@@ -291,7 +290,7 @@ export class SQLiteSystemSettingsRepository implements ISystemSettingsRepository
 }
 
 export class SQLiteSaleRepository implements ISaleRepository {
-  private async getDb(): Promise<Database> {
+  private async getDb(): Promise<IDatabase> {
     return getDatabase();
   }
 

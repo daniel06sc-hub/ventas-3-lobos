@@ -1,38 +1,130 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
+import { createClient, Client } from '@libsql/client';
 import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
 
-let dbInstance: Database | null = null;
+export interface IStatement {
+  run(...params: any[]): Promise<any>;
+  finalize(): Promise<void>;
+}
+
+export interface IDatabase {
+  get<T = any>(sql: string, ...params: any[]): Promise<T | undefined>;
+  all<T = any>(sql: string, ...params: any[]): Promise<T[]>;
+  run(sql: string, ...params: any[]): Promise<{ lastID?: number; changes?: number }>;
+  exec(sql: string): Promise<void>;
+  prepare(sql: string): Promise<IStatement>;
+}
+
+class TursoStatement implements IStatement {
+  constructor(private client: Client, private sql: string) {}
+
+  async run(...params: any[]): Promise<any> {
+    const res = await this.client.execute({ sql: this.sql, args: params });
+    return {
+      lastID: res.lastInsertRowid ? Number(res.lastInsertRowid) : undefined,
+      changes: Number(res.rowsAffected)
+    };
+  }
+
+  async finalize(): Promise<void> {
+    // No-op en conexión remota
+  }
+}
+
+class TursoDatabaseWrapper implements IDatabase {
+  constructor(private client: Client) {}
+
+  private convertRow(row: any, columns: string[]): any {
+    if (!row) return undefined;
+    const obj: any = {};
+    columns.forEach((col, idx) => {
+      obj[col] = row[col] !== undefined ? row[col] : row[idx];
+    });
+    return obj;
+  }
+
+  async get<T = any>(sql: string, ...params: any[]): Promise<T | undefined> {
+    const res = await this.client.execute({ sql, args: params });
+    return res.rows[0] ? this.convertRow(res.rows[0], res.columns) : undefined;
+  }
+
+  async all<T = any>(sql: string, ...params: any[]): Promise<T[]> {
+    const res = await this.client.execute({ sql, args: params });
+    return res.rows.map(row => this.convertRow(row, res.columns));
+  }
+
+  async run(sql: string, ...params: any[]): Promise<{ lastID?: number; changes?: number }> {
+    const res = await this.client.execute({ sql, args: params });
+    return {
+      lastID: res.lastInsertRowid ? Number(res.lastInsertRowid) : undefined,
+      changes: Number(res.rowsAffected)
+    };
+  }
+
+  async exec(sql: string): Promise<void> {
+    // Eliminar comentarios de SQL y líneas vacías para evitar errores de parseo en Turso
+    const cleanSql = sql
+      .split('\n')
+      .map(line => line.replace(/--.*$/, '').trim())
+      .join(' ');
+
+    const statements = cleanSql
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.toLowerCase().startsWith('pragma'));
+    
+    if (statements.length > 0) {
+      await this.client.batch(statements, "write");
+    }
+  }
+
+  async prepare(sql: string): Promise<IStatement> {
+    return new TursoStatement(this.client, sql);
+  }
+}
+
+let dbInstance: IDatabase | null = null;
 
 /**
- * Abre y retorna la conexión activa a la base de datos SQLite.
+ * Abre y retorna la conexión activa a la base de datos (SQLite local o Turso remota).
  * Si es la primera vez que se llama, inicializa el esquema y valores por defecto.
  */
-export async function getDatabase(): Promise<Database> {
+export async function getDatabase(): Promise<IDatabase> {
   if (dbInstance) {
     return dbInstance;
   }
 
-  // Ruta física de la base de datos (soporta disco persistente en entornos como Render/Docker)
-  const dbPath = process.env.DATABASE_PATH
-    ? path.resolve(process.env.DATABASE_PATH)
-    : path.resolve(__dirname, '../../database.db');
+  if (process.env.TURSO_DATABASE_URL) {
+    console.log('Conectando a la base de datos remota de Turso...');
+    const client = createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN
+    });
+    dbInstance = new TursoDatabaseWrapper(client);
+  } else {
+    console.log('Conectando a la base de datos local de SQLite...');
+    // Ruta física de la base de datos (soporta disco persistente en entornos como Render/Docker)
+    const dbPath = process.env.DATABASE_PATH
+      ? path.resolve(process.env.DATABASE_PATH)
+      : path.resolve(__dirname, '../../database.db');
 
-  // Asegurar que el directorio contenedor exista
-  const dbDir = path.dirname(dbPath);
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+    // Asegurar que el directorio contenedor exista
+    const dbDir = path.dirname(dbPath);
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+
+    dbInstance = await open({
+      filename: dbPath,
+      driver: sqlite3.Database
+    });
+
+    // Habilitar restricciones de claves foráneas
+    await dbInstance.exec('PRAGMA foreign_keys = ON;');
   }
-
-  dbInstance = await open({
-    filename: dbPath,
-    driver: sqlite3.Database
-  });
-
-  // Habilitar restricciones de claves foráneas
-  await dbInstance.exec('PRAGMA foreign_keys = ON;');
 
   // Cargar y ejecutar el archivo de esquema schema.sql
   const schemaPath = path.resolve(__dirname, '../../schema.sql');
@@ -41,74 +133,77 @@ export async function getDatabase(): Promise<Database> {
     await dbInstance.exec(schemaSql);
   }
 
-  // Migración dinámica: agregar columna payment_status a la tabla sales si no existe
-  try {
-    const tableInfo = await dbInstance.all('PRAGMA table_info(sales)');
-    const hasPaymentStatus = tableInfo.some((col: any) => col.name === 'payment_status');
-    if (!hasPaymentStatus) {
-      await dbInstance.exec("ALTER TABLE sales ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pagado';");
-      console.log('Migración: Columna "payment_status" agregada a la tabla "sales" exitosamente.');
+  // Migraciones dinámicas específicas de base de datos local
+  if (!process.env.TURSO_DATABASE_URL) {
+    // Migración dinámica: agregar columna payment_status a la tabla sales si no existe
+    try {
+      const tableInfo = await dbInstance.all('PRAGMA table_info(sales)');
+      const hasPaymentStatus = tableInfo.some((col: any) => col.name === 'payment_status');
+      if (!hasPaymentStatus) {
+        await dbInstance.exec("ALTER TABLE sales ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pagado';");
+        console.log('Migración: Columna "payment_status" agregada a la tabla "sales" exitosamente.');
+      }
+    } catch (migError) {
+      console.error('Error al realizar migración en SQLite:', migError);
     }
-  } catch (migError) {
-    console.error('Error al realizar migración en SQLite:', migError);
-  }
 
-  // Migración dinámica: modificar claves foráneas de sales a ON DELETE SET NULL para evitar rebotar al borrar entidades
-  try {
-    const fkList = await dbInstance.all('PRAGMA foreign_key_list(sales)');
-    const needsFkMigration = fkList.some((fk: any) => fk.on_delete === 'NO ACTION');
-    if (needsFkMigration) {
-      console.log('Migrando tabla "sales" para soportar ON DELETE SET NULL...');
-      await dbInstance.exec('PRAGMA foreign_keys = OFF;');
-      await dbInstance.exec('BEGIN TRANSACTION;');
-      
-      // 1. Crear tabla nueva con el esquema correcto
-      await dbInstance.exec(`
-        CREATE TABLE sales_new (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            correlation_id TEXT NOT NULL,
-            transaction_date DATETIME DEFAULT (datetime('now', 'localtime')),
-            seller_id TEXT,
-            seller_name TEXT NOT NULL,
-            customer_id TEXT,
-            customer_name TEXT DEFAULT 'Cliente Detalle',
-            beer_style_id TEXT,
-            beer_style_name TEXT NOT NULL,
-            format_sold TEXT NOT NULL,
-            units_sold INTEGER NOT NULL,
-            unit_price REAL NOT NULL,
-            total_amount REAL NOT NULL,
-            payment_status TEXT NOT NULL DEFAULT 'pagado',
-            FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE SET NULL,
-            FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL,
-            FOREIGN KEY(beer_style_id) REFERENCES beer_styles(id) ON DELETE SET NULL
-        );
-      `);
-      
-      // 2. Copiar los datos históricos
-      await dbInstance.exec(`
-        INSERT INTO sales_new (
-          id, correlation_id, transaction_date, seller_id, seller_name, 
-          customer_id, customer_name, beer_style_id, beer_style_name, 
-          format_sold, units_sold, unit_price, total_amount, payment_status
-        )
-        SELECT 
-          id, correlation_id, transaction_date, seller_id, seller_name, 
-          customer_id, customer_name, beer_style_id, beer_style_name, 
-          format_sold, units_sold, unit_price, total_amount, payment_status
-        FROM sales;
-      `);
-      
-      // 3. Reemplazar la tabla
-      await dbInstance.exec('DROP TABLE sales;');
-      await dbInstance.exec('ALTER TABLE sales_new RENAME TO sales;');
-      
-      await dbInstance.exec('COMMIT;');
-      await dbInstance.exec('PRAGMA foreign_keys = ON;');
-      console.log('Migración de claves foráneas de "sales" completada con éxito.');
+    // Migración dinámica: modificar claves foráneas de sales a ON DELETE SET NULL para evitar rebotar al borrar entidades
+    try {
+      const fkList = await dbInstance.all('PRAGMA foreign_key_list(sales)');
+      const needsFkMigration = fkList.some((fk: any) => fk.on_delete === 'NO ACTION');
+      if (needsFkMigration) {
+        console.log('Migrando tabla "sales" para soportar ON DELETE SET NULL...');
+        await dbInstance.exec('PRAGMA foreign_keys = OFF;');
+        await dbInstance.exec('BEGIN TRANSACTION;');
+        
+        // 1. Crear tabla nueva con el esquema correcto
+        await dbInstance.exec(`
+          CREATE TABLE sales_new (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              correlation_id TEXT NOT NULL,
+              transaction_date DATETIME DEFAULT (datetime('now', 'localtime')),
+              seller_id TEXT,
+              seller_name TEXT NOT NULL,
+              customer_id TEXT,
+              customer_name TEXT DEFAULT 'Cliente Detalle',
+              beer_style_id TEXT,
+              beer_style_name TEXT NOT NULL,
+              format_sold TEXT NOT NULL,
+              units_sold INTEGER NOT NULL,
+              unit_price REAL NOT NULL,
+              total_amount REAL NOT NULL,
+              payment_status TEXT NOT NULL DEFAULT 'pagado',
+              FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE SET NULL,
+              FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+              FOREIGN KEY(beer_style_id) REFERENCES beer_styles(id) ON DELETE SET NULL
+          );
+        `);
+        
+        // 2. Copiar los datos históricos
+        await dbInstance.exec(`
+          INSERT INTO sales_new (
+            id, correlation_id, transaction_date, seller_id, seller_name, 
+            customer_id, customer_name, beer_style_id, beer_style_name, 
+            format_sold, units_sold, unit_price, total_amount, payment_status
+          )
+          SELECT 
+            id, correlation_id, transaction_date, seller_id, seller_name, 
+            customer_id, customer_name, beer_style_id, beer_style_name, 
+            format_sold, units_sold, unit_price, total_amount, payment_status
+          FROM sales;
+        `);
+        
+        // 3. Reemplazar la tabla
+        await dbInstance.exec('DROP TABLE sales;');
+        await dbInstance.exec('ALTER TABLE sales_new RENAME TO sales;');
+        
+        await dbInstance.exec('COMMIT;');
+        await dbInstance.exec('PRAGMA foreign_keys = ON;');
+        console.log('Migración de claves foráneas de "sales" completada con éxito.');
+      }
+    } catch (fkMigError) {
+      console.error('Error al migrar claves foráneas de la tabla sales:', fkMigError);
     }
-  } catch (fkMigError) {
-    console.error('Error al migrar claves foráneas de la tabla sales:', fkMigError);
   }
 
   // 1. Semilla para la variable global del Formato Mayorista (si no existe)
