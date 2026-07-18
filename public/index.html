@@ -1140,6 +1140,38 @@
               </button>
             </div>
           </div>
+
+          <!-- Stock levels direct editor card -->
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-lg font-bold text-white font-outfit flex items-center gap-2">
+              <i class="fa-solid fa-boxes-stacked text-brand-500"></i>
+              <span>Inventario y Existencias (Stock de Estilos)</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Establece el stock físico disponible para venta normal en POS y ferias / festivales de forma rápida.</p>
+            
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
+                    <th class="py-3 px-4">Estilo de Cerveza</th>
+                    <th class="py-3 px-4 w-40 text-center">Stock Global (Botellas)</th>
+                  </tr>
+                </thead>
+                <tbody id="settings-stock-tbody" class="divide-y divide-slate-800/50">
+                  <tr>
+                    <td colspan="2" class="py-6 text-center text-slate-500">Cargando catálogo...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="flex justify-end pt-2">
+              <button onclick="saveStylesStockSettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Actualizar Stock Total</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- 3. WhatsApp -->
@@ -3622,6 +3654,8 @@
         fetchUsersTable();
       } else if (tabId === 'db') {
         fetchDatabaseStatus();
+      } else if (tabId === 'parametros') {
+        fetchSettingsStockTable();
       }
     }
 
@@ -3657,6 +3691,60 @@
         fetchGlobalSettings();
       } catch (err) {
         showToast(err.message, 'error');
+      }
+    }
+
+    let settingsProductsList = [];
+
+    async function fetchSettingsStockTable() {
+      const tbody = document.getElementById('settings-stock-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="2" class="py-6 text-center text-slate-500">Cargando catálogo...</td></tr>';
+      try {
+        const styles = await apiFetch('/api/inventory');
+        settingsProductsList = styles;
+        tbody.innerHTML = styles.map(style => {
+          return `
+            <tr class="hover:bg-slate-900/30 text-xs border-b border-slate-800/30">
+              <td class="py-3 px-4 font-semibold text-white">${style.name}</td>
+              <td class="py-3 px-4 text-center">
+                <input type="number" id="settings-stock-input-${style.id}" min="0" required 
+                  class="bg-slate-900 border border-slate-700 text-white rounded-lg py-1 px-2 text-center text-xs font-mono font-bold focus:outline-none focus:border-brand-500 w-24" 
+                  value="${style.stockBottles}">
+              </td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="2" class="py-6 text-center text-slate-500">No hay cervezas registradas en catálogo.</td></tr>';
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="2" class="py-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function saveStylesStockSettings() {
+      if (settingsProductsList.length === 0) {
+        showToast('No hay estilos cargados para actualizar.', 'warning');
+        return;
+      }
+
+      showToast('Actualizando inventarios de stock...', 'info');
+      try {
+        for (const style of settingsProductsList) {
+          const inputVal = parseInt(document.getElementById(`settings-stock-input-${style.id}`).value, 10);
+          if (isNaN(inputVal) || inputVal < 0) {
+            showToast(`El stock para ${style.name} debe ser un número no negativo`, 'error');
+            return;
+          }
+
+          await apiFetch(`/api/inventory/${style.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ stockBottles: inputVal })
+          });
+        }
+        showToast('Stocks globales actualizados con éxito', 'success');
+        fetchSettingsStockTable();
+        fetchInventoryTable(); // Refrescar tabla en la sección de Productos
+      } catch (err) {
+        showToast('Error al guardar stock: ' + err.message, 'error');
       }
     }
 
