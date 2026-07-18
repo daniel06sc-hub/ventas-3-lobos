@@ -38,6 +38,17 @@ export async function createExpressApp() {
   // Middlewares globales
   app.use(cors());
   app.use(express.json());
+  
+  // Middleware para evitar caché en archivos HTML y directorios
+  app.use((req, res, next) => {
+    if (req.path === '/' || req.path.endsWith('/') || req.path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    next();
+  });
+
   app.use(express.static(path.resolve(__dirname, '../../../public')));
 
   // 1. Inyección de Repositorios (Detalle de Infraestructura)
