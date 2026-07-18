@@ -3403,11 +3403,16 @@
     function compilePrintReport() {
       const range = document.getElementById('report-range-select').value;
       const statusFilter = document.getElementById('report-payment-select').value;
-      const customerFilter = document.getElementById('report-customer-select').value;
-      const sellerFilter = document.getElementById('report-seller-select').value;
+      
+      const customerSelect = document.getElementById('report-customer-select');
+      const customerFilter = customerSelect ? customerSelect.value : 'all';
+      
+      const sellerSelect = document.getElementById('report-seller-select');
+      const sellerFilter = sellerSelect ? sellerSelect.value : 'all';
 
       const now = new Date();
       let startDateLimit = new Date(0);
+      let endDateLimit = new Date(2100, 0, 1);
 
       if (range === 'today') {
         startDateLimit = new Date();
@@ -3417,11 +3422,22 @@
         startDateLimit.setDate(now.getDate() - 7);
       } else if (range === 'monthly') {
         startDateLimit = new Date(now.getFullYear(), now.getMonth(), 1);
+      } else if (range === 'custom') {
+        const fromVal = document.getElementById('rep-ventas-from').value;
+        const toVal = document.getElementById('rep-ventas-to').value;
+        if (fromVal) {
+          startDateLimit = new Date(fromVal);
+          startDateLimit.setHours(0, 0, 0, 0);
+        }
+        if (toVal) {
+          endDateLimit = new Date(toVal);
+          endDateLimit.setHours(23, 59, 59, 999);
+        }
       }
 
       const reportLogsRaw = rawAuditLogs.filter(log => {
         const transDate = new Date(log.transactionDate);
-        if (transDate < startDateLimit) return false;
+        if (transDate < startDateLimit || transDate > endDateLimit) return false;
         if (statusFilter !== 'all' && log.paymentStatus !== statusFilter) return false;
         if (customerFilter !== 'all' && log.customerId !== customerFilter) return false;
         if (sellerFilter !== 'all' && log.sellerId !== sellerFilter) return false;
@@ -3444,21 +3460,25 @@
 
       document.getElementById('print-report-date-compiled').innerText = `Fecha: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
       
-      const rangeNames = { today: 'Diario (Hoy)', weekly: 'Semanal (7 Días)', monthly: 'Mensual (Mes Actual)', all: 'Histórico Completo' };
+      const rangeNames = { today: 'Diario (Hoy)', weekly: 'Semanal (7 Días)', monthly: 'Mensual (Mes Actual)', custom: 'Rango Personalizado', all: 'Histórico Completo' };
       const statusNames = { all: 'Todos los registros', pagado: 'Solo Pagados', pendiente: 'Solo Crédito (Pendiente)' };
       
-      document.getElementById('print-summary-range').innerText = rangeNames[range];
-      document.getElementById('print-summary-status').innerText = statusNames[statusFilter];
+      document.getElementById('print-summary-range').innerText = rangeNames[range] || range;
+      document.getElementById('print-summary-status').innerText = statusNames[statusFilter] || statusFilter;
       
-      const customerSelect = document.getElementById('report-customer-select');
-      document.getElementById('print-summary-customer').innerText = customerFilter === 'all' ? 'Todos los clientes' : customerSelect.options[customerSelect.selectedIndex].text;
+      const printSummaryCust = document.getElementById('print-summary-customer');
+      if (printSummaryCust) {
+        printSummaryCust.innerText = customerFilter === 'all' ? 'Todos los clientes' : (customerSelect ? customerSelect.options[customerSelect.selectedIndex].text : 'Todos');
+      }
 
-      const sellerSelect = document.getElementById('report-seller-select');
-      document.getElementById('print-summary-seller').innerText = sellerFilter === 'all' ? 'Todos los vendedores' : sellerSelect.options[sellerSelect.selectedIndex].text;
+      const printSummarySel = document.getElementById('print-summary-seller');
+      if (printSummarySel) {
+        printSummarySel.innerText = sellerFilter === 'all' ? 'Todos los vendedores' : (sellerSelect ? sellerSelect.options[sellerSelect.selectedIndex].text : 'Todos');
+      }
 
-      document.getElementById('print-stat-revenue').innerText = `$${totalRevenue.toFixed(2)}`;
+      document.getElementById('print-stat-revenue').innerText = `$${totalRevenue.toLocaleString()}`;
       document.getElementById('print-stat-bottles').innerText = `${totalBottles} u.`;
-      document.getElementById('print-stat-pending').innerText = `$${totalPendingDebt.toFixed(2)}`;
+      document.getElementById('print-stat-pending').innerText = `$${totalPendingDebt.toLocaleString()}`;
 
       const printTbody = document.getElementById('print-report-table-body');
       printTbody.innerHTML = '';
@@ -3479,7 +3499,7 @@
             <td class="py-2 px-3">${log.styles.map(s => `${s.qty} ${s.name}`).join(', ')}</td>
             <td class="py-2 px-3">${formatNames[log.formatSold] || log.formatSold}</td>
             <td class="py-2 px-3 text-center">${log.unitsSold} u.</td>
-            <td class="py-2 px-3 text-right font-mono font-bold">$${log.totalAmount.toFixed(2)}</td>
+            <td class="py-2 px-3 text-right font-mono font-bold">$${log.totalAmount.toLocaleString()}</td>
             <td class="py-2 px-3 text-center uppercase font-bold text-[9px]">${log.paymentStatus}</td>
           `;
           printTbody.appendChild(row);
