@@ -429,10 +429,11 @@ export class SQLiteSaleRepository implements ISaleRepository {
         SUM(total_amount) as totalRevenue, 
         COUNT(DISTINCT correlation_id) as transactionCount
       FROM sales
+      WHERE event_id IS NULL
     `;
     const params: any[] = [];
     if (month) {
-      query += ` WHERE strftime('%Y-%m', transaction_date) = ?`;
+      query += ` AND strftime('%Y-%m', transaction_date) = ?`;
       params.push(month);
     }
     query += ` GROUP BY seller_id`;

@@ -2899,7 +2899,8 @@
 
     async function fetchReportsAndAudit() {
       try {
-        rawAuditLogs = await apiFetch('/api/sales/history');
+        const allLogs = await apiFetch('/api/sales/history');
+        rawAuditLogs = allLogs.filter(log => !log.eventId);
         runVentasReport();
       } catch (err) {
         showToast(err.message, 'error');
@@ -3502,7 +3503,8 @@
     // --- DASHBOARD METRICS ---
     async function fetchDashboardMetrics() {
       try {
-        const sales = await apiFetch('/api/sales/history');
+        const allSales = await apiFetch('/api/sales/history');
+        const sales = allSales.filter(s => !s.eventId);
         const activeEvents = await apiFetch('/api/events');
         
         const now = new Date();
