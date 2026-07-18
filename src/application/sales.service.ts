@@ -185,6 +185,21 @@ export class SalesService {
       // Confirmar transacción si todo es correcto y no hubo errores
       await db.run('COMMIT');
 
+      // Obtener teléfono del cliente
+      let recipientPhone = input.customerPhone || null;
+      if (!recipientPhone && input.customerId) {
+        const customer = await db.get('SELECT phone FROM customers WHERE id = ?', input.customerId);
+        if (customer && customer.phone) {
+          recipientPhone = customer.phone;
+        }
+      }
+
+      // Envío de WhatsApp en segundo plano (para no bloquear el hilo de ejecución principal del POS)
+      if (recipientPhone) {
+        this.triggerWhatsAppVoucher(correlationId, recipientPhone, salesToRecord, totalPaid, input.paymentStatus || 'pagado')
+          .catch(err => console.error('Error al enviar voucher por WhatsApp:', err));
+      }
+
       return {
         correlationId,
         totalPaid,
@@ -199,6 +214,123 @@ export class SalesService {
         console.error('Error al ejecutar ROLLBACK en la transacción:', rollbackError);
       }
       throw error;
+    }
+  }
+
+  /**
+   * Envía de forma automática el voucher en formato texto de WhatsApp al cliente.
+   * Utiliza la API oficial de WhatsApp Business Cloud (Meta) si las credenciales están configuradas.
+   */
+  private async triggerWhatsAppVoucher(
+    correlationId: string,
+    recipientPhone: string,
+    sales: Sale[],
+    totalPaid: number,
+    paymentStatus: string
+  ): Promise<void> {
+    try {
+      const db = await getDatabase();
+      const senderPhoneSetting = await db.get("SELECT value FROM system_settings WHERE key = 'whatsapp_sender_number'");
+      const tokenSetting = await db.get("SELECT value FROM system_settings WHERE key = 'whatsapp_token'");
+      const phoneIdSetting = await db.get("SELECT value FROM system_settings WHERE key = 'whatsapp_phone_number_id'");
+      
+      const senderNumber = senderPhoneSetting ? senderPhoneSetting.value : '';
+      const accessToken = tokenSetting ? tokenSetting.value : '';
+      const phoneNumberId = phoneIdSetting ? phoneIdSetting.value : '';
+
+      if (!senderNumber) {
+        console.log(`[WhatsApp Simulado] No se envió mensaje porque no se ha configurado un número entregador en settings.`);
+        return;
+      }
+
+      const dateStr = new Date().toLocaleString('es-ES', { 
+        day: '2-digit', month: '2-digit', year: 'numeric', 
+        hour: '2-digit', minute: '2-digit' 
+      });
+      const first = sales[0];
+      const sellerName = first ? first.sellerName : 'Sistema';
+      const customerName = first ? first.customerName : 'Cliente Detalle';
+
+      const formatNames: Record<string, string> = {
+        unit: '1 Botella',
+        pack2: 'Pack de 2',
+        pack3: 'Pack de 3',
+        pack4: 'Pack de 4',
+        wholesale: 'Wholesale'
+      };
+
+      const itemMap = new Map<string, { format: string; qty: number; styles: string[]; subtotal: number }>();
+      for (const s of sales) {
+        const key = `${s.formatSold}`;
+        if (!itemMap.has(key)) {
+          itemMap.set(key, {
+            format: formatNames[s.formatSold] || s.formatSold,
+            qty: s.unitsSold,
+            styles: [],
+            subtotal: s.totalAmount
+          });
+        } else {
+          const val = itemMap.get(key)!;
+          val.subtotal += s.totalAmount;
+          val.qty += s.unitsSold;
+        }
+        itemMap.get(key)!.styles.push(`${s.unitsSold} ${s.beerStyleName.split(' (')[0]}`);
+      }
+
+      let itemsText = '';
+      itemMap.forEach((val) => {
+        itemsText += `• *${val.format}* (${val.styles.join(', ')}) - $${val.subtotal.toFixed(2)}\n`;
+      });
+
+      const paymentLabel = paymentStatus === 'pendiente' ? 'PENDIENTE (A Crédito)' : 'PAGADO (Saldado)';
+
+      const messageBody = `🍺 *Cervecería 3 Lobos* 🍺\n` +
+                          `¡Hola! Aquí tienes el comprobante de tu compra:\n\n` +
+                          `*Voucher ID:* \`${correlationId}\`\n` +
+                          `*Fecha:* ${dateStr}\n` +
+                          `*Atendido por:* ${sellerName}\n` +
+                          `*Cliente:* ${customerName}\n\n` +
+                          `*Detalle de Compra:*\n${itemsText}\n` +
+                          `*TOTAL:* $${totalPaid.toFixed(2)}\n` +
+                          `*Estado:* ${paymentLabel}\n\n` +
+                          `¡Muchas gracias por su preferencia! 🐺🐺🐺`;
+
+      console.log(`\n--- ENVIANDO VOUCHER WHATSAPP DESDE: ${senderNumber} PARA: ${recipientPhone} ---`);
+      console.log(messageBody);
+      console.log('------------------------------------------------------------\n');
+
+      if (accessToken && phoneNumberId) {
+        const cleanRecipient = recipientPhone.replace(/\+/g, '').replace(/\s/g, '').trim();
+        // Llamada a la API de WhatsApp Cloud
+        const response = await fetch(`https://graph.facebook.com/v19.0/${phoneNumberId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to: cleanRecipient,
+            type: 'text',
+            text: {
+              preview_url: false,
+              body: messageBody
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json() as any;
+          console.error('Error al enviar WhatsApp a través de la API oficial de Meta:', errData);
+        } else {
+          console.log(`✓ Mensaje enviado exitosamente a través de la API oficial de Meta para: ${cleanRecipient}`);
+        }
+      } else {
+        console.log(`[WhatsApp MOCK] Para enviar mensajes de forma real, configura 'whatsapp_token' y 'whatsapp_phone_number_id' en el panel de administrador.`);
+      }
+    } catch (err) {
+      console.error('Error al procesar envío de WhatsApp:', err);
     }
   }
 

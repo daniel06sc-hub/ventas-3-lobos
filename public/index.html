@@ -44,9 +44,36 @@
       .tab-content {
         display: none !important;
       }
-      #print-report-section {
+      /* Control dinámico del contenido imprimible */
+      #print-report-section, #print-voucher-section {
+        display: none !important;
+      }
+      
+      body.print-mode-report #print-report-section {
         display: block !important;
         visibility: visible !important;
+      }
+      
+      body.print-mode-voucher #print-voucher-section {
+        display: block !important;
+        visibility: visible !important;
+      }
+
+      /* Estilo térmico del voucher en impresión */
+      body.print-mode-voucher {
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 10pt !important;
+        width: 80mm !important;
+        margin: 0 auto !important;
+      }
+      body.print-mode-voucher table {
+        border: none !important;
+        margin-top: 5px !important;
+      }
+      body.print-mode-voucher th, body.print-mode-voucher td {
+        border: none !important;
+        border-bottom: 1px dashed #000000 !important;
+        padding: 4px !important;
       }
       .glassmorphism {
         background: transparent !important;
@@ -335,6 +362,17 @@
                 </div>
               </div>
 
+              <!-- Customer Phone Number for WhatsApp Receipt (Optional) -->
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                  <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+                  <span>Teléfono Cliente (WhatsApp)</span>
+                </label>
+                <input type="text" id="pos-customer-phone" placeholder="Ej: +56912345678"
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-brand-500">
+                <div class="text-[9px] text-slate-500 mt-1">Si ingresas número, el voucher se enviará automáticamente por WhatsApp.</div>
+              </div>
+
               <!-- Cart List -->
               <div id="pos-cart-items" class="flex-1 overflow-y-auto max-h-[250px] divide-y divide-slate-800/50 pr-1">
                 <div class="py-8 text-center text-slate-500 text-sm">
@@ -379,15 +417,6 @@
           </div>
           
           <div class="flex items-center gap-3">
-            <!-- Global Wholesale units configuration is restricted to Admins -->
-            <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-2 gap-2 admin-only">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider pl-1">Formato Mayorista:</span>
-              <input type="number" id="setting-wholesale-units" min="1" class="w-16 bg-slate-950 border border-slate-700 text-center text-brand-500 font-bold rounded-lg py-1 focus:outline-none focus:border-brand-500" value="23">
-              <button onclick="saveWholesaleSettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-3 py-1 rounded-lg text-xs transition animate-pulse">
-                Guardar
-              </button>
-            </div>
-
             <!-- Creation of styles is restricted to Admins -->
             <button onclick="openStyleModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-500/10 admin-only">
               <i class="fa-solid fa-plus"></i>
@@ -417,6 +446,44 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- CONFIGURACIONES GLOBALES Y WHATSAPP (Admin only) -->
+        <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4 admin-only mt-6">
+          <h3 class="text-lg font-bold font-outfit text-white flex items-center gap-2 border-b border-slate-800 pb-3">
+            <i class="fa-solid fa-gears text-brand-500"></i>
+            <span>Configuración del Sistema y WhatsApp Business</span>
+          </h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Unidades Mayoristas (W)</label>
+              <input type="number" id="setting-wholesale-units" min="1" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500" value="23">
+              <span class="text-[9px] text-slate-500 mt-1 block">Número de botellas para disparar formato mayorista.</span>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Número Entregador WhatsApp</label>
+              <input type="text" id="setting-whatsapp-sender" placeholder="Ej: 56912345678" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500">
+              <span class="text-[9px] text-slate-500 mt-1 block">Número remitente registrado en WhatsApp Business.</span>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">WhatsApp Phone Number ID</label>
+              <input type="text" id="setting-whatsapp-phone-id" placeholder="Phone Number ID" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500">
+              <span class="text-[9px] text-slate-500 mt-1 block">Identificador del número en Facebook Developer Portal.</span>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Meta API Cloud Token</label>
+              <input type="password" id="setting-whatsapp-token" placeholder="Token de acceso permanente" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500">
+              <span class="text-[9px] text-slate-500 mt-1 block">Token de acceso permanente de Meta Developer.</span>
+            </div>
+          </div>
+          
+          <div class="flex justify-end pt-2">
+            <button onclick="saveGlobalSettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition flex items-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Guardar Configuraciones</span>
+            </button>
           </div>
         </div>
 
@@ -803,7 +870,53 @@
       </div>
       <div class="border-t border-slate-400 pt-3">
         Firma Administrador General
+    </div>
+  </div>
+
+  <!-- PREVIEW DE VOUCHER IMPRIMIBLE (TICKET VIEW CONTAINER) -->
+  <!-- ======================================================== -->
+  <div id="print-voucher-section" class="print-only hidden max-w-sm mx-auto p-4 bg-white text-black font-mono text-xs">
+    <div class="text-center mb-4">
+      <img src="/logo.png" alt="3 Lobos Logo" class="h-16 w-auto mx-auto object-contain mb-2">
+      <h1 class="text-base font-extrabold uppercase">Cervecería 3 Lobos</h1>
+      <p class="text-[9px] text-slate-700">Venta de Cerveza Artesanal</p>
+      <p class="text-[9px] text-slate-700">Ruta 5 Sur, Talca, Chile</p>
+    </div>
+    
+    <div class="border-t border-b border-dashed border-black py-2 my-2 text-[10px] space-y-1">
+      <div><strong>Voucher ID:</strong> <span id="print-voucher-id"></span></div>
+      <div><strong>Fecha:</strong> <span id="print-voucher-date"></span></div>
+      <div><strong>Atendido por:</strong> <span id="print-voucher-seller"></span></div>
+      <div><strong>Cliente:</strong> <span id="print-voucher-customer"></span></div>
+    </div>
+    
+    <table class="w-full text-left my-2 text-[10px]">
+      <thead>
+        <tr class="border-b border-black">
+          <th class="py-1">Cant.</th>
+          <th class="py-1">Detalle</th>
+          <th class="py-1 text-right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody id="print-voucher-table-body">
+        <!-- populated dynamically -->
+      </tbody>
+    </table>
+    
+    <div class="border-t border-dashed border-black pt-2 text-[10px] space-y-1">
+      <div class="flex justify-between font-bold text-sm">
+        <span>TOTAL COBRADO:</span>
+        <span id="print-voucher-total"></span>
       </div>
+      <div class="flex justify-between">
+        <span>Estado Pago:</span>
+        <span id="print-voucher-status" class="uppercase font-bold"></span>
+      </div>
+    </div>
+    
+    <div class="text-center mt-6 pt-4 border-t border-dashed border-black text-[9px] text-slate-600">
+      <p class="font-bold">¡Muchas gracias por su compra!</p>
+      <p class="mt-1">Portal POS Cervecería 3 Lobos</p>
     </div>
   </div>
 
@@ -1148,19 +1261,31 @@
         wholesaleUnitsCount = data.wholesale_units;
         document.getElementById('pos-wholesale-units-badge').innerText = wholesaleUnitsCount;
         document.getElementById('setting-wholesale-units').value = wholesaleUnitsCount;
+        document.getElementById('setting-whatsapp-sender').value = data.whatsapp_sender_number || '';
+        document.getElementById('setting-whatsapp-token').value = data.whatsapp_token || '';
+        document.getElementById('setting-whatsapp-phone-id').value = data.whatsapp_phone_number_id || '';
       } catch (err) {
         console.error(err);
       }
     }
 
-    async function saveWholesaleSettings() {
+    async function saveGlobalSettings() {
       const val = parseInt(document.getElementById('setting-wholesale-units').value, 10);
+      const senderNum = document.getElementById('setting-whatsapp-sender').value.trim();
+      const tokenVal = document.getElementById('setting-whatsapp-token').value.trim();
+      const phoneIdVal = document.getElementById('setting-whatsapp-phone-id').value.trim();
+
       try {
         await apiFetch('/api/inventory/settings', {
           method: 'PUT',
-          body: JSON.stringify({ wholesale_units: val })
+          body: JSON.stringify({ 
+            wholesale_units: val,
+            whatsapp_sender_number: senderNum,
+            whatsapp_token: tokenVal,
+            whatsapp_phone_number_id: phoneIdVal
+          })
         });
-        showToast(`Formato Mayorista actualizado a ${val} botellas`, 'success');
+        showToast('Configuraciones globales actualizadas correctamente', 'success');
         fetchGlobalSettings();
       } catch (err) {
         showToast(err.message, 'error');
@@ -1253,12 +1378,14 @@
       renderCart();
     }
 
+    let posCustomersList = [];
+
     async function loadPOSCustomersDropdown() {
       try {
-        const list = await apiFetch('/api/customers');
+        posCustomersList = await apiFetch('/api/customers');
         const select = document.getElementById('pos-customer-select');
         select.innerHTML = '<option value="">-- Seleccionar Restaurante --</option>';
-        list.forEach(c => {
+        posCustomersList.forEach(c => {
           select.innerHTML += `<option value="${c.id}">${c.businessName} (RUT: ${c.fiscalId})</option>`;
         });
       } catch (err) {
@@ -1269,9 +1396,18 @@
     function handlePOSCustomerSelect(id) {
       if (!id) {
         selectedCustomer = null;
+        const phoneInput = document.getElementById('pos-customer-phone');
+        if (phoneInput) phoneInput.value = '';
         showToast('Restaurante desasociado');
       } else {
-        selectedCustomer = { id };
+        const found = posCustomersList.find(c => c.id === id);
+        selectedCustomer = found ? { id: found.id } : { id };
+        const phoneInput = document.getElementById('pos-customer-phone');
+        if (found && found.phone && phoneInput) {
+          phoneInput.value = found.phone;
+        } else if (phoneInput) {
+          phoneInput.value = '';
+        }
         showToast('Restaurante asociado correctamente');
       }
       validateCheckoutRequirements();
@@ -1603,6 +1739,7 @@
 
       const checkoutPayload = {
         customerId: (posSaleType === 'restaurant' && selectedCustomer) ? selectedCustomer.id : undefined,
+        customerPhone: document.getElementById('pos-customer-phone').value.trim() || undefined,
         paymentStatus: paymentStatus,
         items: shoppingCart.map(item => ({
           format: item.format,
@@ -1626,10 +1763,15 @@
         shoppingCart = [];
         selectedCustomer = null;
         document.getElementById('pos-customer-select').value = "";
+        document.getElementById('pos-customer-phone').value = "";
         document.getElementById('pos-payment-status').value = 'pagado';
         
         await fetchPOSInventory();
         setSaleType('public');
+
+        // Sincronizar reportes e imprimir el voucher para el cliente
+        await fetchReportsAndAudit();
+        prepareAndPrintVoucher(response.correlationId);
       } catch (err) {
         showToast(err.message, 'error');
       } finally {
@@ -2181,6 +2323,12 @@
         let statusBadge = '';
         let actionButton = '';
         let deleteButton = '';
+        const printVoucherButton = `
+          <button onclick="event.stopPropagation(); prepareAndPrintVoucher('${log.correlationId}')" title="Imprimir Ticket Voucher" 
+                  class="ml-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-2 py-0.5 rounded text-[10px] uppercase border border-slate-700 transition cursor-pointer">
+            🖨️
+          </button>
+        `;
 
         if (user && user.role === 'admin') {
           deleteButton = `
@@ -2232,6 +2380,7 @@
             <div class="flex items-center justify-center">
               ${statusBadge}
               ${actionButton}
+              ${printVoucherButton}
               ${deleteButton}
             </div>
           </td>
@@ -2295,6 +2444,73 @@
       } catch (err) {
         showToast(err.message, 'error');
       }
+    }
+
+    function prepareAndPrintVoucher(correlationId) {
+      const logs = rawAuditLogs.filter(log => log.correlationId === correlationId);
+      if (logs.length === 0) {
+        showToast('No se encontraron registros para este voucher.', 'error');
+        return;
+      }
+      
+      const grouped = groupSalesLogs(logs);
+      if (grouped.length === 0) return;
+      
+      const first = grouped[0];
+      const date = new Date(first.transactionDate);
+      const formattedDate = date.toLocaleString('es-ES', { 
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit' 
+      });
+
+      document.getElementById('print-voucher-id').innerText = first.correlationId;
+      document.getElementById('print-voucher-date').innerText = formattedDate;
+      document.getElementById('print-voucher-seller').innerText = first.sellerName;
+      document.getElementById('print-voucher-customer').innerText = first.customerName;
+
+      const tbody = document.getElementById('print-voucher-table-body');
+      tbody.innerHTML = '';
+
+      const formatNames = {
+        unit: '1 Botella',
+        pack2: 'Pack de 2',
+        pack3: 'Pack de 3',
+        pack4: 'Pack de 4',
+        wholesale: 'Wholesale'
+      };
+
+      let total = 0;
+      grouped.forEach(item => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-black/10';
+        
+        const stylesDetail = item.styles.map(s => `${s.qty} ${s.name.split(' (')[0]}`).join(', ');
+        const formatLabel = formatNames[item.formatSold] || item.formatSold;
+        const detailLabel = `${formatLabel}<br><span style="font-size: 8px; color: #4b5563;">(${stylesDetail})</span>`;
+        
+        row.innerHTML = `
+          <td class="py-2 align-top">${item.unitsSold} u.</td>
+          <td class="py-2 align-top">${detailLabel}</td>
+          <td class="py-2 align-top text-right font-mono">$${item.totalAmount.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+        total += item.totalAmount;
+      });
+
+      document.getElementById('print-voucher-total').innerText = `$${total.toFixed(2)}`;
+      
+      const statusNames = {
+        pagado: 'PAGADO (Saldado)',
+        pendiente: 'A CRÉDITO (Pendiente)'
+      };
+      document.getElementById('print-voucher-status').innerText = statusNames[first.paymentStatus] || first.paymentStatus;
+
+      document.body.classList.add('print-mode-voucher');
+      document.body.classList.remove('print-mode-report');
+      
+      window.print();
+      
+      document.body.classList.remove('print-mode-voucher', 'print-mode-report');
     }
 
     // --- COMPILE & PRINT PDF REPORTS ---
@@ -2384,7 +2600,10 @@
         });
       }
 
+      document.body.classList.add('print-mode-report');
+      document.body.classList.remove('print-mode-voucher');
       window.print();
+      document.body.classList.remove('print-mode-report', 'print-mode-voucher');
     }
 
     // On Load Window

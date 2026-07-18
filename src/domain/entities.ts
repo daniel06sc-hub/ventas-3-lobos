@@ -75,6 +75,7 @@ export interface CheckoutItem {
 
 export interface CheckoutInput {
   customerId?: string; // Optional customer ID for discount/association
+  customerPhone?: string; // Teléfono opcional para entrega de voucher por WhatsApp
   paymentStatus?: 'pagado' | 'pendiente'; // Estado de pago inicial de la venta (opcional, por defecto 'pagado')
   items: CheckoutItem[];
 }

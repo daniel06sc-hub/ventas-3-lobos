@@ -125,4 +125,35 @@ export class InventoryService {
       'Cantidad de unidades (botellas) que componen el Formato Mayorista'
     );
   }
+
+  /**
+   * Obtiene la configuración de WhatsApp Business para la entrega de vouchers.
+   */
+  async getWhatsAppSettings(): Promise<{ senderNumber: string; token: string; phoneNumberId: string }> {
+    const senderNumber = await this.systemSettingsRepository.getVal('whatsapp_sender_number') || '';
+    const token = await this.systemSettingsRepository.getVal('whatsapp_token') || '';
+    const phoneNumberId = await this.systemSettingsRepository.getVal('whatsapp_phone_number_id') || '';
+    return { senderNumber, token, phoneNumberId };
+  }
+
+  /**
+   * Modifica la configuración de WhatsApp Business (Admin).
+   */
+  async updateWhatsAppSettings(senderNumber: string, token: string, phoneNumberId: string): Promise<void> {
+    await this.systemSettingsRepository.setVal(
+      'whatsapp_sender_number',
+      senderNumber,
+      'Número entregador de voucher en WhatsApp Business'
+    );
+    await this.systemSettingsRepository.setVal(
+      'whatsapp_token',
+      token,
+      'Token de acceso de API WhatsApp Business Cloud'
+    );
+    await this.systemSettingsRepository.setVal(
+      'whatsapp_phone_number_id',
+      phoneNumberId,
+      'Phone Number ID de WhatsApp Business Cloud'
+    );
+  }
 }

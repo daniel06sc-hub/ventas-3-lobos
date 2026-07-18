@@ -67,7 +67,13 @@ export class InventoryController {
   getSettings = async (req: Request, res: Response) => {
     try {
       const units = await this.inventoryService.getWholesaleUnits();
-      return res.status(200).json({ wholesale_units: units });
+      const whatsapp = await this.inventoryService.getWhatsAppSettings();
+      return res.status(200).json({
+        wholesale_units: units,
+        whatsapp_sender_number: whatsapp.senderNumber,
+        whatsapp_token: whatsapp.token,
+        whatsapp_phone_number_id: whatsapp.phoneNumberId
+      });
     } catch (error: any) {
       return res.status(500).json({ error: error.message || 'Error al obtener configuraciones' });
     }
@@ -75,13 +81,26 @@ export class InventoryController {
 
   updateSettings = async (req: Request, res: Response) => {
     try {
-      const { wholesale_units } = req.body;
+      const { wholesale_units, whatsapp_sender_number, whatsapp_token, whatsapp_phone_number_id } = req.body;
       if (wholesale_units === undefined) {
         return res.status(400).json({ error: 'El parámetro wholesale_units es requerido' });
       }
       const unitsVal = parseInt(wholesale_units, 10);
       await this.inventoryService.updateWholesaleUnits(unitsVal);
-      return res.status(200).json({ message: 'Configuración de formato mayorista actualizada', wholesale_units: unitsVal });
+
+      const senderNum = whatsapp_sender_number !== undefined ? String(whatsapp_sender_number).trim() : '';
+      const token = whatsapp_token !== undefined ? String(whatsapp_token).trim() : '';
+      const phoneId = whatsapp_phone_number_id !== undefined ? String(whatsapp_phone_number_id).trim() : '';
+
+      await this.inventoryService.updateWhatsAppSettings(senderNum, token, phoneId);
+
+      return res.status(200).json({
+        message: 'Configuraciones del sistema actualizadas con éxito',
+        wholesale_units: unitsVal,
+        whatsapp_sender_number: senderNum,
+        whatsapp_token: token,
+        whatsapp_phone_number_id: phoneId
+      });
     } catch (error: any) {
       return res.status(400).json({ error: error.message || 'Error al actualizar configuraciones' });
     }

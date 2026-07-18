@@ -250,6 +250,39 @@ export async function getDatabase(): Promise<IDatabase> {
     );
   }
 
+  // Semilla para el remitente de WhatsApp
+  const waSender = await dbInstance.get('SELECT * FROM system_settings WHERE key = ?', 'whatsapp_sender_number');
+  if (!waSender) {
+    await dbInstance.run(
+      'INSERT INTO system_settings (key, value, description) VALUES (?, ?, ?)',
+      'whatsapp_sender_number',
+      '',
+      'Número de teléfono entregador registrado en WhatsApp Business'
+    );
+  }
+
+  // Semilla para el Token de WhatsApp Business
+  const waToken = await dbInstance.get('SELECT * FROM system_settings WHERE key = ?', 'whatsapp_token');
+  if (!waToken) {
+    await dbInstance.run(
+      'INSERT INTO system_settings (key, value, description) VALUES (?, ?, ?)',
+      'whatsapp_token',
+      '',
+      'Token de acceso de API WhatsApp Business Cloud'
+    );
+  }
+
+  // Semilla para el Phone Number ID de WhatsApp
+  const waPhoneId = await dbInstance.get('SELECT * FROM system_settings WHERE key = ?', 'whatsapp_phone_number_id');
+  if (!waPhoneId) {
+    await dbInstance.run(
+      'INSERT INTO system_settings (key, value, description) VALUES (?, ?, ?)',
+      'whatsapp_phone_number_id',
+      '',
+      'Phone Number ID de la cuenta de WhatsApp Business'
+    );
+  }
+
   // 2. Semilla para Usuarios por Defecto (si no existen usuarios)
   const userCountRow = await dbInstance.get('SELECT COUNT(*) as count FROM users');
   if (userCountRow && userCountRow.count === 0) {
