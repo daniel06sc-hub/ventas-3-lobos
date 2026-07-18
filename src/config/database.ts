@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
-import { createClient, Client } from '@libsql/client';
+import { createClient, Client, Transaction } from '@libsql/client';
 import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
@@ -19,14 +19,10 @@ export interface IDatabase {
 }
 
 class TursoStatement implements IStatement {
-  constructor(private client: Client, private sql: string) {}
+  constructor(private db: IDatabase, private sql: string) {}
 
   async run(...params: any[]): Promise<any> {
-    const res = await this.client.execute({ sql: this.sql, args: params });
-    return {
-      lastID: res.lastInsertRowid ? Number(res.lastInsertRowid) : undefined,
-      changes: Number(res.rowsAffected)
-    };
+    return this.db.run(this.sql, ...params);
   }
 
   async finalize(): Promise<void> {
@@ -35,6 +31,8 @@ class TursoStatement implements IStatement {
 }
 
 class TursoDatabaseWrapper implements IDatabase {
+  private currentTx: Transaction | null = null;
+
   constructor(private client: Client) {}
 
   private convertRow(row: any, columns: string[]): any {
@@ -47,17 +45,49 @@ class TursoDatabaseWrapper implements IDatabase {
   }
 
   async get<T = any>(sql: string, ...params: any[]): Promise<T | undefined> {
-    const res = await this.client.execute({ sql, args: params });
+    const executor = this.currentTx || this.client;
+    const res = await executor.execute({ sql, args: params });
     return res.rows[0] ? this.convertRow(res.rows[0], res.columns) : undefined;
   }
 
   async all<T = any>(sql: string, ...params: any[]): Promise<T[]> {
-    const res = await this.client.execute({ sql, args: params });
+    const executor = this.currentTx || this.client;
+    const res = await executor.execute({ sql, args: params });
     return res.rows.map(row => this.convertRow(row, res.columns));
   }
 
   async run(sql: string, ...params: any[]): Promise<{ lastID?: number; changes?: number }> {
-    const res = await this.client.execute({ sql, args: params });
+    const sqlUpper = sql.trim().toUpperCase();
+
+    if (sqlUpper.startsWith('BEGIN')) {
+      if (this.currentTx) {
+        throw new Error('Transaction is already active');
+      }
+      this.currentTx = await this.client.transaction("write");
+      return { changes: 0 };
+    }
+
+    if (sqlUpper.startsWith('COMMIT')) {
+      if (!this.currentTx) {
+        throw new Error('No active transaction to commit');
+      }
+      await this.currentTx.commit();
+      this.currentTx = null;
+      return { changes: 0 };
+    }
+
+    if (sqlUpper.startsWith('ROLLBACK')) {
+      if (!this.currentTx) {
+        // Retornar silenciosamente si no hay transacción activa para evitar crashes redundantes
+        return { changes: 0 };
+      }
+      await this.currentTx.rollback();
+      this.currentTx = null;
+      return { changes: 0 };
+    }
+
+    const executor = this.currentTx || this.client;
+    const res = await executor.execute({ sql, args: params });
     return {
       lastID: res.lastInsertRowid ? Number(res.lastInsertRowid) : undefined,
       changes: Number(res.rowsAffected)
@@ -82,7 +112,7 @@ class TursoDatabaseWrapper implements IDatabase {
   }
 
   async prepare(sql: string): Promise<IStatement> {
-    return new TursoStatement(this.client, sql);
+    return new TursoStatement(this, sql);
   }
 }
 

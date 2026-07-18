@@ -192,7 +192,12 @@ export class SalesService {
       };
     } catch (error) {
       // Revertir cualquier cambio en la base de datos si ocurre un error
-      await db.run('ROLLBACK');
+      try {
+        await db.run('ROLLBACK');
+      } catch (rollbackError) {
+        // Ignorar el error de rollback para no tapar el error de negocio original
+        console.error('Error al ejecutar ROLLBACK en la transacción:', rollbackError);
+      }
       throw error;
     }
   }
