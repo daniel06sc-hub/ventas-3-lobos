@@ -1806,6 +1806,7 @@
     let systemUsersList = [];
     let eventsList = [];
     let rawAuditLogs = [];
+    let allSalesLogsRaw = [];
     let shoppingCart = [];
     let wholesaleUnitsCount = 23;
     let companySettings = {};
@@ -2891,8 +2892,8 @@
 
     async function fetchReportsAndAudit() {
       try {
-        const allLogs = await apiFetch('/api/sales/history');
-        rawAuditLogs = allLogs.filter(log => !log.eventId);
+        allSalesLogsRaw = await apiFetch('/api/sales/history');
+        rawAuditLogs = allSalesLogsRaw.filter(log => !log.eventId);
         runVentasReport();
       } catch (err) {
         showToast(err.message, 'error');
@@ -3201,7 +3202,9 @@
       const eventsObj = {};
       const citiesObj = {};
 
-      rawAuditLogs.forEach(log => {
+      const eventSalesOnly = allSalesLogsRaw.filter(log => log.eventId);
+
+      eventSalesOnly.forEach(log => {
         const eName = log.eventName || 'Venta General';
         const qty = log.unitsSold || 0;
         const revenue = log.totalAmount || 0;
