@@ -6,24 +6,29 @@ import {
   SQLiteCustomerRepository,
   SQLiteBeerStyleRepository,
   SQLiteSystemSettingsRepository,
-  SQLiteSaleRepository
+  SQLiteSaleRepository,
+  SQLiteEventRepository
 } from '../database/sqlite-repositories';
 import { AuthService } from '../../application/auth.service';
 import { InventoryService } from '../../application/inventory.service';
 import { CustomerService } from '../../application/customer.service';
 import { SalesService } from '../../application/sales.service';
 import { ReportService } from '../../application/report.service';
+import { EventService } from '../../application/event.service';
 import { AuthController } from './controllers/auth.controller';
 import { InventoryController } from './controllers/inventory.controller';
 import { CustomerController } from './controllers/customer.controller';
 import { SalesController } from './controllers/sales.controller';
 import { ReportController } from './controllers/report.controller';
+import { EventController } from './controllers/event.controller';
 import { createAuthRouter } from './routes/auth.routes';
 import { createInventoryRouter } from './routes/inventory.routes';
 import { createCustomerRouter } from './routes/customer.routes';
 import { createSalesRouter } from './routes/sales.routes';
 import { createReportRouter } from './routes/report.routes';
+import { createEventRouter } from './routes/event.routes';
 import { getDatabase } from '../../config/database';
+import { authenticateToken, authorizeRoles } from './middlewares/auth.middleware';
 
 /**
  * Fabrica y configura la instancia de la aplicación Express
@@ -57,13 +62,15 @@ export async function createExpressApp() {
   const beerStyleRepo = new SQLiteBeerStyleRepository();
   const settingsRepo = new SQLiteSystemSettingsRepository();
   const saleRepo = new SQLiteSaleRepository();
+  const eventRepo = new SQLiteEventRepository(() => getDatabase());
 
   // 2. Inyección de Servicios de Aplicación (Lógica de Negocio)
   const authService = new AuthService(userRepo);
   const inventoryService = new InventoryService(beerStyleRepo, settingsRepo);
   const customerService = new CustomerService(customerRepo);
-  const salesService = new SalesService(beerStyleRepo, customerRepo, saleRepo, settingsRepo);
+  const salesService = new SalesService(beerStyleRepo, customerRepo, saleRepo, settingsRepo, eventRepo);
   const reportService = new ReportService(saleRepo);
+  const eventService = new EventService(eventRepo);
 
   // 3. Inyección de Controladores HTTP
   const authController = new AuthController(authService);
@@ -71,6 +78,7 @@ export async function createExpressApp() {
   const customerController = new CustomerController(customerService);
   const salesController = new SalesController(salesService);
   const reportController = new ReportController(reportService);
+  const eventController = new EventController(eventService);
 
   // 4. Montaje de Enrutadores con prefijos REST API
   app.use('/api/auth', createAuthRouter(authController));
@@ -78,6 +86,68 @@ export async function createExpressApp() {
   app.use('/api/customers', createCustomerRouter(customerController));
   app.use('/api/sales', createSalesRouter(salesController));
   app.use('/api/reports', createReportRouter(reportController));
+  app.use('/api/events', createEventRouter(eventController));
+
+  // Endpoints para Base de Datos (Configuración)
+  app.get('/api/database/status', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    try {
+      const db = await getDatabase();
+      const lastBackupRow = await db.get("SELECT value FROM system_settings WHERE key = 'last_backup_date'");
+      const lastBackup = lastBackupRow ? lastBackupRow.value : 'Nunca';
+      
+      return res.status(200).json({
+        tursoConnected: !!process.env.TURSO_DATABASE_URL,
+        lastSync: new Date().toISOString(),
+        lastBackup: lastBackup
+      });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message || 'Error al obtener estado de base de datos' });
+    }
+  });
+
+  app.post('/api/database/backup', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    try {
+      const db = await getDatabase();
+      const backupDate = new Date().toLocaleString();
+      await db.run(
+        "INSERT INTO system_settings (key, value, description) VALUES ('last_backup_date', ?, 'Fecha del último respaldo') ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        backupDate
+      );
+      
+      if (!process.env.TURSO_DATABASE_URL) {
+        const fs = require('fs');
+        const path = require('path');
+        const dbPath = process.env.DATABASE_PATH || path.resolve(__dirname, '../../database.db');
+        const backupPath = dbPath + '.backup';
+        if (fs.existsSync(dbPath)) {
+          fs.copyFileSync(dbPath, backupPath);
+        }
+      }
+      
+      return res.status(200).json({ message: 'Respaldo de base de datos creado con éxito', date: backupDate });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message || 'Error al crear respaldo' });
+    }
+  });
+
+  app.post('/api/database/restore', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+    try {
+      if (!process.env.TURSO_DATABASE_URL) {
+        const fs = require('fs');
+        const path = require('path');
+        const dbPath = process.env.DATABASE_PATH || path.resolve(__dirname, '../../database.db');
+        const backupPath = dbPath + '.backup';
+        if (fs.existsSync(backupPath)) {
+          fs.copyFileSync(backupPath, dbPath);
+        } else {
+          throw new Error('No se encontró ningún respaldo creado previamente.');
+        }
+      }
+      return res.status(200).json({ message: 'Base de datos restaurada con éxito desde el último respaldo' });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Error al restaurar respaldo' });
+    }
+  });
 
   // Ruta de bienvenida en el root (evita el error 'Cannot GET /')
   app.get('/', (req, res) => {

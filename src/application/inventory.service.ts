@@ -156,4 +156,29 @@ export class InventoryService {
       'Phone Number ID de WhatsApp Business Cloud'
     );
   }
+
+  /**
+   * Obtiene la configuración de la empresa.
+   */
+  async getCompanySettings(): Promise<{ name: string; logo: string; rut: string; address: string; phone: string; email: string }> {
+    const name = await this.systemSettingsRepository.getVal('company_name') || 'Cervecería 3 Lobos';
+    const logo = await this.systemSettingsRepository.getVal('company_logo') || '/logo.png';
+    const rut = await this.systemSettingsRepository.getVal('company_rut') || '76.123.456-7';
+    const address = await this.systemSettingsRepository.getVal('company_address') || 'Ruta 5 Sur, Talca, Chile';
+    const phone = await this.systemSettingsRepository.getVal('company_phone') || '+56 9 1234 5678';
+    const email = await this.systemSettingsRepository.getVal('company_email') || 'contacto@3lobos.cl';
+    return { name, logo, rut, address, phone, email };
+  }
+
+  /**
+   * Modifica la configuración de la empresa.
+   */
+  async updateCompanySettings(name: string, logo: string, rut: string, address: string, phone: string, email: string): Promise<void> {
+    await this.systemSettingsRepository.setVal('company_name', name, 'Nombre legal o comercial de la empresa');
+    await this.systemSettingsRepository.setVal('company_logo', logo, 'Logotipo de la empresa (ruta pública o URL)');
+    await this.systemSettingsRepository.setVal('company_rut', rut, 'RUT o identificación fiscal de la empresa');
+    await this.systemSettingsRepository.setVal('company_address', address, 'Dirección física principal de la empresa');
+    await this.systemSettingsRepository.setVal('company_phone', phone, 'Teléfono corporativo de la empresa');
+    await this.systemSettingsRepository.setVal('company_email', email, 'Correo electrónico de contacto');
+  }
 }

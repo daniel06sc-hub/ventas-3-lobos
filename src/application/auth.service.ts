@@ -10,7 +10,7 @@ export class AuthService {
   constructor(private userRepository: IUserRepository) {}
 
   /**
-   * Autentica un usuario y genera un JWT si las credenciales son correctas.
+   * Autentica un usuario y genera un JWT si las credenciales son correctas y el usuario está activo.
    */
   async login(username: string, passwordPlain: string): Promise<{ token: string; user: AuthUserPayload }> {
     const user = await this.userRepository.findByUsername(username);
@@ -18,10 +18,19 @@ export class AuthService {
       throw new Error('Credenciales inválidas');
     }
 
+    // Verificar si el usuario está activo
+    if (user.isActive === false) {
+      throw new Error('El usuario se encuentra desactivado. Contacte al administrador.');
+    }
+
     const isMatch = await bcrypt.compare(passwordPlain, user.passwordHash);
     if (!isMatch) {
       throw new Error('Credenciales inválidas');
     }
+
+    // Actualizar fecha del último acceso
+    user.lastLogin = new Date();
+    await this.userRepository.update(user);
 
     // Generar Payload del token (sin incluir datos sensibles como hashes)
     const payload: AuthUserPayload = {
@@ -39,7 +48,7 @@ export class AuthService {
   /**
    * Registra un nuevo usuario en la base de datos (con hashing de contraseña).
    */
-  async register(username: string, passwordPlain: string, name: string, role: UserRole): Promise<AuthUserPayload> {
+  async register(username: string, passwordPlain: string, name: string, role: UserRole, phone?: string): Promise<AuthUserPayload> {
     if (!username || !passwordPlain || !name || !role) {
       throw new Error('Todos los campos son obligatorios');
     }
@@ -58,6 +67,8 @@ export class AuthService {
       passwordHash,
       name,
       role,
+      phone: phone || '',
+      isActive: true,
       createdAt: new Date()
     };
 
@@ -72,7 +83,7 @@ export class AuthService {
   }
 
   /**
-   * Obtiene la lista completa de usuarios registrados.
+   * Devuelve la lista completa de usuarios registrados.
    */
   async listUsers(): Promise<Omit<User, 'passwordHash'>[]> {
     const users = await this.userRepository.listAll();
@@ -82,7 +93,17 @@ export class AuthService {
   /**
    * Modifica un usuario existente. Si se proporciona contraseña, se hashea.
    */
-  async updateUser(id: string, data: { username: string; passwordPlain?: string; name: string; role: UserRole }): Promise<void> {
+  async updateUser(
+    id: string,
+    data: {
+      username: string;
+      passwordPlain?: string;
+      name: string;
+      role: UserRole;
+      phone?: string;
+      isActive?: boolean;
+    }
+  ): Promise<void> {
     const user = await this.userRepository.findById(id);
     if (!user) {
       throw new Error('Usuario no encontrado');
@@ -105,7 +126,9 @@ export class AuthService {
       username: data.username,
       passwordHash,
       name: data.name,
-      role: data.role
+      role: data.role,
+      phone: data.phone !== undefined ? data.phone : user.phone,
+      isActive: data.isActive !== undefined ? data.isActive : user.isActive
     };
 
     await this.userRepository.update(updatedUser);

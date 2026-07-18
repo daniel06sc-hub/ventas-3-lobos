@@ -1,0 +1,17 @@
+import { Router } from 'express';
+import { EventController } from '../controllers/event.controller';
+import { authenticateToken, authorizeRoles } from '../middlewares/auth.middleware';
+
+export function createEventRouter(controller: EventController): Router {
+  const router = Router();
+
+  // Todos los usuarios autenticados pueden ver la lista de eventos
+  router.get('/', authenticateToken, controller.listEvents);
+
+  // Solo Administradores y Supervisores pueden crear, modificar o eliminar eventos
+  router.post('/', authenticateToken, authorizeRoles('admin', 'supervisor'), controller.createEvent);
+  router.put('/:id', authenticateToken, authorizeRoles('admin', 'supervisor'), controller.updateEvent);
+  router.delete('/:id', authenticateToken, authorizeRoles('admin', 'supervisor'), controller.deleteEvent);
+
+  return router;
+}

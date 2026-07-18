@@ -67,6 +67,9 @@ async function runTests() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: 'admin', password: 'admin123' })
     });
+    if (loginAdminRes.status !== 200) {
+      console.error('Login failed response:', await loginAdminRes.text());
+    }
     assert(loginAdminRes.status === 200, 'Debería loguearse exitosamente');
     const adminData = await loginAdminRes.json() as any;
     adminToken = adminData.token;

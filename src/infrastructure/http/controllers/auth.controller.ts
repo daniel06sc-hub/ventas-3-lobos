@@ -20,8 +20,8 @@ export class AuthController {
 
   register = async (req: Request, res: Response) => {
     try {
-      const { username, password, name, role } = req.body;
-      const userPayload = await this.authService.register(username, password, name, role);
+      const { username, password, name, role, phone } = req.body;
+      const userPayload = await this.authService.register(username, password, name, role, phone);
       return res.status(201).json(userPayload);
     } catch (error: any) {
       return res.status(400).json({ error: error.message || 'Error al registrar usuario' });
@@ -40,8 +40,8 @@ export class AuthController {
   updateUser = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { username, password, name, role } = req.body;
-      await this.authService.updateUser(id, { username, passwordPlain: password, name, role });
+      const { username, password, name, role, phone, isActive } = req.body;
+      await this.authService.updateUser(id, { username, passwordPlain: password, name, role, phone, isActive });
       return res.status(200).json({ message: 'Usuario actualizado con éxito', id });
     } catch (error: any) {
       return res.status(400).json({ error: error.message || 'Error al actualizar usuario' });

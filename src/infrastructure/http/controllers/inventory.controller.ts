@@ -68,11 +68,18 @@ export class InventoryController {
     try {
       const units = await this.inventoryService.getWholesaleUnits();
       const whatsapp = await this.inventoryService.getWhatsAppSettings();
+      const company = await this.inventoryService.getCompanySettings();
       return res.status(200).json({
         wholesale_units: units,
         whatsapp_sender_number: whatsapp.senderNumber,
         whatsapp_token: whatsapp.token,
-        whatsapp_phone_number_id: whatsapp.phoneNumberId
+        whatsapp_phone_number_id: whatsapp.phoneNumberId,
+        company_name: company.name,
+        company_logo: company.logo,
+        company_rut: company.rut,
+        company_address: company.address,
+        company_phone: company.phone,
+        company_email: company.email
       });
     } catch (error: any) {
       return res.status(500).json({ error: error.message || 'Error al obtener configuraciones' });
@@ -81,25 +88,45 @@ export class InventoryController {
 
   updateSettings = async (req: Request, res: Response) => {
     try {
-      const { wholesale_units, whatsapp_sender_number, whatsapp_token, whatsapp_phone_number_id } = req.body;
-      if (wholesale_units === undefined) {
-        return res.status(400).json({ error: 'El parámetro wholesale_units es requerido' });
+      const {
+        wholesale_units,
+        whatsapp_sender_number,
+        whatsapp_token,
+        whatsapp_phone_number_id,
+        company_name,
+        company_logo,
+        company_rut,
+        company_address,
+        company_phone,
+        company_email
+      } = req.body;
+
+      if (wholesale_units !== undefined) {
+        const unitsVal = parseInt(wholesale_units, 10);
+        await this.inventoryService.updateWholesaleUnits(unitsVal);
       }
-      const unitsVal = parseInt(wholesale_units, 10);
-      await this.inventoryService.updateWholesaleUnits(unitsVal);
 
-      const senderNum = whatsapp_sender_number !== undefined ? String(whatsapp_sender_number).trim() : '';
-      const token = whatsapp_token !== undefined ? String(whatsapp_token).trim() : '';
-      const phoneId = whatsapp_phone_number_id !== undefined ? String(whatsapp_phone_number_id).trim() : '';
+      if (whatsapp_sender_number !== undefined || whatsapp_token !== undefined || whatsapp_phone_number_id !== undefined) {
+        const whatsapp = await this.inventoryService.getWhatsAppSettings();
+        const senderNum = whatsapp_sender_number !== undefined ? String(whatsapp_sender_number).trim() : whatsapp.senderNumber;
+        const token = whatsapp_token !== undefined ? String(whatsapp_token).trim() : whatsapp.token;
+        const phoneId = whatsapp_phone_number_id !== undefined ? String(whatsapp_phone_number_id).trim() : whatsapp.phoneNumberId;
+        await this.inventoryService.updateWhatsAppSettings(senderNum, token, phoneId);
+      }
 
-      await this.inventoryService.updateWhatsAppSettings(senderNum, token, phoneId);
+      if (company_name !== undefined || company_logo !== undefined || company_rut !== undefined || company_address !== undefined || company_phone !== undefined || company_email !== undefined) {
+        const company = await this.inventoryService.getCompanySettings();
+        const cName = company_name !== undefined ? String(company_name).trim() : company.name;
+        const cLogo = company_logo !== undefined ? String(company_logo).trim() : company.logo;
+        const cRut = company_rut !== undefined ? String(company_rut).trim() : company.rut;
+        const cAddress = company_address !== undefined ? String(company_address).trim() : company.address;
+        const cPhone = company_phone !== undefined ? String(company_phone).trim() : company.phone;
+        const cEmail = company_email !== undefined ? String(company_email).trim() : company.email;
+        await this.inventoryService.updateCompanySettings(cName, cLogo, cRut, cAddress, cPhone, cEmail);
+      }
 
       return res.status(200).json({
-        message: 'Configuraciones del sistema actualizadas con éxito',
-        wholesale_units: unitsVal,
-        whatsapp_sender_number: senderNum,
-        whatsapp_token: token,
-        whatsapp_phone_number_id: phoneId
+        message: 'Configuraciones del sistema actualizadas con éxito'
       });
     } catch (error: any) {
       return res.status(400).json({ error: error.message || 'Error al actualizar configuraciones' });

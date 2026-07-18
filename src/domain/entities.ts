@@ -1,6 +1,6 @@
 // Capa de Dominio - Entidades y Tipos
 
-export type UserRole = 'admin' | 'vendedor';
+export type UserRole = 'admin' | 'supervisor' | 'vendedor';
 
 export interface User {
   id: string;
@@ -8,6 +8,9 @@ export interface User {
   passwordHash: string;
   name: string;
   role: UserRole;
+  phone?: string | null;
+  isActive: boolean;
+  lastLogin?: Date | null;
   createdAt: Date;
 }
 
@@ -18,6 +21,10 @@ export interface Customer {
   businessName: string;
   fiscalId: string; // Rut / Identificación Fiscal
   phone: string;
+  contactName?: string | null;   // Nombre del contacto
+  address?: string | null;       // Dirección física
+  ivaPercent: number;            // % IVA (Ej: 19.0)
+  ilaPercent: number;            // % Impuesto Adicional ILA (Ej: 15.0 o 0.0)
   customerType: CustomerType;
   createdAt: Date;
 }
@@ -42,6 +49,16 @@ export interface SystemSetting {
   updatedAt: Date;
 }
 
+export interface Event {
+  id: string;
+  name: string;
+  city: string;
+  startDate: Date;
+  endDate: Date;
+  status: 'activo' | 'finalizado';
+  createdAt: Date;
+}
+
 export type SalesFormat = 'unit' | 'pack2' | 'pack3' | 'pack4' | 'wholesale';
 
 export interface Sale {
@@ -59,6 +76,8 @@ export interface Sale {
   unitPrice: number; // price of the chosen format
   totalAmount: number; // unitPrice * quantity
   paymentStatus: 'pagado' | 'pendiente'; // Estado de pago ('pagado' o 'pendiente')
+  eventId?: string | null;    // ID del evento asociado
+  eventName?: string | null;  // Nombre del evento histórico
 }
 
 // DTOs (Data Transfer Objects) e inputs
@@ -77,6 +96,7 @@ export interface CheckoutInput {
   customerId?: string; // Optional customer ID for discount/association
   customerPhone?: string; // Teléfono opcional para entrega de voucher por WhatsApp
   paymentStatus?: 'pagado' | 'pendiente'; // Estado de pago inicial de la venta (opcional, por defecto 'pagado')
+  eventId?: string; // ID opcional del evento asociado
   items: CheckoutItem[];
 }
 

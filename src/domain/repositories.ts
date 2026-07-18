@@ -1,4 +1,4 @@
-import { User, Customer, BeerStyle, Sale } from './entities';
+import { User, Customer, BeerStyle, Sale, Event } from './entities';
 
 export interface IUserRepository {
   findById(id: string): Promise<User | null>;
@@ -32,6 +32,14 @@ export interface IBeerStyleRepository {
 export interface ISystemSettingsRepository {
   getVal(key: string): Promise<string | null>;
   setVal(key: string, value: string, description?: string): Promise<void>;
+}
+
+export interface IEventRepository {
+  findById(id: string): Promise<Event | null>;
+  create(event: Event): Promise<void>;
+  update(event: Event): Promise<void>;
+  delete(id: string): Promise<void>;
+  listAll(): Promise<Event[]>;
 }
 
 export interface ISaleRepository {

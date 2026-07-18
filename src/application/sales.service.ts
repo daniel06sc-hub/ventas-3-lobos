@@ -1,5 +1,5 @@
 import { getDatabase } from '../config/database';
-import { IBeerStyleRepository, ICustomerRepository, ISaleRepository, ISystemSettingsRepository } from '../domain/repositories';
+import { IBeerStyleRepository, ICustomerRepository, ISaleRepository, ISystemSettingsRepository, IEventRepository } from '../domain/repositories';
 import { CheckoutInput, Sale, SalesFormat, CheckoutItem } from '../domain/entities';
 
 export class SalesService {
@@ -7,7 +7,8 @@ export class SalesService {
     private beerStyleRepository: IBeerStyleRepository,
     private customerRepository: ICustomerRepository,
     private saleRepository: ISaleRepository,
-    private systemSettingsRepository: ISystemSettingsRepository
+    private systemSettingsRepository: ISystemSettingsRepository,
+    private eventRepository: IEventRepository
   ) {}
 
   /**
@@ -44,6 +45,17 @@ export class SalesService {
         }
         customerName = customer.business_name;
         customerId = customer.id;
+      }
+
+      // Validar evento si se asoció
+      let eventId: string | null = null;
+      let eventName: string | null = null;
+      if (input.eventId) {
+        const event = await db.get('SELECT * FROM events WHERE id = ?', input.eventId);
+        if (event) {
+          eventId = event.id;
+          eventName = event.name;
+        }
       }
 
       // Generar ID único correlativo para toda esta venta agrupada
@@ -151,7 +163,9 @@ export class SalesService {
             unitsSold: styleBreakdown.bottlesCount,
             unitPrice: pricePerBottleInFormat,
             totalAmount: portionTotalAmount,
-            paymentStatus: input.paymentStatus || 'pagado'
+            paymentStatus: input.paymentStatus || 'pagado',
+            eventId,
+            eventName
           });
         }
       }
@@ -160,8 +174,8 @@ export class SalesService {
       const insertStmt = await db.prepare(
         `INSERT INTO sales (
           correlation_id, seller_id, seller_name, customer_id, customer_name,
-          beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, transaction_date
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
+          beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, event_id, event_name, transaction_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
       );
 
       for (const sale of salesToRecord) {
@@ -177,7 +191,9 @@ export class SalesService {
           sale.unitsSold,
           sale.unitPrice,
           sale.totalAmount,
-          sale.paymentStatus
+          sale.paymentStatus,
+          sale.eventId || null,
+          sale.eventName || null
         );
       }
       await insertStmt.finalize();

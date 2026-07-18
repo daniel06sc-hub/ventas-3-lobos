@@ -163,6 +163,88 @@ export async function getDatabase(): Promise<IDatabase> {
     await dbInstance.exec(schemaSql);
   }
 
+  // Migración de columnas para customers si no existen (aplica para SQLite y Turso)
+  try {
+    const customerCols = await dbInstance.all('PRAGMA table_info(customers)');
+    const hasContactName = customerCols.some((col: any) => col.name === 'contact_name');
+    if (!hasContactName) {
+      await dbInstance.exec('ALTER TABLE customers ADD COLUMN contact_name TEXT;');
+      await dbInstance.exec('ALTER TABLE customers ADD COLUMN address TEXT;');
+      await dbInstance.exec('ALTER TABLE customers ADD COLUMN iva_percent REAL DEFAULT 19.0;');
+      await dbInstance.exec('ALTER TABLE customers ADD COLUMN ila_percent REAL DEFAULT 0.0;');
+      console.log('Migración: Columnas fiscales y contacto agregadas a la tabla "customers" exitosamente.');
+    }
+  } catch (err) {
+    console.error('Error al migrar la tabla "customers":', err);
+  }
+
+  // Migración de columnas para users si no existen (aplica para SQLite y Turso)
+  try {
+    const userCols = await dbInstance.all('PRAGMA table_info(users)');
+    const hasPhone = userCols.some((col: any) => col.name === 'phone');
+    if (!hasPhone) {
+      await dbInstance.exec('ALTER TABLE users ADD COLUMN phone TEXT;');
+      await dbInstance.exec('ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1;');
+      await dbInstance.exec('ALTER TABLE users ADD COLUMN last_login DATETIME;');
+      console.log('Migración: Columnas "phone", "is_active" y "last_login" agregadas a la tabla "users" exitosamente.');
+    }
+  } catch (err) {
+    console.error('Error al migrar la tabla "users":', err);
+  }
+
+  // Migración de columnas de eventos para sales si no existen (aplica para SQLite y Turso)
+  try {
+    const salesCols = await dbInstance.all('PRAGMA table_info(sales)');
+    const hasEventId = salesCols.some((col: any) => col.name === 'event_id');
+    if (!hasEventId) {
+      await dbInstance.exec('ALTER TABLE sales ADD COLUMN event_id TEXT;');
+      await dbInstance.exec('ALTER TABLE sales ADD COLUMN event_name TEXT;');
+      console.log('Migración: Columnas de vinculación a eventos agregadas a la tabla "sales" exitosamente.');
+    }
+  } catch (err) {
+    console.error('Error al migrar la tabla "sales" para eventos:', err);
+  }
+
+  // Migración del CHECK constraint de roles en la tabla "users" (aplica para SQLite y Turso)
+  try {
+    const usersTableInfo = await dbInstance.all('PRAGMA table_info(users)');
+    const hasRoleCol = usersTableInfo.some((col: any) => col.name === 'role');
+    if (hasRoleCol) {
+      console.log('Migrando/Verificando tabla "users" para el rol "supervisor"...');
+      await dbInstance.exec('PRAGMA foreign_keys = OFF;');
+      await dbInstance.exec('BEGIN TRANSACTION;');
+      
+      await dbInstance.exec(`
+        CREATE TABLE IF NOT EXISTS users_new (
+            id TEXT PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            name TEXT NOT NULL,
+            role TEXT NOT NULL CHECK(role IN ('admin', 'supervisor', 'vendedor')),
+            phone TEXT,
+            is_active INTEGER NOT NULL DEFAULT 1,
+            last_login DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      
+      await dbInstance.exec(`
+        INSERT OR IGNORE INTO users_new (id, username, password_hash, name, role, phone, is_active, last_login, created_at)
+        SELECT id, username, password_hash, name, role, phone, is_active, last_login, created_at FROM users;
+      `);
+      
+      await dbInstance.exec('DROP TABLE users;');
+      await dbInstance.exec('ALTER TABLE users_new RENAME TO users;');
+      await dbInstance.exec('COMMIT;');
+      await dbInstance.exec('PRAGMA foreign_keys = ON;');
+      console.log('Tabla "users" verificada/migrada para admitir rol "supervisor" con éxito.');
+    }
+  } catch (usersMigError) {
+    console.error('Error al verificar/migrar tabla "users":', usersMigError);
+    try { await dbInstance.exec('ROLLBACK;'); } catch (e) {}
+    await dbInstance.exec('PRAGMA foreign_keys = ON;');
+  }
+
   // Migraciones dinámicas específicas de base de datos local
   if (!process.env.TURSO_DATABASE_URL) {
     // Migración dinámica: agregar columna payment_status a la tabla sales si no existe
@@ -283,10 +365,32 @@ export async function getDatabase(): Promise<IDatabase> {
     );
   }
 
+  // Semilla para Configuración de Empresa
+  const companySeeds = [
+    { key: 'company_name', val: 'Cervecería 3 Lobos', desc: 'Nombre legal o comercial de la empresa' },
+    { key: 'company_logo', val: '/logo.png', desc: 'Logotipo de la empresa (ruta pública o URL)' },
+    { key: 'company_rut', val: '76.123.456-7', desc: 'RUT o identificación fiscal de la empresa' },
+    { key: 'company_address', val: 'Ruta 5 Sur, Talca, Chile', desc: 'Dirección física principal de la empresa' },
+    { key: 'company_phone', val: '+56 9 1234 5678', desc: 'Teléfono corporativo de la empresa' },
+    { key: 'company_email', val: 'contacto@3lobos.cl', desc: 'Correo electrónico de contacto' }
+  ];
+  for (const c of companySeeds) {
+    const exist = await dbInstance.get('SELECT * FROM system_settings WHERE key = ?', c.key);
+    if (!exist) {
+      await dbInstance.run(
+        'INSERT INTO system_settings (key, value, description) VALUES (?, ?, ?)',
+        c.key,
+        c.val,
+        c.desc
+      );
+    }
+  }
+
   // 2. Semilla para Usuarios por Defecto (si no existen usuarios)
   const userCountRow = await dbInstance.get('SELECT COUNT(*) as count FROM users');
   if (userCountRow && userCountRow.count === 0) {
     const adminHash = await bcrypt.hash('admin123', 10);
+    const supervisorHash = await bcrypt.hash('supervisor123', 10);
     const sellerHash = await bcrypt.hash('vendedor123', 10);
 
     // Insertar Administrador por defecto
@@ -299,6 +403,16 @@ export async function getDatabase(): Promise<IDatabase> {
       'admin'
     );
 
+    // Insertar Supervisor por defecto
+    await dbInstance.run(
+      'INSERT INTO users (id, username, password_hash, name, role) VALUES (?, ?, ?, ?, ?)',
+      'u-supervisor-default-id',
+      'supervisor',
+      supervisorHash,
+      'Supervisor Cervecería',
+      'supervisor'
+    );
+
     // Insertar Vendedor por defecto
     await dbInstance.run(
       'INSERT INTO users (id, username, password_hash, name, role) VALUES (?, ?, ?, ?, ?)',
@@ -309,7 +423,7 @@ export async function getDatabase(): Promise<IDatabase> {
       'vendedor'
     );
 
-    console.log('Seeder: Usuarios por defecto creados (admin/admin123 y vendedor/vendedor123).');
+    console.log('Seeder: Usuarios por defecto creados (admin, supervisor y vendedor).');
   }
 
   // 3. Semilla para Estilos de Cerveza Iniciales (si no hay estilos)

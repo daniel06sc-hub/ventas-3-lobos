@@ -1,10 +1,11 @@
 import { getDatabase, IDatabase } from '../../config/database';
-import { User, Customer, BeerStyle, Sale, UserRole, CustomerType, SalesFormat } from '../../domain/entities';
+import { User, Customer, BeerStyle, Sale, UserRole, CustomerType, SalesFormat, Event } from '../../domain/entities';
 import {
   IUserRepository,
   ICustomerRepository,
   IBeerStyleRepository,
   ISystemSettingsRepository,
+  IEventRepository,
   ISaleRepository
 } from '../../domain/repositories';
 
@@ -16,6 +17,9 @@ function mapUserRow(row: any): User {
     passwordHash: row.password_hash,
     name: row.name,
     role: row.role as UserRole,
+    phone: row.phone || '',
+    isActive: row.is_active !== undefined ? row.is_active === 1 : true,
+    lastLogin: row.last_login ? new Date(row.last_login) : null,
     createdAt: new Date(row.created_at)
   };
 }
@@ -27,6 +31,10 @@ function mapCustomerRow(row: any): Customer {
     businessName: row.business_name,
     fiscalId: row.fiscal_id,
     phone: row.phone || '',
+    contactName: row.contact_name || '',
+    address: row.address || '',
+    ivaPercent: row.iva_percent !== undefined && row.iva_percent !== null ? row.iva_percent : 19.0,
+    ilaPercent: row.ila_percent !== undefined && row.ila_percent !== null ? row.ila_percent : 0.0,
     customerType: row.customer_type as CustomerType,
     createdAt: new Date(row.created_at)
   };
@@ -64,7 +72,22 @@ function mapSaleRow(row: any): Sale {
     unitsSold: row.units_sold,
     unitPrice: row.unit_price,
     totalAmount: row.total_amount,
-    paymentStatus: row.payment_status as 'pagado' | 'pendiente'
+    paymentStatus: row.payment_status as 'pagado' | 'pendiente',
+    eventId: row.event_id || null,
+    eventName: row.event_name || null
+  };
+}
+
+// Helper de mapeo para Eventos
+function mapEventRow(row: any): Event {
+  return {
+    id: row.id,
+    name: row.name,
+    city: row.city,
+    startDate: new Date(row.start_date),
+    endDate: new Date(row.end_date),
+    status: row.status as 'activo' | 'finalizado',
+    createdAt: new Date(row.created_at)
   };
 }
 
@@ -88,23 +111,29 @@ export class SQLiteUserRepository implements IUserRepository {
   async create(user: User): Promise<void> {
     const db = await this.getDb();
     await db.run(
-      'INSERT INTO users (id, username, password_hash, name, role) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO users (id, username, password_hash, name, role, phone, is_active, last_login) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       user.id,
       user.username,
       user.passwordHash,
       user.name,
-      user.role
+      user.role,
+      user.phone || null,
+      user.isActive ? 1 : 0,
+      user.lastLogin ? user.lastLogin.toISOString() : null
     );
   }
 
   async update(user: User): Promise<void> {
     const db = await this.getDb();
     await db.run(
-      'UPDATE users SET username = ?, password_hash = ?, name = ?, role = ? WHERE id = ?',
+      'UPDATE users SET username = ?, password_hash = ?, name = ?, role = ?, phone = ?, is_active = ?, last_login = ? WHERE id = ?',
       user.username,
       user.passwordHash,
       user.name,
       user.role,
+      user.phone || null,
+      user.isActive ? 1 : 0,
+      user.lastLogin ? user.lastLogin.toISOString() : null,
       user.id
     );
   }
@@ -141,11 +170,15 @@ export class SQLiteCustomerRepository implements ICustomerRepository {
   async create(customer: Customer): Promise<void> {
     const db = await this.getDb();
     await db.run(
-      'INSERT INTO customers (id, business_name, fiscal_id, phone, customer_type) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO customers (id, business_name, fiscal_id, phone, contact_name, address, iva_percent, ila_percent, customer_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       customer.id,
       customer.businessName,
       customer.fiscalId,
       customer.phone,
+      customer.contactName || null,
+      customer.address || null,
+      customer.ivaPercent,
+      customer.ilaPercent,
       customer.customerType
     );
   }
@@ -153,10 +186,14 @@ export class SQLiteCustomerRepository implements ICustomerRepository {
   async update(customer: Customer): Promise<void> {
     const db = await this.getDb();
     await db.run(
-      'UPDATE customers SET business_name = ?, fiscal_id = ?, phone = ?, customer_type = ? WHERE id = ?',
+      'UPDATE customers SET business_name = ?, fiscal_id = ?, phone = ?, contact_name = ?, address = ?, iva_percent = ?, ila_percent = ?, customer_type = ? WHERE id = ?',
       customer.businessName,
       customer.fiscalId,
       customer.phone,
+      customer.contactName || null,
+      customer.address || null,
+      customer.ivaPercent,
+      customer.ilaPercent,
       customer.customerType,
       customer.id
     );
@@ -289,6 +326,53 @@ export class SQLiteSystemSettingsRepository implements ISystemSettingsRepository
   }
 }
 
+export class SQLiteEventRepository implements IEventRepository {
+  constructor(private getDb: () => Promise<IDatabase>) {}
+
+  async findById(id: string): Promise<Event | null> {
+    const db = await this.getDb();
+    const row = await db.get('SELECT * FROM events WHERE id = ?', id);
+    return row ? mapEventRow(row) : null;
+  }
+
+  async create(event: Event): Promise<void> {
+    const db = await this.getDb();
+    await db.run(
+      'INSERT INTO events (id, name, city, start_date, end_date, status) VALUES (?, ?, ?, ?, ?, ?)',
+      event.id,
+      event.name,
+      event.city,
+      event.startDate.toISOString().split('T')[0],
+      event.endDate.toISOString().split('T')[0],
+      event.status
+    );
+  }
+
+  async update(event: Event): Promise<void> {
+    const db = await this.getDb();
+    await db.run(
+      'UPDATE events SET name = ?, city = ?, start_date = ?, end_date = ?, status = ? WHERE id = ?',
+      event.name,
+      event.city,
+      event.startDate.toISOString().split('T')[0],
+      event.endDate.toISOString().split('T')[0],
+      event.status,
+      event.id
+    );
+  }
+
+  async delete(id: string): Promise<void> {
+    const db = await this.getDb();
+    await db.run('DELETE FROM events WHERE id = ?', id);
+  }
+
+  async listAll(): Promise<Event[]> {
+    const db = await this.getDb();
+    const rows = await db.all('SELECT * FROM events ORDER BY start_date DESC');
+    return rows.map(mapEventRow);
+  }
+}
+
 export class SQLiteSaleRepository implements ISaleRepository {
   private async getDb(): Promise<IDatabase> {
     return getDatabase();
@@ -299,8 +383,8 @@ export class SQLiteSaleRepository implements ISaleRepository {
     const stmt = await db.prepare(
       `INSERT INTO sales (
         correlation_id, seller_id, seller_name, customer_id, customer_name,
-        beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, event_id, event_name
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
 
     for (const sale of sales) {
@@ -316,7 +400,9 @@ export class SQLiteSaleRepository implements ISaleRepository {
         sale.unitsSold,
         sale.unitPrice,
         sale.totalAmount,
-        sale.paymentStatus
+        sale.paymentStatus,
+        sale.eventId || null,
+        sale.eventName || null
       );
     }
     await stmt.finalize();

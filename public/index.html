@@ -217,30 +217,37 @@
 
         <!-- Navigation Tabs -->
         <nav class="hidden md:flex gap-1">
-          <button onclick="switchTab('pos')" id="tab-pos" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300">
+          <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300">
+            <i class="fa-solid fa-house"></i>
+            <span>Dashboard</span>
+          </button>
+          <button onclick="switchTab('pos')" id="tab-pos" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300">
             <i class="fa-solid fa-cash-register"></i>
-            <span>Punto de Venta (POS)</span>
+            <span>POS</span>
           </button>
-          
-          <!-- Removed admin-only from catalog because sellers can access it to edit stock -->
-          <button onclick="switchTab('inventory')" id="tab-inventory" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300">
+          <button onclick="switchTab('inventory')" id="tab-inventory" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300">
             <i class="fa-solid fa-boxes-stacked"></i>
-            <span>Catálogo e Inventario</span>
+            <span>Productos</span>
           </button>
-          
-          <button onclick="switchTab('customers')" id="tab-customers" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300">
-            <i class="fa-solid fa-store"></i>
-            <span>Clientes Restaurantes</span>
+          <button onclick="switchTab('customers')" id="tab-customers" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300 supervisor-admin-only">
+            <i class="fa-solid fa-users"></i>
+            <span>Clientes</span>
           </button>
-
-          <button onclick="switchTab('users')" id="tab-users" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300 admin-only">
-            <i class="fa-solid fa-users-gear"></i>
-            <span>Personal (Vendedores)</span>
+          <button onclick="switchTab('events')" id="tab-events" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300 supervisor-admin-only">
+            <i class="fa-solid fa-calendar-day"></i>
+            <span>Eventos</span>
           </button>
-          
-          <button onclick="switchTab('reports')" id="tab-reports" class="px-4 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-2 hover:bg-slate-800 text-slate-300 admin-only">
+          <button onclick="switchTab('sellers')" id="tab-sellers" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300 supervisor-admin-only">
+            <i class="fa-solid fa-user-tie"></i>
+            <span>Vendedores</span>
+          </button>
+          <button onclick="switchTab('reports')" id="tab-reports" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300 supervisor-admin-only">
             <i class="fa-solid fa-chart-line"></i>
-            <span>Reportes & Auditoría</span>
+            <span>Reportes</span>
+          </button>
+          <button onclick="switchTab('settings')" id="tab-settings" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300 admin-only">
+            <i class="fa-solid fa-gears"></i>
+            <span>Configuración</span>
           </button>
         </nav>
 
@@ -261,32 +268,118 @@
     </header>
 
     <!-- Mobile Navigation Tab Bar -->
-    <div class="md:hidden bg-slate-900 border-b border-slate-800 flex justify-around p-2 mobile-nav no-print">
-      <button onclick="switchTab('pos')" id="tab-pos-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400">
+    <div class="md:hidden bg-slate-900 border-b border-slate-800 flex justify-start p-2 gap-4 overflow-x-auto mobile-nav no-print">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0">
+        <i class="fa-solid fa-house text-lg"></i>
+        <span>Dashboard</span>
+      </button>
+      <button onclick="switchTab('pos')" id="tab-pos-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0">
         <i class="fa-solid fa-cash-register text-lg"></i>
         <span>POS</span>
       </button>
-      <button onclick="switchTab('inventory')" id="tab-inventory-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400">
+      <button onclick="switchTab('inventory')" id="tab-inventory-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0">
         <i class="fa-solid fa-boxes-stacked text-lg"></i>
-        <span>Catálogo</span>
+        <span>Productos</span>
       </button>
-      <button onclick="switchTab('customers')" id="tab-customers-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400">
-        <i class="fa-solid fa-store text-lg"></i>
+      <button onclick="switchTab('customers')" id="tab-customers-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0 supervisor-admin-only">
+        <i class="fa-solid fa-users text-lg"></i>
         <span>Clientes</span>
       </button>
-      <button onclick="switchTab('users')" id="tab-users-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 admin-only">
-        <i class="fa-solid fa-users-gear text-lg"></i>
-        <span>Personal</span>
+      <button onclick="switchTab('events')" id="tab-events-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0 supervisor-admin-only">
+        <i class="fa-solid fa-calendar-day text-lg"></i>
+        <span>Eventos</span>
       </button>
-      <button onclick="switchTab('reports')" id="tab-reports-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 admin-only">
+      <button onclick="switchTab('sellers')" id="tab-sellers-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0 supervisor-admin-only">
+        <i class="fa-solid fa-user-tie text-lg"></i>
+        <span>Vendedores</span>
+      </button>
+      <button onclick="switchTab('reports')" id="tab-reports-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0 supervisor-admin-only">
         <i class="fa-solid fa-chart-line text-lg"></i>
         <span>Reportes</span>
+      </button>
+      <button onclick="switchTab('settings')" id="tab-settings-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0 admin-only">
+        <i class="fa-solid fa-gears text-lg"></i>
+        <span>Config</span>
       </button>
     </div>
 
     <!-- Main Content Area -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
       
+      <!-- ======================================================== -->
+      <!-- TAB: DASHBOARD -->
+      <!-- ======================================================== -->
+      <section id="section-dashboard" class="tab-content hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Recaudacion Hoy -->
+          <div class="glassmorphism p-5 rounded-2xl border border-slate-800 flex items-center gap-4 relative overflow-hidden">
+            <div class="p-3 bg-brand-500/10 text-brand-500 rounded-xl">
+              <i class="fa-solid fa-cash-register text-2xl"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Recaudación Hoy</div>
+              <div id="dash-recaudacion-hoy" class="text-xl font-extrabold text-white mt-1 font-outfit">$0</div>
+            </div>
+          </div>
+          <!-- Botellas Hoy -->
+          <div class="glassmorphism p-5 rounded-2xl border border-slate-800 flex items-center gap-4 relative overflow-hidden">
+            <div class="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl">
+              <i class="fa-solid fa-beer-mug-empty text-2xl"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Botellas Vendidas Hoy</div>
+              <div id="dash-botellas-hoy" class="text-xl font-extrabold text-white mt-1 font-outfit">0 u.</div>
+            </div>
+          </div>
+          <!-- Pendientes Hoy -->
+          <div class="glassmorphism p-5 rounded-2xl border border-slate-800 flex items-center gap-4 relative overflow-hidden">
+            <div class="p-3 bg-amber-500/10 text-amber-500 rounded-xl">
+              <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Cuentas Pendientes (Hoy)</div>
+              <div id="dash-pendientes-hoy" class="text-xl font-extrabold text-white mt-1 font-outfit">$0</div>
+            </div>
+          </div>
+          <!-- Eventos Activos -->
+          <div class="glassmorphism p-5 rounded-2xl border border-slate-800 flex items-center gap-4 relative overflow-hidden">
+            <div class="p-3 bg-blue-500/10 text-blue-500 rounded-xl">
+              <i class="fa-solid fa-calendar-day text-2xl"></i>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Eventos Activos</div>
+              <div id="dash-eventos-hoy" class="text-xl font-extrabold text-white mt-1 font-outfit">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+          <h3 class="text-lg font-bold font-outfit text-white flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-brand-500"></i>
+            <span>Últimas Ventas Registradas</span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                  <th class="py-3 px-4">Correlativo</th>
+                  <th class="py-3 px-4">Fecha/Hora</th>
+                  <th class="py-3 px-4">Vendedor</th>
+                  <th class="py-3 px-4">Cliente</th>
+                  <th class="py-3 px-4 text-right">Total</th>
+                  <th class="py-3 px-4 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent-sales-tbody" class="divide-y divide-slate-800/50">
+                <tr>
+                  <td colspan="6" class="py-6 text-center text-slate-500">Cargando ventas recientes...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
       <!-- ======================================================== -->
       <!-- TAB: POS (Punto de Venta) -->
       <!-- ======================================================== -->
@@ -362,6 +455,16 @@
                 </div>
               </div>
 
+              <!-- Event Dropdown (Optional sale association) -->
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Vincular a Evento (Opcional)</label>
+                <select id="pos-event-select"
+                        class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-brand-500">
+                  <option value="">-- Sin evento (Venta General) --</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
               <!-- Customer Phone Number for WhatsApp Receipt (Optional) -->
               <div class="mb-4">
                 <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
@@ -408,16 +511,18 @@
       <!-- ======================================================== -->
       <!-- TAB: CATALOG & INVENTORY (Admin & Vendedores only to edit stock) -->
       <!-- ======================================================== -->
+      <!-- ======================================================== -->
+      <!-- TAB: PRODUCTOS E INVENTARIO -->
+      <!-- ======================================================== -->
       <section id="section-inventory" class="tab-content hidden space-y-6">
         
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 class="text-2xl font-bold font-outfit text-white">Catálogo de Cervezas e Inventario</h2>
-            <p class="text-slate-400 text-sm mt-0.5">CRUD de Estilos (Solo Administrador) y alimentación directa de stocks.</p>
+            <h2 class="text-2xl font-bold font-outfit text-white">Productos e Inventario</h2>
+            <p class="text-slate-400 text-sm mt-0.5">Catálogo de estilos de cerveza y control de stock en bodega.</p>
           </div>
           
           <div class="flex items-center gap-3">
-            <!-- Creation of styles is restricted to Admins -->
             <button onclick="openStyleModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-500/10 admin-only">
               <i class="fa-solid fa-plus"></i>
               <span>Nuevo Estilo</span>
@@ -436,7 +541,7 @@
                   <th class="py-4 px-6">Pack de 2</th>
                   <th class="py-4 px-6">Pack de 3</th>
                   <th class="py-4 px-6">Pack de 4</th>
-                  <th class="py-4 px-6">Mayorista (Pack)</th>
+                  <th class="py-4 px-6">Mayorista (Caja)</th>
                   <th class="py-4 px-6 text-right">Acciones</th>
                 </tr>
               </thead>
@@ -448,49 +553,10 @@
             </table>
           </div>
         </div>
-
-        <!-- CONFIGURACIONES GLOBALES Y WHATSAPP (Admin only) -->
-        <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4 admin-only mt-6">
-          <h3 class="text-lg font-bold font-outfit text-white flex items-center gap-2 border-b border-slate-800 pb-3">
-            <i class="fa-solid fa-gears text-brand-500"></i>
-            <span>Configuración del Sistema y WhatsApp Business</span>
-          </h3>
-          
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Unidades Mayoristas (W)</label>
-              <input type="number" id="setting-wholesale-units" min="1" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500" value="23">
-              <span class="text-[9px] text-slate-500 mt-1 block">Número de botellas para disparar formato mayorista.</span>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Número Entregador WhatsApp</label>
-              <input type="text" id="setting-whatsapp-sender" placeholder="Ej: 56912345678" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500">
-              <span class="text-[9px] text-slate-500 mt-1 block">Número remitente registrado en WhatsApp Business.</span>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">WhatsApp Phone Number ID</label>
-              <input type="text" id="setting-whatsapp-phone-id" placeholder="Phone Number ID" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500">
-              <span class="text-[9px] text-slate-500 mt-1 block">Identificador del número en Facebook Developer Portal.</span>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Meta API Cloud Token</label>
-              <input type="password" id="setting-whatsapp-token" placeholder="Token de acceso permanente" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500">
-              <span class="text-[9px] text-slate-500 mt-1 block">Token de acceso permanente de Meta Developer.</span>
-            </div>
-          </div>
-          
-          <div class="flex justify-end pt-2">
-            <button onclick="saveGlobalSettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition flex items-center gap-2">
-              <i class="fa-solid fa-floppy-disk"></i>
-              <span>Guardar Configuraciones</span>
-            </button>
-          </div>
-        </div>
-
       </section>
 
       <!-- ======================================================== -->
-      <!-- TAB: CUSTOMERS -->
+      <!-- TAB: CLIENTES (Restaurantes Mayoristas) -->
       <!-- ======================================================== -->
       <section id="section-customers" class="tab-content hidden space-y-6">
         
@@ -499,7 +565,7 @@
           <!-- Add Corporate Customer Form -->
           <div class="space-y-4">
             <div class="glassmorphism p-6 rounded-2xl border border-slate-800">
-              <h2 class="text-xl font-bold font-outfit text-white border-b border-slate-800 pb-4 mb-4 flex items-center gap-2">
+              <h2 id="form-customer-title" class="text-xl font-bold font-outfit text-white border-b border-slate-800 pb-4 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-plus text-brand-500"></i>
                 <span>Nuevo Restaurante</span>
               </h2>
@@ -508,14 +574,21 @@
                 <input type="hidden" id="customer-id">
                 
                 <div>
-                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre del Negocio</label>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre del Restaurante / Razón Social</label>
                   <input type="text" id="customer-name" required
                          class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
                          placeholder="ej: Restobar El Lobo Rojo">
                 </div>
 
                 <div>
-                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Identificación Fiscal / RUT</label>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre de Contacto</label>
+                  <input type="text" id="customer-contact"
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="ej: Daniel Silva">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">RUT / Identificación Fiscal</label>
                   <input type="text" id="customer-rut" required
                          class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
                          placeholder="ej: 76.123.456-7">
@@ -526,6 +599,26 @@
                   <input type="text" id="customer-phone"
                          class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
                          placeholder="ej: +56912345678">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Dirección Comercial</label>
+                  <input type="text" id="customer-address"
+                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
+                         placeholder="ej: Av. San Miguel 3450, Talca">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">IVA %</label>
+                    <input type="number" id="customer-iva" min="0" max="100" step="0.1" value="19.0" required
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">ILA %</label>
+                    <input type="number" id="customer-ila" min="0" max="100" step="0.1" value="0.0" required
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm">
+                  </div>
                 </div>
 
                 <div class="flex gap-3 pt-2">
@@ -544,239 +637,206 @@
 
           <!-- Customer List Table -->
           <div class="lg:col-span-2 space-y-4">
-            <div class="flex items-center justify-between">
-              <h2 class="text-2xl font-bold font-outfit text-white">Directorio de Restaurantes (Mayoristas)</h2>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h2 class="text-2xl font-bold font-outfit text-white">Directorio de Clientes Mayoristas</h2>
               <div class="relative w-64">
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500">
                   <i class="fa-solid fa-search"></i>
                 </span>
                 <input type="text" id="customer-search-input" oninput="fetchCustomers(this.value)"
                        class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 pl-9 pr-4 text-xs text-white focus:outline-none focus:border-brand-500" 
-                       placeholder="Buscar clientes por nombre o RUT...">
+                       placeholder="Buscar clientes...">
               </div>
             </div>
 
             <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
-                    <th class="py-4 px-6">Nombre de Negocio</th>
-                    <th class="py-4 px-6">Identificación Fiscal / RUT</th>
-                    <th class="py-4 px-6">Teléfono</th>
-                    <th class="py-4 px-6 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="customers-table-body" class="divide-y divide-slate-800/50 text-sm">
-                  <tr>
-                    <td colspan="4" class="py-12 text-center text-slate-500">Cargando directorio...</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                      <th class="py-4 px-6">Restaurante / Nombre</th>
+                      <th class="py-4 px-6">RUT</th>
+                      <th class="py-4 px-6">Teléfono</th>
+                      <th class="py-4 px-6">Dirección</th>
+                      <th class="py-4 px-6 text-center">Impuestos</th>
+                      <th class="py-4 px-6 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="customers-table-body" class="divide-y divide-slate-800/50 text-sm">
+                    <tr>
+                      <td colspan="6" class="py-12 text-center text-slate-500">Cargando directorio...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
         </div>
-
       </section>
 
       <!-- ======================================================== -->
-      <!-- TAB: USERS/STAFF MANAGEMENT (Admin Only) -->
+      <!-- TAB: EVENTOS (Pantalla Independiente) -->
       <!-- ======================================================== -->
-      <section id="section-users" class="tab-content hidden space-y-6 admin-only">
-        
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          <!-- Add/Edit Staff Form -->
-          <div class="space-y-4">
-            <div class="glassmorphism p-6 rounded-2xl border border-slate-800">
-              <h2 id="form-user-title" class="text-xl font-bold font-outfit text-white border-b border-slate-800 pb-4 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-plus text-brand-500"></i>
-                <span>Nuevo Vendedor / Administrador</span>
-              </h2>
-              
-              <form id="form-user" onsubmit="handleSaveUser(event)" class="space-y-4">
-                <input type="hidden" id="user-id-field">
-                
-                <div>
-                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre Completo</label>
-                  <input type="text" id="user-fullname" required
-                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
-                         placeholder="ej: Victor Ortiz">
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Nombre de Usuario (Para Login)</label>
-                  <input type="text" id="user-username" required
-                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
-                         placeholder="ej: victor.ortiz">
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Contraseña (Mínimo 6 carac.)</label>
-                  <input type="password" id="user-password"
-                         class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm" 
-                         placeholder="•••••• (Vacío para mantener)">
-                </div>
-
-                <div>
-                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Rol / Permisos</label>
-                  <select id="user-role" required
-                          class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 px-3.5 text-white focus:outline-none focus:border-brand-500 text-sm">
-                    <option value="vendedor" selected>Vendedor (Solo POS / Clientes / Caja)</option>
-                    <option value="admin">Administrador (Acceso Total)</option>
-                  </select>
-                </div>
-
-                <div class="flex gap-3 pt-2">
-                  <button type="button" onclick="resetUserForm()"
-                          class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-xl transition text-sm cursor-pointer">
-                    Limpiar
-                  </button>
-                  <button type="submit" 
-                          class="flex-1 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 rounded-xl transition text-sm cursor-pointer">
-                    Guardar Ficha
-                  </button>
-                </div>
-              </form>
-            </div>
+      <section id="section-events" class="tab-content hidden space-y-6 supervisor-admin-only">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold font-outfit text-white">Eventos</h2>
+            <p class="text-slate-400 text-sm mt-0.5">Administración de ferias, fiestas y puntos de venta móviles externos.</p>
           </div>
-
-          <!-- Staff list Table -->
-          <div class="lg:col-span-2 space-y-4">
-            <h2 class="text-2xl font-bold font-outfit text-white">Registro Oficial de Personal (Vendedores)</h2>
-            
-            <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
-                    <th class="py-4 px-6">Nombre del Personal</th>
-                    <th class="py-4 px-6">Nombre de Usuario</th>
-                    <th class="py-4 px-6">Rol asignado</th>
-                    <th class="py-4 px-6 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="users-table-body" class="divide-y divide-slate-800/50 text-sm">
-                  <tr>
-                    <td colspan="4" class="py-12 text-center text-slate-500">Cargando personal...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
+          <button onclick="openEventModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-500/10">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nuevo Evento</span>
+          </button>
         </div>
 
+        <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                  <th class="py-4 px-6">Nombre Evento</th>
+                  <th class="py-4 px-6">Ciudad / Comuna</th>
+                  <th class="py-4 px-6">Fecha Inicio</th>
+                  <th class="py-4 px-6">Fecha Término</th>
+                  <th class="py-4 px-6 text-center">Estado</th>
+                  <th class="py-4 px-6 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body" class="divide-y divide-slate-800/50 text-sm">
+                <tr>
+                  <td colspan="6" class="py-12 text-center text-slate-500">Cargando eventos...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- ======================================================== -->
-      <!-- TAB: REPORTS & AUDIT (Admin Only) -->
+      <!-- TAB: VENDEDORES (Pantalla Independiente) -->
       <!-- ======================================================== -->
-      <section id="section-reports" class="tab-content hidden space-y-8 admin-only">
-        
-        <!-- Part 1: Seller Performance Reports -->
-        <div class="space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 class="text-2xl font-bold font-outfit text-white">Rendimiento Mensual por Vendedor</h2>
-              <p class="text-slate-400 text-sm mt-0.5">Reporte de recaudación y transacciones agrupado mensualmente por vendedor.</p>
-            </div>
-            
-            <!-- Month filter picker -->
-            <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-2 gap-2">
-              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider pl-1">Filtrar por Mes:</span>
-              <input type="month" id="report-seller-month" onchange="fetchSellersPerformance()" onclick="this.showPicker()"
-                     class="bg-slate-950 border border-slate-700 text-center text-brand-500 font-bold rounded-lg py-1 px-2.5 focus:outline-none focus:border-brand-500 text-xs cursor-pointer">
-            </div>
+      <section id="section-sellers" class="tab-content hidden space-y-6 supervisor-admin-only">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold font-outfit text-white">Vendedores y Personal</h2>
+            <p class="text-slate-400 text-sm mt-0.5">Lista del personal del punto de venta y control de estados.</p>
           </div>
+          <button onclick="openSellerModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-500/10">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Nuevo Vendedor</span>
+          </button>
+        </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="seller-reports-cards">
-            <div class="col-span-full py-8 text-center text-slate-500">Generando reporte de rendimiento...</div>
+        <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                  <th class="py-4 px-6">Nombre Completo</th>
+                  <th class="py-4 px-6">Usuario</th>
+                  <th class="py-4 px-6">Teléfono</th>
+                  <th class="py-4 px-6 text-center">Estado</th>
+                  <th class="py-4 px-6">Fecha Creación</th>
+                  <th class="py-4 px-6">Último Acceso</th>
+                  <th class="py-4 px-6 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="sellers-table-body" class="divide-y divide-slate-800/50 text-sm">
+                <tr>
+                  <td colspan="7" class="py-12 text-center text-slate-500">Cargando vendedores...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB: REPORTES (Exclusivo con Sub-Pestañas) -->
+      <!-- ======================================================== -->
+      <section id="section-reports" class="tab-content hidden space-y-6 supervisor-admin-only">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold font-outfit text-white">Centro de Reportes y Estadísticas</h2>
+            <p class="text-slate-400 text-sm mt-0.5">Análisis de recaudación, inventarios, vendedores y eventos.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportReportsToCSV()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
+              <i class="fa-solid fa-file-excel text-emerald-400"></i>
+              <span>Exportar Excel</span>
+            </button>
+            <button onclick="compilePrintReport()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center gap-1.5 shadow-lg shadow-brand-500/10 cursor-pointer">
+              <i class="fa-solid fa-print"></i>
+              <span>Imprimir PDF</span>
+            </button>
           </div>
         </div>
 
-        <!-- Part 1.5: Print PDF Report Generator Panel & Live On-Screen History Filter -->
-        <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
-          <h3 class="text-xl font-bold font-outfit text-white flex items-center gap-2">
-            <i class="fa-solid fa-file-pdf text-brand-500"></i>
-            <span>Generador de Reportes de Caja y Filtros en Pantalla</span>
-          </h3>
-          <p class="text-xs text-slate-400">Selecciona los filtros para actualizar la bitácora en tiempo real. Presiona "Imprimir PDF" para archivar físicamente el arqueo filtrado.</p>
-
-          <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Rango del Reporte</label>
-              <select id="report-range-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
-                <option value="all" selected>Histórico Completo</option>
-                <option value="today">Reporte Diario (Hoy)</option>
-                <option value="weekly">Reporte Semanal (Últimos 7 días)</option>
-                <option value="monthly">Reporte Mensual (Mes actual)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Filtro de Pago</label>
-              <select id="report-payment-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
-                <option value="all" selected>Todos los registros</option>
-                <option value="pagado">Solo transacciones pagadas</option>
-                <option value="pendiente">Solo créditos acumulados (Pendientes)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Filtrar por Cliente</label>
-              <select id="report-customer-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
-                <option value="all" selected>Todos los clientes</option>
-                <!-- Dynamically loaded corporate customers -->
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Filtrar por Vendedor</label>
-              <select id="report-seller-select" onchange="filterAuditLogs()" class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
-                <option value="all" selected>Todos los vendedores</option>
-                <!-- Dynamically loaded system sellers -->
-              </select>
-            </div>
-            <div class="flex items-end">
-              <button onclick="compilePrintReport()" class="w-full bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-4 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-lg shadow-brand-500/10 cursor-pointer">
-                <i class="fa-solid fa-print"></i>
-                <span>Imprimir PDF</span>
-              </button>
-            </div>
-          </div>
+        <!-- Sub-pestañas de Reportes -->
+        <div class="border-b border-slate-800 flex gap-2 overflow-x-auto pb-1">
+          <button onclick="switchReportTab('ventas')" id="rep-tab-ventas" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-500 text-brand-500 transition">Ventas</button>
+          <button onclick="switchReportTab('productos')" id="rep-tab-productos" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">Productos</button>
+          <button onclick="switchReportTab('vendedores')" id="rep-tab-vendedores" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">Vendedores</button>
+          <button onclick="switchReportTab('eventos')" id="rep-tab-eventos" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">Eventos</button>
+          <button onclick="switchReportTab('clientes')" id="rep-tab-clientes" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">Clientes</button>
         </div>
 
-        <!-- Part 2: Audit Transaction History Logs -->
-        <div class="space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <!-- Sub-Sección: Ventas -->
+        <div id="rep-sect-ventas" class="report-tab-content space-y-4">
+          <!-- Filtros -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
             <div>
-              <h2 class="text-xl font-bold font-outfit text-white">Historial de Auditoría de Ventas (Filtrado en Pantalla)</h2>
-              <p class="text-slate-400 text-sm">Registro inmutable permanente de transacciones del POS.</p>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Rango de Fecha</label>
+              <select id="report-range-select" onchange="runVentasReport()" class="w-full bg-slate-950 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                <option value="all">Histórico Completo</option>
+                <option value="today" selected>Hoy</option>
+                <option value="weekly">Esta Semana (Últimos 7 días)</option>
+                <option value="monthly">Este Mes (Actual)</option>
+                <option value="custom">Rango Personalizado</option>
+              </select>
             </div>
-            <div class="flex items-center gap-2">
-              <button onclick="fetchReportsAndAudit()" class="text-slate-400 hover:text-white transition duration-150 p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs flex items-center gap-1 cursor-pointer">
-                <i class="fa-solid fa-rotate"></i>
-                <span>Refrescar</span>
-              </button>
+            <div id="rep-ventas-custom-dates" class="hidden md:col-span-2 grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Desde</label>
+                <input type="date" id="rep-ventas-from" onchange="runVentasReport()" class="w-full bg-slate-950 border border-slate-700 rounded-xl py-1.5 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Hasta</label>
+                <input type="date" id="rep-ventas-to" onchange="runVentasReport()" class="w-full bg-slate-950 border border-slate-700 rounded-xl py-1.5 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Filtro Estado Pago</label>
+              <select id="report-payment-select" onchange="runVentasReport()" class="w-full bg-slate-950 border border-slate-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-brand-500">
+                <option value="all" selected>Todos los estados</option>
+                <option value="pagado">Pagados de inmediato</option>
+                <option value="pendiente">Crédito Pendiente</option>
+              </select>
             </div>
           </div>
 
+          <!-- Tabla de Ventas -->
           <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse">
+              <table class="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
-                    <th class="py-4 px-6">ID Venta / Correlativo</th>
-                    <th class="py-4 px-6">Fecha / Hora</th>
+                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase border-b border-slate-800">
+                    <th class="py-4 px-6">ID Venta</th>
+                    <th class="py-4 px-6">Fecha/Hora</th>
                     <th class="py-4 px-6">Vendedor</th>
                     <th class="py-4 px-6">Cliente (Restaurante)</th>
                     <th class="py-4 px-6">Cerveza</th>
-                    <th class="py-4 px-6">Format</th>
+                    <th class="py-4 px-6">Formato</th>
                     <th class="py-4 px-6 text-center">Unidades</th>
-                    <th class="py-4 px-6 text-right">Monto</th>
-                    <th class="py-4 px-6 text-center">Estado de Pago</th>
+                    <th class="py-4 px-6 text-right">Subtotal</th>
+                    <th class="py-4 px-6 text-center">Estado</th>
+                    <th class="py-4 px-6 text-right no-print">Acciones</th>
                   </tr>
                 </thead>
-                <tbody id="audit-table-body" class="divide-y divide-slate-800/50 text-sm">
+                <tbody id="audit-table-body" class="divide-y divide-slate-800/50">
                   <tr>
-                    <td colspan="9" class="py-12 text-center text-slate-500">Cargando registros de auditoría...</td>
+                    <td colspan="10" class="py-12 text-center text-slate-500">Cargando transacciones...</td>
                   </tr>
                 </tbody>
               </table>
@@ -784,6 +844,318 @@
           </div>
         </div>
 
+        <!-- Sub-Sección: Productos -->
+        <div id="rep-sect-productos" class="report-tab-content hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Más vendidos -->
+            <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h3 class="text-lg font-bold text-white font-outfit flex items-center gap-2">
+                <i class="fa-solid fa-fire text-amber-500"></i>
+                <span>Estilos Más Vendidos (Rotación)</span>
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="text-slate-400 font-bold border-b border-slate-800">
+                      <th class="pb-2">Cerveza Estilo</th>
+                      <th class="pb-2 text-center">Botellas Vendidas</th>
+                      <th class="pb-2 text-right">Total Recaudado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rep-prod-best-tbody" class="divide-y divide-slate-800/50">
+                    <!-- populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <!-- Menos vendidos -->
+            <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h3 class="text-lg font-bold text-white font-outfit flex items-center gap-2">
+                <i class="fa-solid fa-snowflake text-blue-400"></i>
+                <span>Estilos Menos Vendidos / Stock</span>
+              </h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="text-slate-400 font-bold border-b border-slate-800">
+                      <th class="pb-2">Cerveza Estilo</th>
+                      <th class="pb-2 text-center">Botellas Vendidas</th>
+                      <th class="pb-2 text-right">Total Recaudado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rep-prod-worst-tbody" class="divide-y divide-slate-800/50">
+                    <!-- populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-Sección: Vendedores -->
+        <div id="rep-sect-vendedores" class="report-tab-content hidden space-y-6">
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-lg font-bold text-white font-outfit">Ventas y Rendimiento por Vendedor</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase border-b border-slate-800">
+                    <th class="py-3 px-4">Nombre de Vendedor</th>
+                    <th class="py-3 px-4 text-center">Transacciones POS</th>
+                    <th class="py-3 px-4 text-center">Botellas Vendidas</th>
+                    <th class="py-3 px-4 text-right">Total Recaudado</th>
+                  </tr>
+                </thead>
+                <tbody id="rep-vendedores-tbody" class="divide-y divide-slate-800/50">
+                  <!-- populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-Sección: Eventos -->
+        <div id="rep-sect-eventos" class="report-tab-content hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Ventas por Evento -->
+            <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h3 class="text-base font-bold text-white font-outfit">Ventas por Evento</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="text-slate-400 font-bold border-b border-slate-800">
+                      <th class="pb-2">Nombre Evento</th>
+                      <th class="pb-2 text-center">Transacciones</th>
+                      <th class="pb-2 text-right">Ganancia Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rep-event-sales-tbody" class="divide-y divide-slate-800/50">
+                    <!-- populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <!-- Ventas por Ciudad -->
+            <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h3 class="text-base font-bold text-white font-outfit">Ventas por Ciudad / Comuna</h3>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr class="text-slate-400 font-bold border-b border-slate-800">
+                      <th class="pb-2">Ciudad / Comuna</th>
+                      <th class="pb-2 text-center">Transacciones</th>
+                      <th class="pb-2 text-right">Monto Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rep-city-sales-tbody" class="divide-y divide-slate-800/50">
+                    <!-- populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-Sección: Clientes -->
+        <div id="rep-sect-clientes" class="report-tab-content hidden space-y-6">
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-lg font-bold text-white font-outfit">Ranking de Clientes (Restaurantes Mayoristas)</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase border-b border-slate-800">
+                    <th class="py-3 px-4">Restaurante / Cliente</th>
+                    <th class="py-3 px-4">RUT</th>
+                    <th class="py-3 px-4 text-center">Compras Registradas</th>
+                    <th class="py-3 px-4 text-center">Botellas Compradas</th>
+                    <th class="py-3 px-4 text-right">Total Facturado</th>
+                  </tr>
+                </thead>
+                <tbody id="rep-clientes-ranking-tbody" class="divide-y divide-slate-800/50">
+                  <!-- populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB: CONFIGURACIÓN (Solo Administradores) -->
+      <!-- ======================================================== -->
+      <section id="section-settings" class="tab-content hidden space-y-6 admin-only">
+        <div>
+          <h2 class="text-2xl font-bold font-outfit text-white">Configuración del Sistema</h2>
+          <p class="text-slate-400 text-sm mt-0.5">Parámetros globales, credenciales de WhatsApp, usuarios y respaldos.</p>
+        </div>
+
+        <!-- Config sub-tabs -->
+        <div class="border-b border-slate-800 flex gap-2 overflow-x-auto pb-1">
+          <button onclick="switchSettingsTab('empresa')" id="settings-tab-empresa" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-500 text-brand-500 transition">Empresa</button>
+          <button onclick="switchSettingsTab('parametros')" id="settings-tab-parametros" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">Parámetros</button>
+          <button onclick="switchSettingsTab('whatsapp')" id="settings-tab-whatsapp" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">WhatsApp</button>
+          <button onclick="switchSettingsTab('usuarios')" id="settings-tab-usuarios" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">Usuarios</button>
+          <button onclick="switchSettingsTab('db')" id="settings-tab-db" class="px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition">Base de Datos</button>
+        </div>
+
+        <!-- Subtab contents -->
+        <!-- 1. Empresa -->
+        <div id="settings-sect-empresa" class="settings-tab-content space-y-4">
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-lg font-bold text-white font-outfit">Datos de la Empresa</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre Comercial</label>
+                <input type="text" id="set-company-name" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">RUT Empresa</label>
+                <input type="text" id="set-company-rut" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Dirección Fiscal</label>
+                <input type="text" id="set-company-address" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Teléfono Corporativo</label>
+                <input type="text" id="set-company-phone" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Email de Contacto</label>
+                <input type="email" id="set-company-email" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500 text-sm">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">URL del Logo (Opcional)</label>
+                <input type="text" id="set-company-logo" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 focus:outline-none focus:border-brand-500 text-sm">
+              </div>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button onclick="saveCompanySettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Guardar Datos de Empresa</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Parámetros -->
+        <div id="settings-sect-parametros" class="settings-tab-content hidden space-y-4">
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-lg font-bold text-white font-outfit">Parámetros Generales de Venta</h3>
+            <div>
+              <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Botellas por Caja Mayorista</label>
+              <input type="number" id="set-wholesale-units" min="1" class="max-w-xs w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2.5 px-3 focus:outline-none focus:border-brand-500 text-sm" value="23">
+              <span class="text-[11px] text-slate-500 mt-2 block">Define cuántas botellas contiene una caja vendida al canal mayorista. Este valor se utilizará para los cálculos de stock.</span>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button onclick="saveParamSettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Guardar Parámetros</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. WhatsApp -->
+        <div id="settings-sect-whatsapp" class="settings-tab-content hidden space-y-4">
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 class="text-lg font-bold text-white font-outfit">Meta Cloud API (WhatsApp Business)</h3>
+              <div id="wa-connection-status">
+                <span class="px-2 py-1 rounded bg-red-500/10 text-red-500 font-bold text-xs">🔴 No configurado</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Número Oficial Remitente</label>
+                <input type="text" id="set-whatsapp-sender" placeholder="Ej: 56912345678" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+                <span class="text-[9px] text-slate-500 mt-1 block">Número remitente registrado en WhatsApp.</span>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Phone Number ID</label>
+                <input type="text" id="set-whatsapp-phone-id" placeholder="Phone Number ID" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+                <span class="text-[9px] text-slate-500 mt-1 block">Identificador de número de teléfono.</span>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Meta API Cloud Token</label>
+                <input type="password" id="set-whatsapp-token" placeholder="Token de acceso permanente" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+                <span class="text-[9px] text-slate-500 mt-1 block">Token permanente de Meta Developer.</span>
+              </div>
+            </div>
+            <div class="flex justify-end pt-2">
+              <button onclick="saveWhatsAppSettings()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span>Guardar Credenciales</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Usuarios -->
+        <div id="settings-sect-usuarios" class="settings-tab-content hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-white font-outfit">Control de Accesos (Usuarios del Sistema)</h3>
+            <button onclick="openUserModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-4 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Crear Usuario</span>
+            </button>
+          </div>
+          
+          <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                    <th class="py-4 px-6">Nombre Completo</th>
+                    <th class="py-4 px-6">Nombre de Usuario</th>
+                    <th class="py-4 px-6">Rol de Usuario</th>
+                    <th class="py-4 px-6 text-center">Estado</th>
+                    <th class="py-4 px-6 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body" class="divide-y divide-slate-800/50">
+                  <tr>
+                    <td colspan="5" class="py-8 text-center text-slate-500">Cargando usuarios...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Base de Datos -->
+        <div id="settings-sect-db" class="settings-tab-content hidden space-y-4">
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-6">
+            <h3 class="text-lg font-bold text-white font-outfit border-b border-slate-800 pb-3">Estado de la Base de Datos</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+              <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl">
+                <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Enlace Turso Cloud</div>
+                <div id="db-turso-connection" class="text-lg font-bold text-white flex items-center gap-1.5 mt-2">
+                  <span>Cargando...</span>
+                </div>
+              </div>
+              <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl">
+                <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Última Sincronización</div>
+                <div id="db-last-sync" class="text-base font-medium text-slate-200 mt-2">--</div>
+              </div>
+              <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-xl">
+                <div class="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-1">Fecha Último Respaldo</div>
+                <div id="db-last-backup" class="text-base font-medium text-slate-200 mt-2">Cargando...</div>
+              </div>
+            </div>
+
+            <div class="flex gap-3 border-t border-slate-800 pt-5">
+              <button onclick="createDatabaseBackup()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Crear Respaldo</span>
+              </button>
+              <button onclick="restoreDatabaseBackup()" class="bg-red-500/10 hover:bg-red-500 hover:text-slate-950 text-red-400 border border-red-500/20 px-5 py-2.5 rounded-xl text-xs transition flex items-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+                <span>Restaurar Respaldo</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
     </main>
@@ -1058,6 +1430,89 @@
       </div>
     </div>
   </div>
+  <div id="modal-event" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeEventModal()"></div>
+    <div class="glassmorphism w-full max-w-md p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
+      <h3 id="modal-event-title" class="text-xl font-bold font-outfit text-white">Nuevo Evento</h3>
+      <form id="form-event" onsubmit="handleSaveEvent(event)" class="space-y-4">
+        <input type="hidden" id="event-id-field">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre del Evento</label>
+          <input type="text" id="event-name-field" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Ciudad / Comuna</label>
+          <input type="text" id="event-city-field" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Fecha Inicio</label>
+            <input type="date" id="event-start-date-field" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Fecha Término</label>
+            <input type="date" id="event-end-date-field" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Estado</label>
+          <select id="event-status-field" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+            <option value="activo">Activo</option>
+            <option value="finalizado">Finalizado</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeEventModal()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-5 rounded-xl text-xs transition cursor-pointer">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-user" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeUserModal()"></div>
+    <div class="glassmorphism w-full max-w-md p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
+      <h3 id="modal-user-title" class="text-xl font-bold font-outfit text-white">Ficha de Usuario</h3>
+      <form id="form-user-modal" onsubmit="handleSaveUserModal(event)" class="space-y-4">
+        <input type="hidden" id="modal-user-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre Completo</label>
+          <input type="text" id="modal-user-name" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nombre de Usuario</label>
+          <input type="text" id="modal-user-username" required class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Teléfono</label>
+          <input type="text" id="modal-user-phone" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500" placeholder="Ej: +56912345678">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Contraseña</label>
+          <input type="password" id="modal-user-password" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500" placeholder="Mínimo 6 carac. (Vacío para mantener)">
+        </div>
+        <div id="modal-user-role-container">
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Rol / Permisos</label>
+          <select id="modal-user-role" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+            <option value="vendedor">Vendedor</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Estado</label>
+          <select id="modal-user-status" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-sm focus:outline-none focus:border-brand-500">
+            <option value="active">Activo</option>
+            <option value="inactive">Desactivado</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeUserModal()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded-xl text-xs transition cursor-pointer">Cancelar</button>
+          <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-5 rounded-xl text-xs transition cursor-pointer">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
 
   <!-- ======================================================== -->
@@ -1072,12 +1527,16 @@
     let beerCatalog = [];
     let customerList = [];
     let systemUsersList = [];
+    let eventsList = [];
     let rawAuditLogs = [];
     let shoppingCart = [];
     let wholesaleUnitsCount = 23;
+    let companySettings = {};
     
     let selectedCustomer = null;
     let posSaleType = 'public';
+    let activeReportTab = 'ventas';
+    let activeSettingsTab = 'empresa';
 
     // Toast alerts
     function showToast(message, type = 'success') {
@@ -1182,6 +1641,7 @@
     }
 
     // --- APPLICATION BOOTSTRAP ---
+    // --- APPLICATION BOOTSTRAP ---
     function initApp() {
       if (!token) {
         document.getElementById('view-login').classList.remove('hidden');
@@ -1195,63 +1655,94 @@
       document.getElementById('user-name').innerText = user.name;
       document.getElementById('user-role-badge').innerText = user.role;
 
-      if (user.role === 'admin') {
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-      } else {
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-      }
+      // Renderizar controles de navegación por rol (vendedor, supervisor, admin)
+      const isSeller = user.role === 'vendedor';
+      const isSupervisor = user.role === 'supervisor';
+      const isAdmin = user.role === 'admin';
 
-      const now = new Date();
-      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      document.getElementById('report-seller-month').value = currentMonthStr;
+      document.querySelectorAll('.admin-only').forEach(el => {
+        if (isAdmin) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
 
+      document.querySelectorAll('.supervisor-admin-only').forEach(el => {
+        if (isAdmin || isSupervisor) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
+
+      // Cargar configuraciones básicas e inicializar en Dashboard
       fetchGlobalSettings();
-      loadPOSCustomersDropdown();
-      
-      setSaleType('public');
-      switchTab('pos');
+      switchTab('dashboard');
     }
 
     // --- TAB SWITCHER ---
     function switchTab(tabId) {
-      // Sellers are blocked only from users (Vendedores) and reports (Reportes). They CAN access inventory (Catálogo) now
-      const adminTabs = ['users', 'reports'];
-      if (adminTabs.includes(tabId) && (!user || user.role !== 'admin')) {
-        showToast('Acceso Denegado: Esta sección es exclusiva para Administradores.', 'error');
-        switchTab('pos');
+      if (!user) return;
+
+      // Restricción estricta de Roles (RBAC)
+      if (tabId === 'settings' && user.role !== 'admin') {
+        showToast('Acceso Denegado: Configuración es exclusivo para Administradores.', 'error');
+        switchTab('dashboard');
         return;
       }
 
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`section-${tabId}`).classList.remove('hidden');
+      const supervisorRestricted = ['settings'];
+      const vendedorRestricted = ['customers', 'events', 'sellers', 'reports', 'settings'];
 
-      const tabs = ['pos', 'inventory', 'customers', 'users', 'reports'];
+      if (user.role === 'vendedor' && vendedorRestricted.includes(tabId)) {
+        showToast('Acceso Denegado: Su rol de Vendedor no tiene acceso a esta sección.', 'error');
+        switchTab('dashboard');
+        return;
+      }
+
+      if (user.role === 'supervisor' && supervisorRestricted.includes(tabId)) {
+        showToast('Acceso Denegado: Su rol de Supervisor no tiene acceso a esta sección.', 'error');
+        switchTab('dashboard');
+        return;
+      }
+
+      // Ocultar todas las secciones y mostrar la seleccionada
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      const activeSect = document.getElementById(`section-${tabId}`);
+      if (activeSect) activeSect.classList.remove('hidden');
+
+      // Actualizar estilos activos de los botones del menú superior y móvil
+      const tabs = ['dashboard', 'pos', 'inventory', 'customers', 'events', 'sellers', 'reports', 'settings'];
       tabs.forEach(t => {
         const tabEl = document.getElementById(`tab-${t}`);
         const tabMobileEl = document.getElementById(`tab-${t}-mobile`);
         
         if (t === tabId) {
           if (tabEl) tabEl.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-brand-500 text-slate-950 transition duration-150 flex items-center gap-2";
-          if (tabMobileEl) tabMobileEl.className = "p-2 text-xs flex flex-col items-center gap-1 text-brand-500 font-bold";
+          if (tabMobileEl) tabMobileEl.className = "p-2 text-xs flex flex-col items-center gap-1 text-brand-500 font-bold shrink-0";
         } else {
           if (tabEl) tabEl.className = "px-4 py-2 text-sm font-medium rounded-lg hover:bg-slate-800 text-slate-300 transition duration-150 flex items-center gap-2";
-          if (tabMobileEl) tabMobileEl.className = "p-2 text-xs flex flex-col items-center gap-1 text-slate-400";
+          if (tabMobileEl) tabMobileEl.className = "p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0";
         }
       });
 
-      if (tabId === 'pos') {
+      // Carga bajo demanda de datos del módulo activo
+      if (tabId === 'dashboard') {
+        fetchDashboardMetrics();
+      } else if (tabId === 'pos') {
         fetchPOSInventory();
         loadPOSCustomersDropdown();
+        loadPOSEventsDropdown();
+        setSaleType('public');
       } else if (tabId === 'inventory') {
         fetchInventoryTable();
       } else if (tabId === 'customers') {
         fetchCustomers();
-      } else if (tabId === 'users') {
-        fetchUsersTable();
+      } else if (tabId === 'events') {
+        fetchEvents();
+      } else if (tabId === 'sellers') {
+        fetchSellersTable();
       } else if (tabId === 'reports') {
-        fetchReportsAndAudit();
-        fetchCustomersListForReports();
-        loadSellersDropdownForReports();
+        activeReportTab = 'ventas';
+        switchReportTab('ventas');
+      } else if (tabId === 'settings') {
+        activeSettingsTab = 'empresa';
+        switchSettingsTab('empresa');
       }
     }
 
@@ -1261,35 +1752,31 @@
         const data = await apiFetch('/api/inventory/settings');
         wholesaleUnitsCount = data.wholesale_units;
         document.getElementById('pos-wholesale-units-badge').innerText = wholesaleUnitsCount;
-        document.getElementById('setting-wholesale-units').value = wholesaleUnitsCount;
-        document.getElementById('setting-whatsapp-sender').value = data.whatsapp_sender_number || '';
-        document.getElementById('setting-whatsapp-token').value = data.whatsapp_token || '';
-        document.getElementById('setting-whatsapp-phone-id').value = data.whatsapp_phone_number_id || '';
+        
+        // Cargar inputs de Configuración
+        document.getElementById('set-wholesale-units').value = wholesaleUnitsCount;
+        document.getElementById('set-whatsapp-sender').value = data.whatsapp_sender_number || '';
+        document.getElementById('set-whatsapp-token').value = data.whatsapp_token || '';
+        document.getElementById('set-whatsapp-phone-id').value = data.whatsapp_phone_number_id || '';
+
+        // Indicador de estado de WhatsApp
+        const waStatusEl = document.getElementById('wa-connection-status');
+        if (data.whatsapp_token && data.whatsapp_sender_number) {
+          waStatusEl.innerHTML = '<span class="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 font-bold text-xs">🟢 Conectado</span>';
+        } else {
+          waStatusEl.innerHTML = '<span class="px-2 py-1 rounded bg-red-500/10 text-red-500 font-bold text-xs">🔴 No configurado</span>';
+        }
+
+        // Cargar datos de Empresa
+        document.getElementById('set-company-name').value = data.company_name || '';
+        document.getElementById('set-company-rut').value = data.company_rut || '';
+        document.getElementById('set-company-address').value = data.company_address || '';
+        document.getElementById('set-company-phone').value = data.company_phone || '';
+        document.getElementById('set-company-email').value = data.company_email || '';
+        document.getElementById('set-company-logo').value = data.company_logo || '';
+
       } catch (err) {
         console.error(err);
-      }
-    }
-
-    async function saveGlobalSettings() {
-      const val = parseInt(document.getElementById('setting-wholesale-units').value, 10);
-      const senderNum = document.getElementById('setting-whatsapp-sender').value.trim();
-      const tokenVal = document.getElementById('setting-whatsapp-token').value.trim();
-      const phoneIdVal = document.getElementById('setting-whatsapp-phone-id').value.trim();
-
-      try {
-        await apiFetch('/api/inventory/settings', {
-          method: 'PUT',
-          body: JSON.stringify({ 
-            wholesale_units: val,
-            whatsapp_sender_number: senderNum,
-            whatsapp_token: tokenVal,
-            whatsapp_phone_number_id: phoneIdVal
-          })
-        });
-        showToast('Configuraciones globales actualizadas correctamente', 'success');
-        fetchGlobalSettings();
-      } catch (err) {
-        showToast(err.message, 'error');
       }
     }
 
@@ -1737,11 +2224,16 @@
       checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Procesando...';
 
       const paymentStatus = document.getElementById('pos-payment-status').value;
+      const eventSelect = document.getElementById('pos-event-select');
+      const eventIdVal = eventSelect.value ? parseInt(eventSelect.value, 10) : undefined;
+      const eventNameVal = eventSelect.value ? eventSelect.options[eventSelect.selectedIndex].text.split(' (')[0] : undefined;
 
       const checkoutPayload = {
         customerId: (posSaleType === 'restaurant' && selectedCustomer) ? selectedCustomer.id : undefined,
         customerPhone: document.getElementById('pos-customer-phone').value.trim() || undefined,
         paymentStatus: paymentStatus,
+        eventId: eventIdVal,
+        eventName: eventNameVal,
         items: shoppingCart.map(item => ({
           format: item.format,
           quantity: item.quantity,
@@ -1934,7 +2426,7 @@
     // --- CUSTOMERS MANAGEMENT ---
     async function fetchCustomers(searchQuery = '') {
       const tbody = document.getElementById('customers-table-body');
-      tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">Cargando directorio de restaurantes...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-slate-500">Cargando directorio de restaurantes...</td></tr>';
 
       try {
         const queryParam = searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : '';
@@ -1942,7 +2434,7 @@
         tbody.innerHTML = '';
 
         if (customerList.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">No se encontraron restaurantes registrados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-slate-500">No se encontraron restaurantes registrados.</td></tr>';
           return;
         }
 
@@ -1958,9 +2450,17 @@
           ` : '';
 
           row.innerHTML = `
-            <td class="py-4 px-6 font-semibold text-white">${cust.businessName}</td>
+            <td class="py-4 px-6">
+              <div class="font-semibold text-white">${cust.businessName}</div>
+              <div class="text-xs text-slate-400">${cust.contactName || '--'}</div>
+            </td>
             <td class="py-4 px-6 font-mono text-slate-300">${cust.fiscalId}</td>
             <td class="py-4 px-6 text-slate-400">${cust.phone || '-'}</td>
+            <td class="py-4 px-6 text-slate-400 text-xs truncate max-w-[150px]" title="${cust.address || ''}">${cust.address || '-'}</td>
+            <td class="py-4 px-6 text-center text-slate-300 text-xs">
+              <div>IVA: ${cust.ivaPercent}%</div>
+              <div>ILA: ${cust.ilaPercent}%</div>
+            </td>
             <td class="py-4 px-6 text-right">
               <div class="flex justify-end gap-2">
                 <button onclick="editCustomer('${cust.id}')" class="p-2 rounded bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer" title="Editar Ficha">
@@ -1980,16 +2480,22 @@
     function resetCustomerForm() {
       document.getElementById('form-customer').reset();
       document.getElementById('customer-id').value = '';
+      document.getElementById('form-customer-title').innerText = 'Nuevo Restaurante';
     }
 
     function editCustomer(id) {
       const cust = customerList.find(c => c.id === id);
       if (!cust) return;
 
+      document.getElementById('form-customer-title').innerText = 'Modificar Restaurante';
       document.getElementById('customer-id').value = cust.id;
       document.getElementById('customer-name').value = cust.businessName;
+      document.getElementById('customer-contact').value = cust.contactName || '';
       document.getElementById('customer-rut').value = cust.fiscalId;
-      document.getElementById('customer-phone').value = cust.phone;
+      document.getElementById('customer-phone').value = cust.phone || '';
+      document.getElementById('customer-address').value = cust.address || '';
+      document.getElementById('customer-iva').value = cust.ivaPercent !== undefined ? cust.ivaPercent : 19.0;
+      document.getElementById('customer-ila').value = cust.ilaPercent !== undefined ? cust.ilaPercent : 0.0;
     }
 
     async function deleteCustomer(id) {
@@ -2007,11 +2513,15 @@
     async function handleSaveCustomer(e) {
       e.preventDefault();
       const id = document.getElementById('customer-id').value;
-      const businessName = document.getElementById('customer-name').value;
-      const fiscalId = document.getElementById('customer-rut').value;
-      const phone = document.getElementById('customer-phone').value;
+      const businessName = document.getElementById('customer-name').value.trim();
+      const contactName = document.getElementById('customer-contact').value.trim();
+      const fiscalId = document.getElementById('customer-rut').value.trim();
+      const phone = document.getElementById('customer-phone').value.trim();
+      const address = document.getElementById('customer-address').value.trim();
+      const ivaPercent = parseFloat(document.getElementById('customer-iva').value);
+      const ilaPercent = parseFloat(document.getElementById('customer-ila').value);
 
-      const payload = { businessName, fiscalId, phone };
+      const payload = { businessName, contactName, fiscalId, phone, address, ivaPercent, ilaPercent };
 
       try {
         if (id) {
@@ -2029,119 +2539,6 @@
         }
         resetCustomerForm();
         fetchCustomers();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    // --- STAFF / USERS MANAGEMENT (Admin Only) ---
-    async function fetchUsersTable() {
-      const tbody = document.getElementById('users-table-body');
-      tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">Cargando personal...</td></tr>';
-
-      try {
-        systemUsersList = await apiFetch('/api/auth/users');
-        tbody.innerHTML = '';
-
-        if (systemUsersList.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="4" class="py-12 text-center text-slate-500">No hay personal registrado.</td></tr>';
-          return;
-        }
-
-        systemUsersList.forEach(u => {
-          const row = document.createElement('tr');
-          row.className = 'hover:bg-slate-900/40 transition duration-150';
-          row.innerHTML = `
-            <td class="py-4 px-6 font-semibold text-white">${u.name}</td>
-            <td class="py-4 px-6 font-mono text-slate-300">${u.username}</td>
-            <td class="py-4 px-6 text-slate-400 capitalize">
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold ${u.role === 'admin' ? 'bg-brand-500/10 text-brand-500 border border-brand-500/20' : 'bg-slate-800 text-slate-300 border border-slate-700'}">
-                ${u.role}
-              </span>
-            </td>
-            <td class="py-4 px-6 text-right">
-              <div class="flex justify-end gap-2">
-                <button onclick="editUser('${u.id}')" class="p-2 rounded bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer">
-                  <i class="fa-solid fa-pen text-xs"></i>
-                </button>
-                <button onclick="deleteUser('${u.id}')" class="p-2 rounded bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition cursor-pointer">
-                  <i class="fa-solid fa-trash-can text-xs"></i>
-                </button>
-              </div>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    function resetUserForm() {
-      document.getElementById('form-user').reset();
-      document.getElementById('user-id-field').value = '';
-      document.getElementById('form-user-title').innerText = 'Nuevo Vendedor / Administrador';
-      document.getElementById('user-password').required = true;
-    }
-
-    function editUser(id) {
-      const u = systemUsersList.find(x => x.id === id);
-      if (!u) return;
-
-      document.getElementById('user-id-field').value = u.id;
-      document.getElementById('user-fullname').value = u.name;
-      document.getElementById('user-username').value = u.username;
-      document.getElementById('user-role').value = u.role;
-      document.getElementById('user-password').value = '';
-      
-      document.getElementById('user-password').required = false;
-      document.getElementById('form-user-title').innerText = 'Modificar Ficha de Personal';
-    }
-
-    async function handleSaveUser(e) {
-      e.preventDefault();
-      const id = document.getElementById('user-id-field').value;
-      const name = document.getElementById('user-fullname').value;
-      const username = document.getElementById('user-username').value;
-      const password = document.getElementById('user-password').value;
-      const role = document.getElementById('user-role').value;
-
-      try {
-        if (id) {
-          await apiFetch(`/api/auth/users/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify({ name, username, password: password || undefined, role })
-          });
-          showToast('Ficha de personal modificada correctamente', 'success');
-        } else {
-          if (!password || password.length < 6) {
-            showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
-            return;
-          }
-          await apiFetch('/api/auth/register', {
-            method: 'POST',
-            body: JSON.stringify({ name, username, password, role })
-          });
-          showToast('Nuevo personal registrado correctamente', 'success');
-        }
-        resetUserForm();
-        fetchUsersTable();
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    async function deleteUser(id) {
-      if (id === user.id) {
-        showToast('No puedes eliminarte a ti mismo del sistema', 'error');
-        return;
-      }
-      if (!confirm('¿Estás seguro de eliminar esta cuenta de personal del sistema?')) return;
-
-      try {
-        await apiFetch(`/api/auth/users/${id}`, { method: 'DELETE' });
-        showToast('Ficha de personal eliminada');
-        fetchUsersTable();
       } catch (err) {
         showToast(err.message, 'error');
       }
@@ -2212,17 +2609,44 @@
     }
 
     async function fetchReportsAndAudit() {
-      await fetchSellersPerformance();
-
-      const auditTbody = document.getElementById('audit-table-body');
-      auditTbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-500">Cargando bitácora de auditoría...</td></tr>';
-
       try {
         rawAuditLogs = await apiFetch('/api/sales/history');
-        filterAuditLogs();
+        runVentasReport();
       } catch (err) {
         showToast(err.message, 'error');
-        auditTbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-red-500">Error al cargar bitácora.</td></tr>';
+      }
+    }
+
+    function switchReportTab(tabId) {
+      activeReportTab = tabId;
+      document.querySelectorAll('.report-tab-content').forEach(el => el.classList.add('hidden'));
+      const activeSect = document.getElementById(`rep-sect-${tabId}`);
+      if (activeSect) activeSect.classList.remove('hidden');
+
+      // Actualizar estilos de pestañas de reporte
+      const tabs = ['ventas', 'productos', 'vendedores', 'eventos', 'clientes'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`rep-tab-${t}`);
+        if (btn) {
+          if (t === tabId) {
+            btn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-500 text-brand-500 transition";
+          } else {
+            btn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition";
+          }
+        }
+      });
+
+      // Ejecutar cálculos del reporte seleccionado
+      if (tabId === 'ventas') {
+        runVentasReport();
+      } else if (tabId === 'productos') {
+        runProductosReport();
+      } else if (tabId === 'vendedores') {
+        runVendedoresReport();
+      } else if (tabId === 'eventos') {
+        runEventosReport();
+      } else if (tabId === 'clientes') {
+        runClientesReport();
       }
     }
 
@@ -2266,17 +2690,25 @@
       }
     }
 
-    function filterAuditLogs() {
+    function runVentasReport() {
       const range = document.getElementById('report-range-select').value;
       const paymentFilter = document.getElementById('report-payment-select').value;
-      const customerFilter = document.getElementById('report-customer-select').value;
-      const sellerFilter = document.getElementById('report-seller-select').value;
+      
+      const customDatesEl = document.getElementById('rep-ventas-custom-dates');
+      if (range === 'custom') {
+        customDatesEl.classList.remove('hidden');
+        customDatesEl.classList.add('grid');
+      } else {
+        customDatesEl.classList.remove('grid');
+        customDatesEl.classList.add('hidden');
+      }
 
       const tbody = document.getElementById('audit-table-body');
       tbody.innerHTML = '';
 
       const now = new Date();
       let startDateLimit = new Date(0);
+      let endDateLimit = new Date(2100, 0, 1);
 
       if (range === 'today') {
         startDateLimit = new Date();
@@ -2286,23 +2718,30 @@
         startDateLimit.setDate(now.getDate() - 7);
       } else if (range === 'monthly') {
         startDateLimit = new Date(now.getFullYear(), now.getMonth(), 1);
+      } else if (range === 'custom') {
+        const fromVal = document.getElementById('rep-ventas-from').value;
+        const toVal = document.getElementById('rep-ventas-to').value;
+        if (fromVal) {
+          startDateLimit = new Date(fromVal);
+          startDateLimit.setHours(0,0,0,0);
+        }
+        if (toVal) {
+          endDateLimit = new Date(toVal);
+          endDateLimit.setHours(23,59,59,999);
+        }
       }
 
       const filteredRaw = rawAuditLogs.filter(log => {
         const transDate = new Date(log.transactionDate);
-        if (transDate < startDateLimit) return false;
-        
+        if (transDate < startDateLimit || transDate > endDateLimit) return false;
         if (paymentFilter !== 'all' && log.paymentStatus !== paymentFilter) return false;
-        if (customerFilter !== 'all' && log.customerId !== customerFilter) return false;
-        if (sellerFilter !== 'all' && log.sellerId !== sellerFilter) return false;
-
         return true;
       });
 
       const filtered = groupSalesLogs(filteredRaw);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-500">No se encontraron ventas para los filtros seleccionados.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10" class="py-12 text-center text-slate-500">No se encontraron ventas para los filtros seleccionados.</td></tr>';
         return;
       }
 
@@ -2376,8 +2815,8 @@
           </td>
           <td class="py-4 px-6 text-slate-300">${formatNames[log.formatSold] || log.formatSold}</td>
           <td class="py-4 px-6 text-center font-bold text-slate-200">${log.unitsSold} u.</td>
-          <td class="py-4 px-6 text-right font-bold text-brand-500 font-mono text-sm">$${Number(log.totalAmount).toFixed(2)}</td>
-          <td class="py-4 px-6 text-center">
+          <td class="py-4 px-6 text-right font-bold text-brand-500 font-mono text-sm">$${Number(log.totalAmount).toLocaleString('es-CL')}</td>
+          <td class="py-4 px-6 text-center font-semibold">
             <div class="flex items-center justify-center">
               ${statusBadge}
               ${actionButton}
@@ -2399,7 +2838,7 @@
         `).join('');
 
         detailsRow.innerHTML = `
-          <td colspan="9" class="py-3 px-12">
+          <td colspan="10" class="py-3 px-12">
             <div class="border-l-2 border-brand-500 pl-4 py-1">
               <div class="text-slate-500 font-semibold uppercase tracking-wider text-[9px] mb-2">Composición del formato (${formatNames[log.formatSold] || log.formatSold}):</div>
               ${detailsListHtml}
@@ -2410,6 +2849,170 @@
         tbody.appendChild(row);
         tbody.appendChild(detailsRow);
       });
+    }
+
+    function runProductosReport() {
+      const counts = {};
+      rawAuditLogs.forEach(log => {
+        const style = log.beerStyleName || 'Desconocido';
+        const qty = log.unitsSold || 0;
+        const revenue = log.totalAmount || 0;
+        
+        if (!counts[style]) {
+          counts[style] = { name: style, bottles: 0, revenue: 0 };
+        }
+        counts[style].bottles += qty;
+        counts[style].revenue += revenue;
+      });
+
+      const list = Object.values(counts);
+      
+      const best = [...list].sort((a, b) => b.bottles - a.bottles);
+      const bestTbody = document.getElementById('rep-prod-best-tbody');
+      bestTbody.innerHTML = best.map(p => `
+        <tr class="border-b border-slate-800/30 text-xs">
+          <td class="py-3 px-2 font-medium text-white">${p.name}</td>
+          <td class="py-3 px-2 text-center text-slate-300">${p.bottles} u.</td>
+          <td class="py-3 px-2 text-right font-semibold text-brand-500">$${Number(p.revenue).toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="3" class="py-6 text-center text-slate-500">Sin datos</td></tr>';
+
+      const worst = [...list].sort((a, b) => a.bottles - b.bottles);
+      const worstTbody = document.getElementById('rep-prod-worst-tbody');
+      worstTbody.innerHTML = worst.map(p => `
+        <tr class="border-b border-slate-800/30 text-xs">
+          <td class="py-3 px-2 font-medium text-white">${p.name}</td>
+          <td class="py-3 px-2 text-center text-slate-300">${p.bottles} u.</td>
+          <td class="py-3 px-2 text-right font-semibold text-brand-500">$${Number(p.revenue).toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="3" class="py-6 text-center text-slate-500">Sin datos</td></tr>';
+    }
+
+    function runVendedoresReport() {
+      const sellers = {};
+      rawAuditLogs.forEach(log => {
+        const sName = log.sellerName || 'Desconocido';
+        const qty = log.unitsSold || 0;
+        const revenue = log.totalAmount || 0;
+        
+        if (!sellers[sName]) {
+          sellers[sName] = { name: sName, txs: 0, bottles: 0, revenue: 0 };
+        }
+        sellers[sName].txs += 1;
+        sellers[sName].bottles += qty;
+        sellers[sName].revenue += revenue;
+      });
+
+      const list = Object.values(sellers).sort((a, b) => b.revenue - a.revenue);
+      const tbody = document.getElementById('rep-vendedores-tbody');
+      tbody.innerHTML = list.map(v => `
+        <tr class="border-b border-slate-800/30 hover:bg-slate-900/30 text-xs">
+          <td class="py-3.5 px-4 font-semibold text-white">${v.name}</td>
+          <td class="py-3.5 px-4 text-center text-slate-300 font-bold">${v.txs}</td>
+          <td class="py-3.5 px-4 text-center text-slate-300">${v.bottles} u.</td>
+          <td class="py-3.5 px-4 text-right text-brand-500 font-bold font-mono">$${Number(v.revenue).toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="4" class="py-6 text-center text-slate-500">Sin datos de vendedores.</td></tr>';
+    }
+
+    function runEventosReport() {
+      const eventsObj = {};
+      const citiesObj = {};
+
+      rawAuditLogs.forEach(log => {
+        const eName = log.eventName || 'Venta General';
+        const qty = log.unitsSold || 0;
+        const revenue = log.totalAmount || 0;
+
+        if (!eventsObj[eName]) {
+          eventsObj[eName] = { name: eName, txs: 0, revenue: 0 };
+        }
+        eventsObj[eName].txs += 1;
+        eventsObj[eName].revenue += revenue;
+
+        let city = 'Ventas Locales';
+        const matched = eventsList.find(e => e.name === log.eventName);
+        if (matched) {
+          city = matched.city;
+        }
+
+        if (!citiesObj[city]) {
+          citiesObj[city] = { name: city, txs: 0, revenue: 0 };
+        }
+        citiesObj[city].txs += 1;
+        citiesObj[city].revenue += revenue;
+      });
+
+      const evList = Object.values(eventsObj).sort((a, b) => b.revenue - a.revenue);
+      const evTbody = document.getElementById('rep-event-sales-tbody');
+      evTbody.innerHTML = evList.map(e => `
+        <tr class="border-b border-slate-800/30 text-xs">
+          <td class="py-3 px-2 font-medium text-white">${e.name}</td>
+          <td class="py-3 px-2 text-center text-slate-300">${e.txs}</td>
+          <td class="py-3 px-2 text-right font-bold text-brand-500 font-mono">$${Number(e.revenue).toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="3" class="py-6 text-center text-slate-500">Sin datos</td></tr>';
+
+      const cityList = Object.values(citiesObj).sort((a, b) => b.revenue - a.revenue);
+      const cityTbody = document.getElementById('rep-city-sales-tbody');
+      cityTbody.innerHTML = cityList.map(c => `
+        <tr class="border-b border-slate-800/30 text-xs">
+          <td class="py-3 px-2 font-medium text-white">${c.name}</td>
+          <td class="py-3 px-2 text-center text-slate-300">${c.txs}</td>
+          <td class="py-3 px-2 text-right font-bold text-brand-500 font-mono">$${Number(c.revenue).toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="3" class="py-6 text-center text-slate-500">Sin datos</td></tr>';
+    }
+
+    function runClientesReport() {
+      const customers = {};
+      rawAuditLogs.forEach(log => {
+        const cName = log.customerName || 'Público General';
+        const rut = log.customerRut || '--';
+        const qty = log.unitsSold || 0;
+        const revenue = log.totalAmount || 0;
+
+        if (!customers[cName]) {
+          customers[cName] = { name: cName, rut: rut, txs: 0, bottles: 0, revenue: 0 };
+        }
+        customers[cName].txs += 1;
+        customers[cName].bottles += qty;
+        customers[cName].revenue += revenue;
+      });
+
+      const list = Object.values(customers).sort((a, b) => b.revenue - a.revenue);
+      const tbody = document.getElementById('rep-clientes-ranking-tbody');
+      tbody.innerHTML = list.map(c => `
+        <tr class="border-b border-slate-800/30 hover:bg-slate-900/30 text-xs">
+          <td class="py-3.5 px-4 font-semibold text-white">${c.name}</td>
+          <td class="py-3.5 px-4 text-slate-400 font-mono">${c.rut}</td>
+          <td class="py-3.5 px-4 text-center text-slate-300 font-bold">${c.txs}</td>
+          <td class="py-3.5 px-4 text-center text-slate-300">${c.bottles} u.</td>
+          <td class="py-3.5 px-4 text-right text-brand-500 font-bold font-mono">$${Number(c.revenue).toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" class="py-6 text-center text-slate-500">Sin datos de clientes.</td></tr>';
+    }
+
+    function exportReportsToCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "ID Venta,Fecha,Vendedor,Cliente,Cerveza Estilo,Unidades,Subtotal,Estado de Pago\r\n";
+      
+      rawAuditLogs.forEach(log => {
+        const date = new Date(log.transactionDate).toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        const cName = (log.customerName || 'Público General').replace(/,/g, ' ');
+        const sName = (log.sellerName || 'Desconocido').replace(/,/g, ' ');
+        const beerName = (log.beerStyleName || '').replace(/,/g, ' ');
+        
+        csvContent += `"${log.correlationId}","${date}","${sName}","${cName}","${beerName}",${log.unitsSold},${log.totalAmount},"${log.paymentStatus}"\r\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Reporte_Ventas_3Lobos_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     async function settlePendingSale(saleId) {
@@ -2605,6 +3208,459 @@
       document.body.classList.remove('print-mode-voucher');
       window.print();
       document.body.classList.remove('print-mode-report', 'print-mode-voucher');
+    }
+
+    // --- DASHBOARD METRICS ---
+    async function fetchDashboardMetrics() {
+      try {
+        const sales = await apiFetch('/api/sales/history');
+        const activeEvents = await apiFetch('/api/events');
+        
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        
+        let revenueToday = 0;
+        let bottlesToday = 0;
+        let pendingToday = 0;
+        
+        sales.forEach(sale => {
+          const saleTime = new Date(sale.transactionDate).getTime();
+          if (saleTime >= startOfToday) {
+            if (sale.paymentStatus === 'pagado') {
+              revenueToday += sale.totalAmount;
+            } else {
+              pendingToday += sale.totalAmount;
+            }
+            bottlesToday += sale.unitsSold;
+          }
+        });
+
+        document.getElementById('dash-recaudacion-hoy').innerText = `$${revenueToday.toLocaleString('es-CL')}`;
+        document.getElementById('dash-botellas-hoy').innerText = `${bottlesToday} u.`;
+        document.getElementById('dash-pendientes-hoy').innerText = `$${pendingToday.toLocaleString('es-CL')}`;
+        
+        const activeCount = activeEvents.filter(e => e.status === 'activo').length;
+        document.getElementById('dash-eventos-hoy').innerText = activeCount;
+
+        // Populate recent sales
+        const recentTbody = document.getElementById('dash-recent-sales-tbody');
+        const grouped = groupSalesLogs(sales).slice(0, 5);
+        recentTbody.innerHTML = grouped.map(log => {
+          const date = new Date(log.transactionDate);
+          const formattedDate = date.toLocaleString('es-ES', { 
+            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' 
+          });
+          const statusBadge = log.paymentStatus === 'pendiente' 
+            ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400">PENDIENTE</span>`
+            : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400">PAGADO</span>`;
+          return `
+            <tr class="border-b border-slate-800/30 text-xs">
+              <td class="py-3 px-4 font-mono text-slate-400">${log.correlationId}</td>
+              <td class="py-3 px-4 text-slate-300">${formattedDate}</td>
+              <td class="py-3 px-4 text-white font-medium">${log.sellerName}</td>
+              <td class="py-3 px-4 text-slate-300">${log.customerName}</td>
+              <td class="py-3 px-4 text-right text-brand-500 font-bold font-mono">$${Number(log.totalAmount).toLocaleString('es-CL')}</td>
+              <td class="py-3 px-4 text-center">${statusBadge}</td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="6" class="py-6 text-center text-slate-500">No hay ventas registradas.</td></tr>';
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // --- POS EVENT SELECTOR ---
+    async function loadPOSEventsDropdown() {
+      try {
+        const events = await apiFetch('/api/events');
+        eventsList = events; // save globally
+        const select = document.getElementById('pos-event-select');
+        select.innerHTML = '<option value="">-- Sin evento (Venta General) --</option>';
+        events.forEach(e => {
+          if (e.status === 'activo') {
+            select.innerHTML += `<option value="${e.id}">${e.name} (${e.city})</option>`;
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // --- EVENTS CRUD ---
+    async function fetchEvents() {
+      const tbody = document.getElementById('events-table-body');
+      tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500">Cargando eventos...</td></tr>';
+      try {
+        const data = await apiFetch('/api/events');
+        eventsList = data;
+        tbody.innerHTML = data.map(e => {
+          const statusBadge = e.status === 'activo'
+            ? `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-500">Activo</span>`
+            : `<span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-400">Finalizado</span>`;
+          
+          let actionBtns = `
+            <button onclick="openEventModal(${e.id})" class="text-brand-500 hover:underline mr-3"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+            <button onclick="deleteEvent(${e.id})" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i> Eliminar</button>
+          `;
+          
+          return `
+            <tr class="hover:bg-slate-900/30 text-xs border-b border-slate-800/30">
+              <td class="py-4 px-6 font-semibold text-white">${e.name}</td>
+              <td class="py-4 px-6 text-slate-300">${e.city}</td>
+              <td class="py-4 px-6 text-slate-400">${new Date(e.startDate).toLocaleDateString()}</td>
+              <td class="py-4 px-6 text-slate-400">${new Date(e.endDate).toLocaleDateString()}</td>
+              <td class="py-4 px-6 text-center">${statusBadge}</td>
+              <td class="py-4 px-6 text-right">${actionBtns}</td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="6" class="py-6 text-center text-slate-500">No hay eventos registrados.</td></tr>';
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function openEventModal(eventId = null) {
+      document.getElementById('modal-event').classList.remove('hidden');
+      if (eventId) {
+        const e = eventsList.find(ev => ev.id === eventId);
+        if (e) {
+          document.getElementById('modal-event-title').innerText = 'Editar Evento';
+          document.getElementById('event-id-field').value = e.id;
+          document.getElementById('event-name-field').value = e.name;
+          document.getElementById('event-city-field').value = e.city;
+          document.getElementById('event-start-date-field').value = e.startDate.slice(0, 10);
+          document.getElementById('event-end-date-field').value = e.endDate.slice(0, 10);
+          document.getElementById('event-status-field').value = e.status;
+        }
+      } else {
+        document.getElementById('modal-event-title').innerText = 'Nuevo Evento';
+        document.getElementById('form-event').reset();
+        document.getElementById('event-id-field').value = '';
+      }
+    }
+
+    function closeEventModal() {
+      document.getElementById('modal-event').classList.add('hidden');
+    }
+
+    async function handleSaveEvent(e) {
+      e.preventDefault();
+      const id = document.getElementById('event-id-field').value;
+      const payload = {
+        name: document.getElementById('event-name-field').value.trim(),
+        city: document.getElementById('event-city-field').value.trim(),
+        startDate: document.getElementById('event-start-date-field').value,
+        endDate: document.getElementById('event-end-date-field').value,
+        status: document.getElementById('event-status-field').value
+      };
+      
+      try {
+        if (id) {
+          await apiFetch(`/api/events/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          showToast('Evento actualizado correctamente', 'success');
+        } else {
+          await apiFetch('/api/events', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          showToast('Evento registrado correctamente', 'success');
+        }
+        closeEventModal();
+        fetchEvents();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteEvent(eventId) {
+      if (!confirm('¿Deseas eliminar este evento? Las ventas asociadas permanecerán pero sin vinculación.')) return;
+      try {
+        await apiFetch(`/api/events/${eventId}`, { method: 'DELETE' });
+        showToast('Evento eliminado con éxito', 'success');
+        fetchEvents();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- SELLERS / SYSTEM USERS ---
+    async function fetchSellersTable() {
+      const tbody = document.getElementById('sellers-table-body');
+      tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-500">Cargando vendedores...</td></tr>';
+      try {
+        const data = await apiFetch('/api/auth/users');
+        systemUsersList = data; // save globally
+        
+        const sellers = data.filter(u => u.role === 'vendedor' || u.role === 'supervisor');
+        
+        tbody.innerHTML = sellers.map(u => {
+          const statusBadge = u.isActive
+            ? `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-500">Activo</span>`
+            : `<span class="px-2 py-0.5 rounded text-xs font-bold bg-red-500/10 text-red-500">Inactivo</span>`;
+          
+          const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '--';
+          const lastLoginDate = u.lastLogin ? new Date(u.lastLogin).toLocaleString() : 'Nunca';
+          
+          return `
+            <tr class="hover:bg-slate-900/30 text-xs border-b border-slate-800/30">
+              <td class="py-4 px-6 font-semibold text-white">${u.name}</td>
+              <td class="py-4 px-6 text-slate-300 font-mono">${u.username}</td>
+              <td class="py-4 px-6 text-slate-300">${u.phone || '--'}</td>
+              <td class="py-4 px-6 text-center">${statusBadge}</td>
+              <td class="py-4 px-6 text-slate-400">${createdDate}</td>
+              <td class="py-4 px-6 text-slate-400">${lastLoginDate}</td>
+              <td class="py-4 px-6 text-right">
+                <button onclick="openSellerModal(${u.id})" class="text-brand-500 hover:underline mr-3"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                <button onclick="deleteUser(${u.id})" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i> Eliminar</button>
+              </td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="7" class="py-6 text-center text-slate-500">No hay vendedores registrados.</td></tr>';
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function openSellerModal(userId = null) {
+      openUserModal(userId);
+      document.getElementById('modal-user-role-container').classList.remove('hidden');
+    }
+
+    // --- CONFIG TABS SWITCHER & SETTINGS LOGIC ---
+    function switchSettingsTab(tabId) {
+      activeSettingsTab = tabId;
+      document.querySelectorAll('.settings-tab-content').forEach(el => el.classList.add('hidden'));
+      const activeSect = document.getElementById(`settings-sect-${tabId}`);
+      if (activeSect) activeSect.classList.remove('hidden');
+
+      const tabs = ['empresa', 'parametros', 'whatsapp', 'usuarios', 'db'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`settings-tab-${t}`);
+        if (btn) {
+          if (t === tabId) {
+            btn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-brand-500 text-brand-500 transition";
+          } else {
+            btn.className = "px-4 py-2 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent text-slate-400 hover:text-white transition";
+          }
+        }
+      });
+
+      if (tabId === 'usuarios') {
+        fetchUsersTable();
+      } else if (tabId === 'db') {
+        fetchDatabaseStatus();
+      }
+    }
+
+    async function saveCompanySettings() {
+      const payload = {
+        company_name: document.getElementById('set-company-name').value.trim(),
+        company_rut: document.getElementById('set-company-rut').value.trim(),
+        company_address: document.getElementById('set-company-address').value.trim(),
+        company_phone: document.getElementById('set-company-phone').value.trim(),
+        company_email: document.getElementById('set-company-email').value.trim(),
+        company_logo: document.getElementById('set-company-logo').value.trim()
+      };
+      try {
+        await apiFetch('/api/inventory/settings', {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+        showToast('Datos de la empresa guardados con éxito', 'success');
+        fetchGlobalSettings();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function saveParamSettings() {
+      const units = parseInt(document.getElementById('set-wholesale-units').value, 10);
+      try {
+        await apiFetch('/api/inventory/settings', {
+          method: 'PUT',
+          body: JSON.stringify({ wholesale_units: units })
+        });
+        showToast('Parámetros de venta guardados con éxito', 'success');
+        fetchGlobalSettings();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function saveWhatsAppSettings() {
+      const payload = {
+        whatsapp_sender_number: document.getElementById('set-whatsapp-sender').value.trim(),
+        whatsapp_phone_number_id: document.getElementById('set-whatsapp-phone-id').value.trim(),
+        whatsapp_token: document.getElementById('set-whatsapp-token').value.trim()
+      };
+      try {
+        await apiFetch('/api/inventory/settings', {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+        showToast('Credenciales de WhatsApp actualizadas', 'success');
+        fetchGlobalSettings();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- SYSTEM USERS CRUD (Inside Config) ---
+    async function fetchUsersTable() {
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">Cargando usuarios...</td></tr>';
+      try {
+        const data = await apiFetch('/api/auth/users');
+        systemUsersList = data;
+        tbody.innerHTML = data.map(u => {
+          const statusBadge = u.isActive
+            ? `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-500">Activo</span>`
+            : `<span class="px-2 py-0.5 rounded text-xs font-bold bg-red-500/10 text-red-500">Inactivo</span>`;
+          
+          return `
+            <tr class="hover:bg-slate-900/30 text-xs border-b border-slate-800/30">
+              <td class="py-4 px-6 font-semibold text-white">${u.name}</td>
+              <td class="py-4 px-6 text-slate-300 font-mono">${u.username}</td>
+              <td class="py-4 px-6 text-slate-300 uppercase font-bold text-xs text-brand-400">${u.role}</td>
+              <td class="py-4 px-6 text-center">${statusBadge}</td>
+              <td class="py-4 px-6 text-right">
+                <button onclick="openUserModal(${u.id})" class="text-brand-500 hover:underline mr-3"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
+                <button onclick="deleteUser(${u.id})" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i> Eliminar</button>
+              </td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="5" class="py-6 text-center text-slate-500">No hay usuarios registrados.</td></tr>';
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    function openUserModal(userId = null) {
+      document.getElementById('modal-user').classList.remove('hidden');
+      if (userId) {
+        const u = systemUsersList.find(us => us.id === userId);
+        if (u) {
+          document.getElementById('modal-user-title').innerText = 'Editar Ficha de Usuario';
+          document.getElementById('modal-user-id').value = u.id;
+          document.getElementById('modal-user-name').value = u.name;
+          document.getElementById('modal-user-username').value = u.username;
+          document.getElementById('modal-user-phone').value = u.phone || '';
+          document.getElementById('modal-user-role').value = u.role;
+          document.getElementById('modal-user-status').value = u.isActive ? 'active' : 'inactive';
+          document.getElementById('modal-user-password').value = '';
+        }
+      } else {
+        document.getElementById('modal-user-title').innerText = 'Crear Ficha de Usuario';
+        document.getElementById('form-user-modal').reset();
+        document.getElementById('modal-user-id').value = '';
+      }
+    }
+
+    function closeUserModal() {
+      document.getElementById('modal-user').classList.add('hidden');
+    }
+
+    async function handleSaveUserModal(e) {
+      e.preventDefault();
+      const id = document.getElementById('modal-user-id').value;
+      const payload = {
+        name: document.getElementById('modal-user-name').value.trim(),
+        username: document.getElementById('modal-user-username').value.trim(),
+        phone: document.getElementById('modal-user-phone').value.trim(),
+        role: document.getElementById('modal-user-role').value,
+        isActive: document.getElementById('modal-user-status').value === 'active'
+      };
+      
+      const pwd = document.getElementById('modal-user-password').value.trim();
+      if (pwd) {
+        payload.password = pwd;
+      }
+      
+      try {
+        if (id) {
+          await apiFetch(`/api/auth/users/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+          showToast('Usuario actualizado con éxito', 'success');
+        } else {
+          if (!pwd) {
+            showToast('Debe ingresar una contraseña para el nuevo usuario', 'error');
+            return;
+          }
+          await apiFetch('/api/auth/register', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          showToast('Usuario registrado con éxito', 'success');
+        }
+        closeUserModal();
+        if (activeSettingsTab === 'usuarios') fetchUsersTable();
+        if (document.getElementById('section-sellers').classList.contains('hidden') === false) fetchSellersTable();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteUser(userId) {
+      if (!confirm('¿Deseas eliminar esta cuenta de usuario? El historial de auditoría de ventas permanecerá intacto.')) return;
+      try {
+        await apiFetch(`/api/auth/users/${userId}`, { method: 'DELETE' });
+        showToast('Usuario eliminado con éxito', 'success');
+        if (activeSettingsTab === 'usuarios') fetchUsersTable();
+        if (document.getElementById('section-sellers').classList.contains('hidden') === false) fetchSellersTable();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // --- DATABASE STATUS & BACKUPS ---
+    async function fetchDatabaseStatus() {
+      try {
+        const data = await apiFetch('/api/database/status');
+        const connEl = document.getElementById('db-turso-connection');
+        const syncEl = document.getElementById('db-last-sync');
+        const bkpEl = document.getElementById('db-last-backup');
+        
+        if (data.mode === 'turso') {
+          connEl.innerHTML = '<span class="text-emerald-400 flex items-center gap-1">🟢 Turso Cloud Database</span>';
+          syncEl.innerText = data.lastSync ? new Date(data.lastSync).toLocaleString() : 'Conectado en vivo';
+        } else {
+          connEl.innerHTML = '<span class="text-amber-500 flex items-center gap-1">🟡 SQLite Local (Sin Nube)</span>';
+          syncEl.innerText = 'Local (Sin sincronización)';
+        }
+        
+        bkpEl.innerText = data.lastBackup ? new Date(data.lastBackup).toLocaleString() : 'Sin respaldos registrados';
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function createDatabaseBackup() {
+      showToast('Generando copia de seguridad...', 'info');
+      try {
+        const res = await apiFetch('/api/database/backup', { method: 'POST' });
+        showToast(res.message || 'Copia de seguridad guardada con éxito', 'success');
+        fetchDatabaseStatus();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function restoreDatabaseBackup() {
+      if (!confirm('⚠️ ¡PRECAUCIÓN! Esta acción restaurará la base de datos a su última copia guardada en el servidor local. Todos los cambios no respaldados desde entonces se perderán permanentemente. ¿Desea continuar?')) return;
+      showToast('Restaurando copia de seguridad...', 'info');
+      try {
+        const res = await apiFetch('/api/database/restore', { method: 'POST' });
+        showToast(res.message || 'Base de datos restaurada correctamente. Recargando...', 'success');
+        setTimeout(() => location.reload(), 1500);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
     }
 
     // On Load Window

@@ -8,10 +8,10 @@ export function createAuthRouter(controller: AuthController): Router {
   // Ruta pública para iniciar sesión
   router.post('/login', controller.login);
 
-  // Registro, consulta, modificación y eliminación de usuarios (solo administradores)
-  router.post('/register', authenticateToken, authorizeRoles('admin'), controller.register);
-  router.get('/users', authenticateToken, authorizeRoles('admin'), controller.listUsers);
-  router.put('/users/:id', authenticateToken, authorizeRoles('admin'), controller.updateUser);
+  // Registro, consulta, modificación y eliminación de usuarios (administradores y supervisores)
+  router.post('/register', authenticateToken, authorizeRoles('admin', 'supervisor'), controller.register);
+  router.get('/users', authenticateToken, authorizeRoles('admin', 'supervisor'), controller.listUsers);
+  router.put('/users/:id', authenticateToken, authorizeRoles('admin', 'supervisor'), controller.updateUser);
   router.delete('/users/:id', authenticateToken, authorizeRoles('admin'), controller.deleteUser);
 
   return router;
