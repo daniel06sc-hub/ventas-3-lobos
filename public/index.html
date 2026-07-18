@@ -2575,17 +2575,9 @@
             </button>
           ` : '';
 
-          const isFav = style.isFavorite || false;
-          const starIcon = isFav 
-            ? `<button onclick="toggleProductFavorite('${style.id}', ${isFav})" class="text-amber-400 hover:scale-115 transition mr-2 focus:outline-none" title="Quitar de Favoritos de Feria"><i class="fa-solid fa-star"></i></button>`
-            : `<button onclick="toggleProductFavorite('${style.id}', ${isFav})" class="text-slate-600 hover:text-amber-400 hover:scale-115 transition mr-2 focus:outline-none" title="Destacar en Feria (Caja Rápida)"><i class="fa-regular fa-star"></i></button>`;
-          
-          const starHtml = isAdmin ? starIcon : (isFav ? '<i class="fa-solid fa-star text-amber-400 mr-2" title="Favorito de Feria"></i>' : '');
-
           row.innerHTML = `
             <td class="py-4 px-6 font-semibold text-white">
               <div class="flex items-center">
-                ${starHtml}
                 <span>${style.name}</span>
               </div>
             </td>
@@ -4033,20 +4025,6 @@
     let activeQuickPOSEvent = null;
     let quickPOSProducts = [];
 
-    // Toggles a beer style favorite status in the database catalog
-    async function toggleProductFavorite(styleId, currentVal) {
-      try {
-        const res = await apiFetch(`/api/inventory/${styleId}/favorite`, {
-          method: 'PUT',
-          body: JSON.stringify({ isFavorite: !currentVal })
-        });
-        showToast(res.message || 'Favorito actualizado con éxito', 'success');
-        fetchInventoryTable(); // Refresh inventory tab catalog table
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
     async function startQuickPOS(eventId) {
       activeQuickPOSEvent = eventsList.find(e => e.id === eventId);
       if (!activeQuickPOSEvent) {
@@ -4417,10 +4395,6 @@
       
       // Open modal
       document.getElementById('modal-event-products').classList.remove('hidden');
-
-      // Populate datalist of global styles
-      populateGlobalStylesDatalist();
-
       // Fetch current event products
       await fetchEventProducts(eventId);
     }
@@ -4430,23 +4404,6 @@
       activeConfigEventId = null;
       eventProductsList = [];
     }
-
-    async function populateGlobalStylesDatalist() {
-      const datalist = document.getElementById('global-styles-datalist');
-      if (!datalist) return;
-      datalist.innerHTML = '';
-      try {
-        const styles = await apiFetch('/api/inventory');
-        styles.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s.name;
-          datalist.appendChild(opt);
-        });
-      } catch (err) {
-        console.error('Error al cargar estilos globales para datalist:', err);
-      }
-    }
-
     async function fetchEventProducts(eventId) {
       const tbody = document.getElementById('event-products-tbody');
       tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500">Cargando productos...</td></tr>';
