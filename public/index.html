@@ -1040,6 +1040,25 @@
               </div>
             </div>
           </div>
+
+          <!-- Productos de Evento Vendidos -->
+          <div class="glassmorphism p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="text-base font-bold text-white font-outfit">Productos Vendidos en Eventos (Feria)</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="text-slate-400 font-bold border-b border-slate-800">
+                    <th class="pb-2">Producto de Evento</th>
+                    <th class="pb-2 text-center">Unidades Vendidas</th>
+                    <th class="pb-2 text-right">Total Recaudado</th>
+                  </tr>
+                </thead>
+                <tbody id="rep-event-products-tbody" class="divide-y divide-slate-800/50">
+                  <!-- populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- Sub-Sección: Clientes -->
@@ -3240,6 +3259,7 @@
     function runEventosReport() {
       const eventsObj = {};
       const citiesObj = {};
+      const productsObj = {};
 
       const eventSalesOnly = allSalesLogsRaw.filter(log => log.eventId);
 
@@ -3265,6 +3285,13 @@
         }
         citiesObj[city].txs += 1;
         citiesObj[city].revenue += revenue;
+
+        const pName = log.beerStyleName || 'Producto Especial';
+        if (!productsObj[pName]) {
+          productsObj[pName] = { name: pName, units: 0, revenue: 0 };
+        }
+        productsObj[pName].units += qty;
+        productsObj[pName].revenue += revenue;
       });
 
       const evList = Object.values(eventsObj).sort((a, b) => b.revenue - a.revenue);
@@ -3286,6 +3313,16 @@
           <td class="py-3 px-2 text-right font-bold text-brand-500 font-mono">$${Number(c.revenue).toLocaleString('es-CL')}</td>
         </tr>
       `).join('') || '<tr><td colspan="3" class="py-6 text-center text-slate-500">Sin datos</td></tr>';
+
+      const prodList = Object.values(productsObj).sort((a, b) => b.units - a.units);
+      const prodTbody = document.getElementById('rep-event-products-tbody');
+      prodTbody.innerHTML = prodList.map(p => `
+        <tr class="border-b border-slate-800/30 text-xs">
+          <td class="py-3 px-2 font-medium text-white">${p.name}</td>
+          <td class="py-3 px-2 text-center text-slate-300 font-bold">${p.units} u.</td>
+          <td class="py-3 px-2 text-right font-bold text-brand-500 font-mono">$${Number(p.revenue).toLocaleString('es-CL')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="3" class="py-6 text-center text-slate-500">Sin datos de productos vendidos</td></tr>';
     }
 
     function runClientesReport() {
