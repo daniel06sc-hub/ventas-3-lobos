@@ -2116,6 +2116,13 @@
       return Object.values(groups).sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
     }
 
+    function toggleRowDetails(correlationId) {
+      const detailsRow = document.getElementById(`details-${correlationId}`);
+      if (detailsRow) {
+        detailsRow.classList.toggle('hidden');
+      }
+    }
+
     function filterAuditLogs() {
       const range = document.getElementById('report-range-select').value;
       const paymentFilter = document.getElementById('report-payment-select').value;
@@ -2177,7 +2184,7 @@
         if (log.paymentStatus === 'pendiente') {
           statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 uppercase">Pendiente</span>`;
           actionButton = `
-            <button onclick="settlePendingSale(${log.id})" title="Registrar Pago" 
+            <button onclick="event.stopPropagation(); settlePendingSale(${log.id})" title="Registrar Pago" 
                     class="ml-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-2 py-0.5 rounded text-[10px] uppercase transition cursor-pointer">
               💰 Pagar
             </button>
@@ -2186,8 +2193,12 @@
           statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">Pagado</span>`;
         }
 
+        const styleNamesShort = log.styles.map(s => s.name.split(' (')[0]).join(', ');
+        const badgeCount = log.styles.length > 1 ? `<span class="ml-1.5 px-1 py-0.2 text-[9px] font-bold rounded bg-brand-500/20 text-brand-400 border border-brand-500/30">P. Mixto (${log.styles.length})</span>` : '';
+
         const row = document.createElement('tr');
-        row.className = 'hover:bg-slate-900/40 transition duration-150 text-xs';
+        row.className = 'hover:bg-slate-900/40 transition duration-150 text-xs cursor-pointer border-b border-slate-800/20';
+        row.setAttribute('onclick', `toggleRowDetails('${log.correlationId}')`);
         row.innerHTML = `
           <td class="py-4 px-6 font-mono font-semibold text-slate-300 select-all">${log.correlationId}</td>
           <td class="py-4 px-6 text-slate-400 whitespace-nowrap">${formattedDate}</td>
@@ -2197,7 +2208,13 @@
               ${log.customerName}
             </span>
           </td>
-          <td class="py-4 px-6 font-medium text-white">${log.styles.map(s => `${s.qty} ${s.name}`).join(', ')}</td>
+          <td class="py-4 px-6 font-medium text-white font-semibold">
+            <div class="flex items-center gap-1 max-w-[220px]">
+              <span class="truncate">${styleNamesShort}</span>
+              ${badgeCount}
+              <span class="text-[10px] text-slate-500 ml-auto select-none">▼ ver</span>
+            </div>
+          </td>
           <td class="py-4 px-6 text-slate-300">${formatNames[log.formatSold] || log.formatSold}</td>
           <td class="py-4 px-6 text-center font-bold text-slate-200">${log.unitsSold} u.</td>
           <td class="py-4 px-6 text-right font-bold text-brand-500 font-mono text-sm">$${Number(log.totalAmount).toFixed(2)}</td>
@@ -2208,7 +2225,29 @@
             </div>
           </td>
         `;
+
+        const detailsRow = document.createElement('tr');
+        detailsRow.id = `details-${log.correlationId}`;
+        detailsRow.className = 'hidden bg-slate-950/40 border-b border-slate-800/40 text-[11px]';
+        
+        const detailsListHtml = log.styles.map(s => `
+          <div class="flex items-center justify-between py-1 max-w-sm border-b border-slate-800/10 last:border-b-0">
+            <span class="text-slate-300">🍺 ${s.name}</span>
+            <span class="font-bold text-brand-500 font-mono">${s.qty} botella(s)</span>
+          </div>
+        `).join('');
+
+        detailsRow.innerHTML = `
+          <td colspan="9" class="py-3 px-12">
+            <div class="border-l-2 border-brand-500 pl-4 py-1">
+              <div class="text-slate-500 font-semibold uppercase tracking-wider text-[9px] mb-2">Composición del formato (${formatNames[log.formatSold] || log.formatSold}):</div>
+              ${detailsListHtml}
+            </div>
+          </td>
+        `;
+
         tbody.appendChild(row);
+        tbody.appendChild(detailsRow);
       });
     }
 
