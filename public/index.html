@@ -2925,11 +2925,25 @@
       }
     }
 
-    async function fetchReportsAndAudit() {
+    async function fetchReportsAndAudit(targetSubTab = null) {
+      console.log(`[Reports Debug] fetchReportsAndAudit() triggered for subtab: ${targetSubTab || activeReportTab}`);
       try {
         allSalesLogsRaw = await apiFetch('/api/sales/history');
         rawAuditLogs = allSalesLogsRaw.filter(log => !log.eventId);
-        runVentasReport();
+        console.log(`[Reports Debug] Successfully fetched ${allSalesLogsRaw.length} total sales, filtered into ${rawAuditLogs.length} POS sales.`);
+        
+        const activeSub = targetSubTab || activeReportTab;
+        if (activeSub === 'ventas') {
+          runVentasReport();
+        } else if (activeSub === 'productos') {
+          runProductosReport();
+        } else if (activeSub === 'vendedores') {
+          runVendedoresReport();
+        } else if (activeSub === 'eventos') {
+          runEventosReport();
+        } else if (activeSub === 'clientes') {
+          runClientesReport();
+        }
       } catch (err) {
         showToast(err.message, 'error');
       }
@@ -2954,18 +2968,8 @@
         }
       });
 
-      // Ejecutar cálculos del reporte seleccionado
-      if (tabId === 'ventas') {
-        runVentasReport();
-      } else if (tabId === 'productos') {
-        runProductosReport();
-      } else if (tabId === 'vendedores') {
-        runVendedoresReport();
-      } else if (tabId === 'eventos') {
-        runEventosReport();
-      } else if (tabId === 'clientes') {
-        runClientesReport();
-      }
+      // Ejecutar cálculos del reporte seleccionado cargando datos frescos de la BD
+      fetchReportsAndAudit(tabId);
     }
 
     function groupSalesLogs(logs) {
@@ -3555,6 +3559,7 @@
       try {
         const allSales = await apiFetch('/api/sales/history');
         const sales = allSales.filter(s => !s.eventId);
+        console.log(`[Dashboard Debug] fetchDashboardMetrics() fetched ${allSales.length} total sales, filtered into ${sales.length} POS sales.`);
         const activeEvents = await apiFetch('/api/events');
         
         const now = new Date();

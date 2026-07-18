@@ -416,7 +416,9 @@ export class SQLiteSaleRepository implements ISaleRepository {
 
   async listAll(): Promise<Sale[]> {
     const db = await this.getDb();
+    console.log('[Database Debug] SQL Executed: SELECT * FROM sales ORDER BY transaction_date DESC');
     const rows = await db.all('SELECT * FROM sales ORDER BY transaction_date DESC');
+    console.log(`[Database Debug] SQL Result: ${rows.length} sales fetched from database.`);
     return rows.map(mapSaleRow);
   }
 
