@@ -38,6 +38,7 @@ export interface BeerStyle {
   pricePack3: number;
   pricePack4: number;
   priceWholesale: number;
+  isFavorite?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -72,12 +73,14 @@ export interface Sale {
   beerStyleId: string;
   beerStyleName: string;
   formatSold: SalesFormat;
+  units_sold?: number; // legacy compatibility
   unitsSold: number; // total bottles deducted for this format * quantity
   unitPrice: number; // price of the chosen format
   totalAmount: number; // unitPrice * quantity
   paymentStatus: 'pagado' | 'pendiente'; // Estado de pago ('pagado' o 'pendiente')
   eventId?: string | null;    // ID del evento asociado
   eventName?: string | null;  // Nombre del evento histórico
+  paymentMethod?: string;     // Método de pago utilizado ('efectivo', 'tarjeta', etc.)
 }
 
 // DTOs (Data Transfer Objects) e inputs
@@ -97,6 +100,7 @@ export interface CheckoutInput {
   customerPhone?: string; // Teléfono opcional para entrega de voucher por WhatsApp
   paymentStatus?: 'pagado' | 'pendiente'; // Estado de pago inicial de la venta (opcional, por defecto 'pagado')
   eventId?: string; // ID opcional del evento asociado
+  paymentMethod?: string; // Método de pago ('efectivo', 'tarjeta', 'transferencia', 'otro')
   items: CheckoutItem[];
 }
 

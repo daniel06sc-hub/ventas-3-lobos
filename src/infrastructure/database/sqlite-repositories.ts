@@ -51,6 +51,7 @@ function mapBeerStyleRow(row: any): BeerStyle {
     pricePack3: row.price_pack3,
     pricePack4: row.price_pack4,
     priceWholesale: row.price_wholesale,
+    isFavorite: row.is_favorite !== undefined ? row.is_favorite === 1 : false,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at)
   };
@@ -74,7 +75,8 @@ function mapSaleRow(row: any): Sale {
     totalAmount: row.total_amount,
     paymentStatus: row.payment_status as 'pagado' | 'pendiente',
     eventId: row.event_id || null,
-    eventName: row.event_name || null
+    eventName: row.event_name || null,
+    paymentMethod: row.payment_method || 'efectivo'
   };
 }
 
@@ -242,7 +244,7 @@ export class SQLiteBeerStyleRepository implements IBeerStyleRepository {
   async create(beerStyle: BeerStyle): Promise<void> {
     const db = await this.getDb();
     await db.run(
-      'INSERT INTO beer_styles (id, name, stock_bottles, price_unit, price_pack2, price_pack3, price_pack4, price_wholesale) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO beer_styles (id, name, stock_bottles, price_unit, price_pack2, price_pack3, price_pack4, price_wholesale, is_favorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       beerStyle.id,
       beerStyle.name,
       beerStyle.stockBottles,
@@ -250,7 +252,8 @@ export class SQLiteBeerStyleRepository implements IBeerStyleRepository {
       beerStyle.pricePack2,
       beerStyle.pricePack3,
       beerStyle.pricePack4,
-      beerStyle.priceWholesale
+      beerStyle.priceWholesale,
+      beerStyle.isFavorite ? 1 : 0
     );
   }
 
@@ -265,6 +268,7 @@ export class SQLiteBeerStyleRepository implements IBeerStyleRepository {
         price_pack3 = ?, 
         price_pack4 = ?, 
         price_wholesale = ?,
+        is_favorite = ?,
         updated_at = CURRENT_TIMESTAMP 
        WHERE id = ?`,
       beerStyle.name,
@@ -274,6 +278,7 @@ export class SQLiteBeerStyleRepository implements IBeerStyleRepository {
       beerStyle.pricePack3,
       beerStyle.pricePack4,
       beerStyle.priceWholesale,
+      beerStyle.isFavorite ? 1 : 0,
       beerStyle.id
     );
   }
@@ -383,8 +388,8 @@ export class SQLiteSaleRepository implements ISaleRepository {
     const stmt = await db.prepare(
       `INSERT INTO sales (
         correlation_id, seller_id, seller_name, customer_id, customer_name,
-        beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, event_id, event_name
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, event_id, event_name, payment_method
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
 
     for (const sale of sales) {
@@ -402,7 +407,8 @@ export class SQLiteSaleRepository implements ISaleRepository {
         sale.totalAmount,
         sale.paymentStatus,
         sale.eventId || null,
-        sale.eventName || null
+        sale.eventName || null,
+        sale.paymentMethod || 'efectivo'
       );
     }
     await stmt.finalize();

@@ -76,4 +76,32 @@ export class SalesController {
       return res.status(500).json({ error: error.message || 'Error al eliminar la transacción' });
     }
   };
+
+  /**
+   * Sincroniza un lote de ventas offline de festival de forma atómica.
+   */
+  sync = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const seller = req.user;
+      if (!seller) {
+        return res.status(401).json({ error: 'Usuario no autenticado o sesión expirada' });
+      }
+
+      const { sales } = req.body;
+      if (!sales || !Array.isArray(sales)) {
+        return res.status(400).json({ error: 'Payload inválido: se esperaba un array de ventas en la propiedad "sales"' });
+      }
+
+      await this.salesService.syncOfflineSales(sales, {
+        id: seller.id,
+        name: seller.name
+      });
+
+      return res.status(200).json({
+        message: 'Lote de ventas offline sincronizado exitosamente en el servidor'
+      });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Error en la sincronización de ventas' });
+    }
+  };
 }

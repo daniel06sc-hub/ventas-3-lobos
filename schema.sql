@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS beer_styles (
     price_pack3 REAL NOT NULL DEFAULT 0.0 CHECK(price_pack3 >= 0),
     price_pack4 REAL NOT NULL DEFAULT 0.0 CHECK(price_pack4 >= 0),
     price_wholesale REAL NOT NULL DEFAULT 0.0 CHECK(price_wholesale >= 0),
+    is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -76,6 +77,7 @@ CREATE TABLE IF NOT EXISTS sales (
     payment_status TEXT NOT NULL DEFAULT 'pagado' CHECK(payment_status IN ('pagado', 'pendiente')), -- Estado de pago
     event_id TEXT, -- Nullable para asociar ventas a eventos
     event_name TEXT, -- Nombre del evento (histórico)
+    payment_method TEXT DEFAULT 'efectivo', -- 'efectivo', 'tarjeta', 'transferencia', 'otro'
     FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL,
     FOREIGN KEY(beer_style_id) REFERENCES beer_styles(id) ON DELETE SET NULL,

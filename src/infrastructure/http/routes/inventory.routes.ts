@@ -13,6 +13,7 @@ export function createInventoryRouter(controller: InventoryController): Router {
   router.post('/', authenticateToken, authorizeRoles('admin'), controller.createStyle);
   router.put('/settings', authenticateToken, authorizeRoles('admin'), controller.updateSettings);
   router.put('/:id', authenticateToken, authorizeRoles('admin', 'vendedor'), controller.updateStyle);
+  router.put('/:id/favorite', authenticateToken, authorizeRoles('admin'), controller.toggleFavorite);
   router.delete('/:id', authenticateToken, authorizeRoles('admin'), controller.deleteStyle);
 
   return router;

@@ -205,6 +205,30 @@ export async function getDatabase(): Promise<IDatabase> {
     console.error('Error al migrar la tabla "sales" para eventos:', err);
   }
 
+  // Migración de columnas para beer_styles si no existen
+  try {
+    const styleCols = await dbInstance.all('PRAGMA table_info(beer_styles)');
+    const hasFavorite = styleCols.some((col: any) => col.name === 'is_favorite');
+    if (!hasFavorite) {
+      await dbInstance.exec('ALTER TABLE beer_styles ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0;');
+      console.log('Migración: Columna "is_favorite" agregada a la tabla "beer_styles" exitosamente.');
+    }
+  } catch (err) {
+    console.error('Error al migrar la tabla "beer_styles" para favorites:', err);
+  }
+
+  // Migración de payment_method para sales si no existe
+  try {
+    const salesCols = await dbInstance.all('PRAGMA table_info(sales)');
+    const hasPaymentMethod = salesCols.some((col: any) => col.name === 'payment_method');
+    if (!hasPaymentMethod) {
+      await dbInstance.exec("ALTER TABLE sales ADD COLUMN payment_method TEXT DEFAULT 'efectivo';");
+      console.log('Migración: Columna "payment_method" agregada a la tabla "sales" exitosamente.');
+    }
+  } catch (err) {
+    console.error('Error al migrar la tabla "sales" para payment_method:', err);
+  }
+
   // Migración del CHECK constraint de roles en la tabla "users" (aplica para SQLite y Turso)
   try {
     const usersTableInfo = await dbInstance.all('PRAGMA table_info(users)');
@@ -285,9 +309,13 @@ export async function getDatabase(): Promise<IDatabase> {
               unit_price REAL NOT NULL,
               total_amount REAL NOT NULL,
               payment_status TEXT NOT NULL DEFAULT 'pagado',
+              event_id TEXT,
+              event_name TEXT,
+              payment_method TEXT DEFAULT 'efectivo',
               FOREIGN KEY(seller_id) REFERENCES users(id) ON DELETE SET NULL,
               FOREIGN KEY(customer_id) REFERENCES customers(id) ON DELETE SET NULL,
-              FOREIGN KEY(beer_style_id) REFERENCES beer_styles(id) ON DELETE SET NULL
+              FOREIGN KEY(beer_style_id) REFERENCES beer_styles(id) ON DELETE SET NULL,
+              FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE SET NULL
           );
         `);
         
@@ -296,12 +324,14 @@ export async function getDatabase(): Promise<IDatabase> {
           INSERT INTO sales_new (
             id, correlation_id, transaction_date, seller_id, seller_name, 
             customer_id, customer_name, beer_style_id, beer_style_name, 
-            format_sold, units_sold, unit_price, total_amount, payment_status
+            format_sold, units_sold, unit_price, total_amount, payment_status,
+            event_id, event_name, payment_method
           )
           SELECT 
             id, correlation_id, transaction_date, seller_id, seller_name, 
             customer_id, customer_name, beer_style_id, beer_style_name, 
-            format_sold, units_sold, unit_price, total_amount, payment_status
+            format_sold, units_sold, unit_price, total_amount, payment_status,
+            event_id, event_name, payment_method
           FROM sales;
         `);
         

@@ -132,4 +132,26 @@ export class InventoryController {
       return res.status(400).json({ error: error.message || 'Error al actualizar configuraciones' });
     }
   };
+
+  toggleFavorite = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { isFavorite } = req.body;
+      if (isFavorite === undefined) {
+        return res.status(400).json({ error: 'El campo isFavorite es requerido' });
+      }
+
+      const styles = await this.inventoryService.listBeerStyles();
+      const style = styles.find(s => s.id === id);
+      if (!style) {
+        return res.status(404).json({ error: 'El estilo de cerveza solicitado no existe' });
+      }
+
+      const isFav = isFavorite === true || isFavorite === 1 || String(isFavorite) === 'true';
+      await this.inventoryService.updateBeerStyle(id, { isFavorite: isFav });
+      return res.status(200).json({ message: 'Estado de favorito actualizado con éxito', isFavorite: isFav });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message || 'Error al actualizar favorito' });
+    }
+  };
 }

@@ -174,8 +174,8 @@ export class SalesService {
       const insertStmt = await db.prepare(
         `INSERT INTO sales (
           correlation_id, seller_id, seller_name, customer_id, customer_name,
-          beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, event_id, event_name, transaction_date
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
+          beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, event_id, event_name, payment_method, transaction_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`
       );
 
       for (const sale of salesToRecord) {
@@ -193,7 +193,8 @@ export class SalesService {
           sale.totalAmount,
           sale.paymentStatus,
           sale.eventId || null,
-          sale.eventName || null
+          sale.eventName || null,
+          input.paymentMethod || 'efectivo'
         );
       }
       await insertStmt.finalize();
@@ -399,6 +400,108 @@ export class SalesService {
         await db.run('ROLLBACK');
       } catch (rollbackError) {
         console.error('Error al realizar rollback en eliminación de transacción:', rollbackError);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Sincroniza un lote de ventas realizadas en modo offline.
+   * Clampea a 0 el stock si la cantidad vendida offline supera las existencias actuales,
+   * garantizando que la transacción no falle por la restricción stock_bottles >= 0.
+   */
+  async syncOfflineSales(
+    salesPayload: {
+      correlationId: string;
+      transactionDate: string;
+      customerId?: string | null;
+      customerName?: string;
+      paymentStatus: 'pagado' | 'pendiente';
+      paymentMethod: string;
+      eventId?: string | null;
+      eventName?: string | null;
+      items: {
+        beerStyleId: string;
+        beerStyleName: string;
+        quantity: number; // physical bottles sold
+        unitPrice: number;
+        totalAmount: number;
+      }[];
+    }[],
+    seller: { id: string; name: string }
+  ): Promise<void> {
+    if (!salesPayload || salesPayload.length === 0) {
+      return;
+    }
+
+    const db = await getDatabase();
+    await db.run('BEGIN TRANSACTION');
+
+    try {
+      for (const t of salesPayload) {
+        // Verificar si esta transacción ya fue sincronizada previamente (evitar duplicados)
+        const existing = await db.get('SELECT id FROM sales WHERE correlation_id = ? LIMIT 1', t.correlationId);
+        if (existing) {
+          continue; // saltar si ya existe
+        }
+
+        const customerName = t.customerName || 'Público General';
+        const customerId = t.customerId || null;
+        const eventId = t.eventId || null;
+        const eventName = t.eventName || null;
+
+        for (const item of t.items) {
+          if (item.quantity <= 0) continue;
+
+          // Obtener stock actual
+          const beerStyle = await db.get('SELECT * FROM beer_styles WHERE id = ?', item.beerStyleId);
+          if (!beerStyle) {
+            throw new Error(`El estilo de cerveza "${item.beerStyleName}" (ID: ${item.beerStyleId}) no existe en catálogo`);
+          }
+
+          // Descontar stock con clampeo a 0
+          let newStock = beerStyle.stock_bottles - item.quantity;
+          if (newStock < 0) {
+            newStock = 0; // clampear a 0 para no romper la restricción CHECK(stock_bottles >= 0)
+          }
+
+          await db.run(
+            'UPDATE beer_styles SET stock_bottles = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            newStock,
+            beerStyle.id
+          );
+
+          // Registrar en la tabla sales
+          await db.run(
+            `INSERT INTO sales (
+              correlation_id, seller_id, seller_name, customer_id, customer_name,
+              beer_style_id, beer_style_name, format_sold, units_sold, unit_price, total_amount, payment_status, event_id, event_name, payment_method, transaction_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            t.correlationId,
+            seller.id,
+            seller.name,
+            customerId,
+            customerName,
+            beerStyle.id,
+            beerStyle.name,
+            'unit', // Las ventas rápidas de festival se registran como formato individual 'unit'
+            item.quantity,
+            item.unitPrice,
+            item.totalAmount,
+            t.paymentStatus || 'pagado',
+            eventId,
+            eventName,
+            t.paymentMethod || 'efectivo',
+            t.transactionDate
+          );
+        }
+      }
+      await db.run('COMMIT');
+    } catch (error) {
+      try {
+        await db.run('ROLLBACK');
+      } catch (err) {
+        console.error('Error al realizar rollback en syncOfflineSales:', err);
       }
       throw error;
     }

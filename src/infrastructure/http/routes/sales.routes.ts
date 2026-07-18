@@ -7,6 +7,7 @@ export function createSalesRouter(controller: SalesController): Router {
 
   // El checkout está habilitado para vendedores y administradores en el punto de venta
   router.post('/checkout', authenticateToken, controller.checkout);
+  router.post('/sync', authenticateToken, controller.sync);
 
   // El historial de auditoría de ventas es de uso exclusivo del Administrador
   router.get('/history', authenticateToken, authorizeRoles('admin'), controller.history);

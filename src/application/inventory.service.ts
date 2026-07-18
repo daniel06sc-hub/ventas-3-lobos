@@ -18,6 +18,7 @@ export class InventoryService {
     pricePack3: number;
     pricePack4: number;
     priceWholesale: number;
+    isFavorite?: boolean;
   }): Promise<BeerStyle> {
     if (!data.name) {
       throw new Error('El nombre del estilo es obligatorio');
@@ -39,6 +40,7 @@ export class InventoryService {
       pricePack3: Math.max(0, data.pricePack3),
       pricePack4: Math.max(0, data.pricePack4),
       priceWholesale: Math.max(0, data.priceWholesale),
+      isFavorite: data.isFavorite !== undefined ? data.isFavorite : false,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -79,6 +81,7 @@ export class InventoryService {
     if (data.pricePack3 !== undefined) style.pricePack3 = Math.max(0, data.pricePack3);
     if (data.pricePack4 !== undefined) style.pricePack4 = Math.max(0, data.pricePack4);
     if (data.priceWholesale !== undefined) style.priceWholesale = Math.max(0, data.priceWholesale);
+    if (data.isFavorite !== undefined) style.isFavorite = data.isFavorite;
 
     style.updatedAt = new Date();
 

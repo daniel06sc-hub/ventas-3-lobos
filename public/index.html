@@ -233,7 +233,7 @@
             <i class="fa-solid fa-users"></i>
             <span>Clientes</span>
           </button>
-          <button onclick="switchTab('events')" id="tab-events" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300 supervisor-admin-only">
+          <button onclick="switchTab('events')" id="tab-events" class="px-3 py-2 text-sm font-medium rounded-lg transition duration-150 flex items-center gap-1.5 hover:bg-slate-800 text-slate-300">
             <i class="fa-solid fa-calendar-day"></i>
             <span>Eventos</span>
           </button>
@@ -285,7 +285,7 @@
         <i class="fa-solid fa-users text-lg"></i>
         <span>Clientes</span>
       </button>
-      <button onclick="switchTab('events')" id="tab-events-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0 supervisor-admin-only">
+      <button onclick="switchTab('events')" id="tab-events-mobile" class="p-2 text-xs flex flex-col items-center gap-1 text-slate-400 shrink-0">
         <i class="fa-solid fa-calendar-day text-lg"></i>
         <span>Eventos</span>
       </button>
@@ -678,38 +678,124 @@
       <!-- ======================================================== -->
       <!-- TAB: EVENTOS (Pantalla Independiente) -->
       <!-- ======================================================== -->
-      <section id="section-events" class="tab-content hidden space-y-6 supervisor-admin-only">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 class="text-2xl font-bold font-outfit text-white">Eventos</h2>
-            <p class="text-slate-400 text-sm mt-0.5">Administración de ferias, fiestas y puntos de venta móviles externos.</p>
-          </div>
-          <button onclick="openEventModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-500/10">
-            <i class="fa-solid fa-plus"></i>
-            <span>Nuevo Evento</span>
-          </button>
+      <section id="section-events" class="tab-content hidden space-y-6">
+        <!-- Sub-View 1: Event List (Table/Cards) -->
+        <div id="event-list-container" class="space-y-6">
+           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 class="text-2xl font-bold font-outfit text-white">Eventos y Ferias</h2>
+                <p class="text-slate-400 text-sm mt-0.5">Gestión de puntos de venta masivos, ferias y festivales externos.</p>
+              </div>
+              <button id="btn-new-event" onclick="openEventModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition flex items-center gap-2 shadow-lg shadow-brand-500/10">
+                <i class="fa-solid fa-plus"></i>
+                <span>Nuevo Evento</span>
+              </button>
+           </div>
+
+           <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
+                      <th class="py-4 px-6">Nombre Evento</th>
+                      <th class="py-4 px-6">Ciudad / Comuna</th>
+                      <th class="py-4 px-6">Fecha Inicio</th>
+                      <th class="py-4 px-6">Fecha Término</th>
+                      <th class="py-4 px-6 text-center">Estado</th>
+                      <th class="py-4 px-6 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="events-table-body" class="divide-y divide-slate-800/50 text-sm">
+                    <tr>
+                      <td colspan="6" class="py-12 text-center text-slate-500">Cargando eventos...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+           </div>
         </div>
 
-        <div class="glassmorphism rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-900/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800">
-                  <th class="py-4 px-6">Nombre Evento</th>
-                  <th class="py-4 px-6">Ciudad / Comuna</th>
-                  <th class="py-4 px-6">Fecha Inicio</th>
-                  <th class="py-4 px-6">Fecha Término</th>
-                  <th class="py-4 px-6 text-center">Estado</th>
-                  <th class="py-4 px-6 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="events-table-body" class="divide-y divide-slate-800/50 text-sm">
-                <tr>
-                  <td colspan="6" class="py-12 text-center text-slate-500">Cargando eventos...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <!-- Sub-View 2: Quick-POS (Caja Rápida de Festival) -->
+        <div id="event-quickpos-container" class="hidden flex flex-col lg:flex-row gap-6">
+           <!-- Left Grid: Big Product Buttons -->
+           <div class="flex-1 flex flex-col space-y-4">
+              <div class="flex items-center justify-between">
+                 <div>
+                    <h3 id="quickpos-event-title" class="text-xl font-bold text-white">Caja Rápida - Feria de Invierno</h3>
+                    <p class="text-xs text-slate-400">Toca los productos para agregarlos al pedido.</p>
+                 </div>
+                 <div class="flex items-center gap-2">
+                    <span id="quickpos-net-badge" class="px-2.5 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1.5 border border-emerald-500/20">
+                      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Online
+                    </span>
+                    <button onclick="closeQuickPOS()" class="bg-slate-800 hover:bg-slate-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition">
+                      <i class="fa-solid fa-arrow-left mr-1"></i> Volver
+                    </button>
+                 </div>
+              </div>
+
+              <!-- Touch-Friendly Product Grid -->
+              <div id="quickpos-products-grid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto max-h-[600px] pr-2">
+                 <!-- Dynamic items with large buttons -->
+              </div>
+           </div>
+
+           <!-- Right Panel: Checkout / Cart Sidebar -->
+           <div class="w-full lg:w-96 glassmorphism border border-slate-800 rounded-2xl p-6 flex flex-col justify-between min-h-[480px]">
+              <div>
+                 <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <span class="text-sm font-semibold text-slate-300">Pedido Actual</span>
+                    <button onclick="clearQuickPOSCart()" class="text-red-400 hover:text-red-300 text-xs transition">Vaciar</button>
+                 </div>
+                 <!-- Cart Items -->
+                 <div id="quickpos-cart-items" class="space-y-4 overflow-y-auto max-h-[280px] pr-2 mb-4">
+                    <!-- Dynamically populated cart items -->
+                 </div>
+              </div>
+
+              <div>
+                 <div class="border-t border-slate-800 pt-4 mb-4">
+                    <div class="flex items-center justify-between">
+                       <span class="text-slate-400 font-semibold text-sm">TOTAL A PAGAR</span>
+                       <span id="quickpos-cart-total" class="text-2xl font-black text-brand-500 font-mono">$0</span>
+                    </div>
+                 </div>
+
+                 <!-- Tactile Checkout Buttons -->
+                 <div class="space-y-3">
+                    <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">Método de Pago (Un clic registra la venta)</div>
+                    <div class="grid grid-cols-2 gap-2">
+                       <button onclick="checkoutQuickPOS('efectivo')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-3 rounded-xl transition flex flex-col items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/10">
+                          <i class="fa-solid fa-money-bill-wave text-lg"></i>
+                          <span class="text-xs">Efectivo</span>
+                       </button>
+                       <button onclick="checkoutQuickPOS('tarjeta')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-3 rounded-xl transition flex flex-col items-center justify-center gap-1.5 shadow-lg shadow-indigo-600/10">
+                          <i class="fa-solid fa-credit-card text-lg"></i>
+                          <span class="text-xs">Tarjeta</span>
+                       </button>
+                       <button onclick="checkoutQuickPOS('transferencia')" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-3.5 px-3 rounded-xl transition flex flex-col items-center justify-center gap-1.5 shadow-lg shadow-amber-600/10">
+                          <i class="fa-solid fa-mobile-screen text-lg"></i>
+                          <span class="text-xs">Transferencia</span>
+                       </button>
+                       <button onclick="checkoutQuickPOS('otro')" class="bg-slate-700 hover:bg-slate-650 text-white font-bold py-3.5 px-3 rounded-xl transition flex flex-col items-center justify-center gap-1.5">
+                          <i class="fa-solid fa-ellipsis text-lg"></i>
+                          <span class="text-xs">Otro</span>
+                       </button>
+                    </div>
+                 </div>
+
+                 <!-- Offline sync stats widget -->
+                 <div id="quickpos-sync-widget" class="mt-4 p-3 bg-slate-900/50 border border-slate-800 rounded-xl flex items-center justify-between text-xs hidden">
+                    <div>
+                       <span class="text-slate-400 block">Caja Offline</span>
+                       <span id="quickpos-queue-count" class="font-bold text-white font-mono">0 ventas pendientes</span>
+                    </div>
+                    <button onclick="triggerQuickPOSManualSync()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-1.5 px-2.5 rounded-lg transition text-[11px]">
+                       <i class="fa-solid fa-rotate mr-1"></i> Sincronizar
+                    </button>
+                 </div>
+              </div>
+           </div>
         </div>
       </section>
 
@@ -1469,6 +1555,60 @@
     </div>
   </div>
 
+  <div id="modal-cierre-feria" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeCierreFeriaModal()"></div>
+    <div class="glassmorphism w-full max-w-lg p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+         <h3 id="cierre-feria-title" class="text-xl font-bold font-outfit text-white">Resumen de Feria</h3>
+         <button onclick="closeCierreFeriaModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+         <div class="grid grid-cols-2 gap-4">
+            <div class="bg-slate-900/50 p-4 border border-slate-850 rounded-xl">
+               <span class="text-xs text-slate-500 uppercase font-semibold">Total Recaudado</span>
+               <span id="cierre-feria-total" class="block text-2xl font-black text-brand-500 font-mono mt-1">$0</span>
+            </div>
+            <div class="bg-slate-900/50 p-4 border border-slate-850 rounded-xl">
+               <span class="text-xs text-slate-500 uppercase font-semibold">Transacciones</span>
+               <span id="cierre-feria-tx-count" class="block text-2xl font-black text-white font-mono mt-1">0</span>
+            </div>
+         </div>
+
+         <!-- Payment methods breakdown -->
+         <div>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Desglose por Medio de Pago</h4>
+            <div id="cierre-feria-payments-list" class="space-y-2 bg-slate-900/30 border border-slate-800/60 rounded-xl p-3 text-xs">
+               <!-- Payment breakdowns go here -->
+            </div>
+         </div>
+
+         <!-- Products units sold breakdown -->
+         <div>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Productos y Existencias Vendidas</h4>
+            <div class="overflow-y-auto max-h-48 bg-slate-900/30 border border-slate-800/60 rounded-xl">
+               <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                     <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
+                        <th class="py-2 px-3">Producto</th>
+                        <th class="py-2 px-3 text-center">Unidades</th>
+                        <th class="py-2 px-3 text-right">Recaudado</th>
+                     </tr>
+                  </thead>
+                  <tbody id="cierre-feria-products-tbody" class="divide-y divide-slate-800/30">
+                     <!-- Dynamically populated -->
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-850">
+         <button type="button" onclick="closeCierreFeriaModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-5 rounded-xl text-xs transition cursor-pointer">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-user" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
     <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeUserModal()"></div>
     <div class="glassmorphism w-full max-w-md p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
@@ -1687,7 +1827,7 @@
       }
 
       const supervisorRestricted = ['settings'];
-      const vendedorRestricted = ['customers', 'events', 'sellers', 'reports', 'settings'];
+      const vendedorRestricted = ['customers', 'sellers', 'reports', 'settings'];
 
       if (user.role === 'vendedor' && vendedorRestricted.includes(tabId)) {
         showToast('Acceso Denegado: Su rol de Vendedor no tiene acceso a esta sección.', 'error');
@@ -2298,8 +2438,20 @@
             </button>
           ` : '';
 
+          const isFav = style.isFavorite || false;
+          const starIcon = isFav 
+            ? `<button onclick="toggleProductFavorite('${style.id}', ${isFav})" class="text-amber-400 hover:scale-115 transition mr-2 focus:outline-none" title="Quitar de Favoritos de Feria"><i class="fa-solid fa-star"></i></button>`
+            : `<button onclick="toggleProductFavorite('${style.id}', ${isFav})" class="text-slate-600 hover:text-amber-400 hover:scale-115 transition mr-2 focus:outline-none" title="Destacar en Feria (Caja Rápida)"><i class="fa-regular fa-star"></i></button>`;
+          
+          const starHtml = isAdmin ? starIcon : (isFav ? '<i class="fa-solid fa-star text-amber-400 mr-2" title="Favorito de Feria"></i>' : '');
+
           row.innerHTML = `
-            <td class="py-4 px-6 font-semibold text-white">${style.name}</td>
+            <td class="py-4 px-6 font-semibold text-white">
+              <div class="flex items-center">
+                ${starHtml}
+                <span>${style.name}</span>
+              </div>
+            </td>
             <td class="py-4 px-6 text-center">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.stockBottles === 0 ? 'bg-red-500/10 text-red-500' : 'bg-brand-500/10 text-brand-500'}">
                 ${style.stockBottles} botellas
@@ -3291,6 +3443,13 @@
     async function fetchEvents() {
       const tbody = document.getElementById('events-table-body');
       tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500">Cargando eventos...</td></tr>';
+      
+      // Controlar visibilidad del botón nuevo evento según rol
+      const newEvBtn = document.getElementById('btn-new-event');
+      if (newEvBtn) {
+        newEvBtn.classList.toggle('hidden', user.role === 'vendedor');
+      }
+
       try {
         const data = await apiFetch('/api/events');
         eventsList = data;
@@ -3299,10 +3458,20 @@
             ? `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/10 text-emerald-500">Activo</span>`
             : `<span class="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-400">Finalizado</span>`;
           
-          let actionBtns = `
-            <button onclick="openEventModal(${e.id})" class="text-brand-500 hover:underline mr-3"><i class="fa-solid fa-pen-to-square"></i> Editar</button>
-            <button onclick="deleteEvent(${e.id})" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i> Eliminar</button>
-          `;
+          let actionBtns = '';
+          if (e.status === 'activo') {
+            actionBtns += `<button onclick="startQuickPOS('${e.id}')" class="text-emerald-400 hover:underline mr-3"><i class="fa-solid fa-bolt"></i> Caja Rápida</button>`;
+          }
+          if (user.role === 'admin' || user.role === 'supervisor') {
+            actionBtns += `<button onclick="openCierreFeriaModal('${e.id}')" class="text-brand-500 hover:underline mr-3"><i class="fa-solid fa-chart-pie"></i> Resumen</button>`;
+            actionBtns += `<button onclick="openEventModal('${e.id}')" class="text-slate-300 hover:underline mr-3"><i class="fa-solid fa-pen-to-square"></i> Editar</button>`;
+            if (user.role === 'admin') {
+              actionBtns += `<button onclick="deleteEvent('${e.id}')" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i> Eliminar</button>`;
+            }
+          }
+          if (actionBtns === '') {
+            actionBtns = '<span class="text-slate-500">--</span>';
+          }
           
           return `
             <tr class="hover:bg-slate-900/30 text-xs border-b border-slate-800/30">
@@ -3663,8 +3832,499 @@
       }
     }
 
+    // --- CAJA RAPIDA DE FESTIVAL STATE ---
+    let quickPOSCart = [];
+    let activeQuickPOSEvent = null;
+    let quickPOSProducts = [];
+
+    // Toggles a beer style favorite status in the database catalog
+    async function toggleProductFavorite(styleId, currentVal) {
+      try {
+        const res = await apiFetch(`/api/inventory/${styleId}/favorite`, {
+          method: 'PUT',
+          body: JSON.stringify({ isFavorite: !currentVal })
+        });
+        showToast(res.message || 'Favorito actualizado con éxito', 'success');
+        fetchInventoryTable(); // Refresh inventory tab catalog table
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function startQuickPOS(eventId) {
+      activeQuickPOSEvent = eventsList.find(e => e.id === eventId);
+      if (!activeQuickPOSEvent) {
+        // Fallback: try loading from localStorage cached event info
+        const cachedEvent = localStorage.getItem(`quickpos_event_${eventId}`);
+        if (cachedEvent) {
+          activeQuickPOSEvent = JSON.parse(cachedEvent);
+        } else {
+          showToast('No se encontró información del evento. Conéctese para iniciar.', 'error');
+          return;
+        }
+      }
+
+      // Hide events list, show quickpos container
+      document.getElementById('event-list-container').classList.add('hidden');
+      document.getElementById('event-quickpos-container').classList.remove('hidden');
+
+      // Update event header title
+      document.getElementById('quickpos-event-title').innerText = `Caja Rápida - ${activeQuickPOSEvent.name}`;
+
+      // Initialize cart
+      quickPOSCart = [];
+      updateNetworkStatusIndicators();
+
+      // Load products catalog
+      try {
+        if (navigator.onLine) {
+          const styles = await apiFetch('/api/inventory');
+          quickPOSProducts = styles;
+          // Cache catalog in localStorage
+          localStorage.setItem('quickpos_catalogue', JSON.stringify(styles));
+          localStorage.setItem(`quickpos_event_${eventId}`, JSON.stringify(activeQuickPOSEvent));
+        } else {
+          const cachedStyles = localStorage.getItem('quickpos_catalogue');
+          if (cachedStyles) {
+            quickPOSProducts = JSON.parse(cachedStyles);
+            showToast('Catálogo cargado desde caché local (Modo Offline)', 'warning');
+          } else {
+            showToast('Sin catálogo en caché. Debe conectarse a internet al menos una vez.', 'error');
+            closeQuickPOS();
+            return;
+          }
+        }
+        
+        renderQuickPOS();
+        updateOfflineQueueWidget();
+      } catch (err) {
+        showToast('Error al cargar catálogo: ' + err.message, 'error');
+      }
+    }
+
+    function closeQuickPOS() {
+      document.getElementById('event-quickpos-container').classList.add('hidden');
+      document.getElementById('event-list-container').classList.remove('hidden');
+      activeQuickPOSEvent = null;
+      quickPOSProducts = [];
+      quickPOSCart = [];
+      fetchEvents(); // Refresh list
+    }
+
+    function addToQuickPOSCart(styleId) {
+      const product = quickPOSProducts.find(p => p.id === styleId);
+      if (!product) return;
+
+      const cartItem = quickPOSCart.find(item => item.beerStyleId === styleId);
+      if (cartItem) {
+        cartItem.quantity += 1;
+      } else {
+        quickPOSCart.push({
+          beerStyleId: product.id,
+          beerStyleName: product.name,
+          quantity: 1,
+          unitPrice: product.priceUnit, // Caja rápida vende formato unitario 'unit'
+          totalAmount: product.priceUnit
+        });
+      }
+      renderQuickPOS();
+    }
+
+    function updateQuickPOSCartQty(styleId, delta) {
+      const item = quickPOSCart.find(i => i.beerStyleId === styleId);
+      if (!item) return;
+
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        quickPOSCart = quickPOSCart.filter(i => i.beerStyleId !== styleId);
+      }
+      renderQuickPOS();
+    }
+
+    function clearQuickPOSCart() {
+      quickPOSCart = [];
+      renderQuickPOS();
+    }
+
+    function renderQuickPOS() {
+      // 1. Render Products Grid
+      const grid = document.getElementById('quickpos-products-grid');
+      grid.innerHTML = '';
+
+      // Sort favorites first
+      const sortedProducts = [...quickPOSProducts].sort((a, b) => {
+        const favA = a.isFavorite ? 1 : 0;
+        const favB = b.isFavorite ? 1 : 0;
+        return favB - favA || a.name.localeCompare(b.name);
+      });
+
+      sortedProducts.forEach(p => {
+        // Calculate remaining stock based on cart deductions
+        const cartItem = quickPOSCart.find(i => i.beerStyleId === p.id);
+        const cartQty = cartItem ? cartItem.quantity : 0;
+        const currentStock = Math.max(0, p.stockBottles - cartQty);
+
+        const isFav = p.isFavorite || false;
+        const card = document.createElement('button');
+        card.onclick = () => {
+          if (currentStock <= 0) {
+            showToast('Stock insuficiente para este producto', 'error');
+            return;
+          }
+          addToQuickPOSCart(p.id);
+        };
+
+        card.className = `glassmorphism border hover:border-brand-500/50 p-4 rounded-2xl flex flex-col items-center justify-between text-center gap-3 transition duration-150 transform hover:scale-[1.02] min-h-[130px] relative ${
+          isFav ? 'border-brand-500/20 shadow-lg shadow-brand-500/5' : 'border-slate-800'
+        }`;
+
+        card.innerHTML = `
+          ${isFav ? '<span class="absolute top-2 right-2 text-amber-400 text-xs"><i class="fa-solid fa-star"></i></span>' : ''}
+          <div class="font-bold text-white text-sm line-clamp-2 leading-snug">${p.name}</div>
+          <div class="w-full flex flex-col gap-1 mt-1">
+             <span class="text-brand-500 font-extrabold text-base font-mono">$${p.priceUnit}</span>
+             <span class="text-[10px] ${currentStock === 0 ? 'text-red-400 font-bold' : 'text-slate-400'}">
+                Stock: ${currentStock} uds
+             </span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      // 2. Render Cart Items
+      const cartContainer = document.getElementById('quickpos-cart-items');
+      cartContainer.innerHTML = '';
+
+      let total = 0;
+
+      if (quickPOSCart.length === 0) {
+        cartContainer.innerHTML = `
+          <div class="py-8 text-center text-slate-500 text-xs">
+            <i class="fa-solid fa-cart-shopping text-2xl mb-2 opacity-30"></i>
+            <p>Carrito vacío</p>
+          </div>
+        `;
+      } else {
+        quickPOSCart.forEach(item => {
+          const lineTotal = item.unitPrice * item.quantity;
+          total += lineTotal;
+
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between gap-2 p-2 bg-slate-900/40 border border-slate-850 rounded-xl text-xs';
+          row.innerHTML = `
+            <div class="flex-1 min-w-0 pr-1">
+               <span class="font-semibold text-white block truncate">${item.beerStyleName}</span>
+               <span class="text-slate-400 text-[10px] font-mono">$${item.unitPrice} c/u</span>
+            </div>
+            <div class="flex items-center gap-2">
+               <div class="flex items-center bg-slate-800 rounded-lg overflow-hidden border border-slate-700">
+                  <button onclick="updateQuickPOSCartQty('${item.beerStyleId}', -1)" class="w-7 h-7 flex items-center justify-center hover:bg-slate-700 text-white font-bold transition">-</button>
+                  <span class="px-2 font-bold text-white font-mono text-center min-w-[20px]">${item.quantity}</span>
+                  <button onclick="updateQuickPOSCartQty('${item.beerStyleId}', 1)" class="w-7 h-7 flex items-center justify-center hover:bg-slate-700 text-white font-bold transition">+</button>
+               </div>
+               <span class="font-bold text-brand-500 font-mono w-16 text-right">$${lineTotal}</span>
+            </div>
+          `;
+          cartContainer.appendChild(row);
+        });
+      }
+
+      document.getElementById('quickpos-cart-total').innerText = `$${total}`;
+    }
+
+    function printQuickPOSVoucher(t) {
+      const date = new Date(t.transactionDate);
+      const formattedDate = date.toLocaleString('es-ES', { 
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit' 
+      });
+
+      document.getElementById('print-voucher-id').innerText = t.correlationId;
+      document.getElementById('print-voucher-date').innerText = formattedDate;
+      document.getElementById('print-voucher-seller').innerText = user.name;
+      document.getElementById('print-voucher-customer').innerText = t.customerName || 'Público General';
+
+      const tbody = document.getElementById('print-voucher-table-body');
+      tbody.innerHTML = '';
+
+      let total = 0;
+      t.items.forEach(item => {
+        const row = document.createElement('tr');
+        row.className = 'border-b border-black/10';
+        
+        row.innerHTML = `
+          <td class="py-2 align-top">${item.quantity} u.</td>
+          <td class="py-2 align-top">
+            1 Botella<br>
+            <span style="font-size: 8px; color: #4b5563;">(${item.beerStyleName})</span>
+          </td>
+          <td class="py-2 align-top text-right font-mono">$${item.totalAmount.toFixed(2)}</td>
+        `;
+        tbody.appendChild(row);
+        total += item.totalAmount;
+      });
+
+      document.getElementById('print-voucher-total').innerText = `$${total.toFixed(2)}`;
+      document.getElementById('print-voucher-status').innerText = 'PAGADO';
+
+      // Disparar diálogo de impresión
+      document.body.classList.add('print-mode-voucher');
+      window.print();
+      document.body.classList.remove('print-mode-voucher');
+    }
+
+    async function checkoutQuickPOS(paymentMethod) {
+      if (quickPOSCart.length === 0) {
+        showToast('El pedido actual está vacío.', 'warning');
+        return;
+      }
+
+      // Generar correlativo de transacción único
+      const txId = 'evpos_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+      const nowStr = new Date().toISOString();
+
+      const transaction = {
+        correlationId: txId,
+        transactionDate: nowStr,
+        customerId: null,
+        customerName: 'Público General',
+        paymentStatus: 'pagado',
+        paymentMethod: paymentMethod,
+        eventId: activeQuickPOSEvent.id,
+        eventName: activeQuickPOSEvent.name,
+        items: quickPOSCart.map(i => ({
+          beerStyleId: i.beerStyleId,
+          beerStyleName: i.beerStyleName,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          totalAmount: i.totalAmount
+        }))
+      };
+
+      // Disparar impresión física del ticket voucher
+      try {
+        printQuickPOSVoucher(transaction);
+      } catch (err) {
+        console.error('Error al imprimir voucher:', err);
+      }
+
+      // Descontar del catálogo local inmediatamente
+      transaction.items.forEach(item => {
+        const p = quickPOSProducts.find(prod => prod.id === item.beerStyleId);
+        if (p) {
+          p.stockBottles = Math.max(0, p.stockBottles - item.quantity);
+        }
+      });
+
+      // Guardar caché local actualizada
+      localStorage.setItem('quickpos_catalogue', JSON.stringify(quickPOSProducts));
+
+      // Intentar persistir en el servidor
+      if (navigator.onLine) {
+        try {
+          await apiFetch('/api/sales/sync', {
+            method: 'POST',
+            body: JSON.stringify({ sales: [transaction] })
+          });
+          showToast('Venta registrada con éxito', 'success');
+        } catch (err) {
+          console.warn('Fallo guardado directo, encolando offline:', err);
+          enqueueOfflineSale(transaction);
+        }
+      } else {
+        enqueueOfflineSale(transaction);
+      }
+
+      // Reiniciar carro y re-renderizar
+      quickPOSCart = [];
+      renderQuickPOS();
+    }
+
+    function enqueueOfflineSale(transaction) {
+      const queue = getOfflineQueue();
+      queue.push(transaction);
+      localStorage.setItem('quickpos_offline_sales', JSON.stringify(queue));
+      showToast('Venta registrada localmente en modo Offline', 'warning');
+      updateOfflineQueueWidget();
+    }
+
+    function getOfflineQueue() {
+      const q = localStorage.getItem('quickpos_offline_sales');
+      return q ? JSON.parse(q) : [];
+    }
+
+    function updateOfflineQueueWidget() {
+      const queue = getOfflineQueue();
+      const widget = document.getElementById('quickpos-sync-widget');
+      const counter = document.getElementById('quickpos-queue-count');
+
+      if (queue.length > 0) {
+        if (widget) widget.classList.remove('hidden');
+        if (counter) counter.innerText = `${queue.length} venta${queue.length > 1 ? 's' : ''} pendiente${queue.length > 1 ? 's' : ''}`;
+      } else {
+        if (widget) widget.classList.add('hidden');
+      }
+    }
+
+    async function triggerQuickPOSManualSync() {
+      const queue = getOfflineQueue();
+      if (queue.length === 0) {
+        showToast('No hay ventas en la cola offline', 'info');
+        return;
+      }
+
+      showToast('Sincronizando ventas offline...', 'info');
+      try {
+        await apiFetch('/api/sales/sync', {
+          method: 'POST',
+          body: JSON.stringify({ sales: queue })
+        });
+        
+        // Limpiar cola
+        localStorage.setItem('quickpos_offline_sales', JSON.stringify([]));
+        showToast('Sincronización de ventas offline completada', 'success');
+        updateOfflineQueueWidget();
+        
+        // Recargar stock de la base de datos
+        if (activeQuickPOSEvent) {
+          const styles = await apiFetch('/api/inventory');
+          quickPOSProducts = styles;
+          localStorage.setItem('quickpos_catalogue', JSON.stringify(styles));
+          renderQuickPOS();
+        }
+      } catch (err) {
+        showToast('Error en la sincronización: ' + err.message, 'error');
+      }
+    }
+
+    function updateNetworkStatusIndicators() {
+      const badge = document.getElementById('quickpos-net-badge');
+      if (!badge) return;
+      if (navigator.onLine) {
+        badge.className = "px-2.5 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1.5 border border-emerald-500/20";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Online`;
+        
+        const queue = getOfflineQueue();
+        if (queue.length > 0) {
+          triggerQuickPOSManualSync();
+        }
+      } else {
+        badge.className = "px-2.5 py-1 rounded text-xs font-bold bg-rose-500/10 text-rose-400 flex items-center gap-1.5 border border-rose-500/20";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span> Offline`;
+      }
+    }
+
+    async function openCierreFeriaModal(eventId) {
+      const modal = document.getElementById('modal-cierre-feria');
+      const targetEvent = eventsList.find(e => e.id === eventId);
+      if (!targetEvent) return;
+
+      document.getElementById('cierre-feria-title').innerText = `Resumen: ${targetEvent.name}`;
+      
+      // Limpiar campos
+      document.getElementById('cierre-feria-total').innerText = '$0';
+      document.getElementById('cierre-feria-tx-count').innerText = '0';
+      document.getElementById('cierre-feria-payments-list').innerHTML = '<div class="text-center py-2 text-slate-500">Calculando...</div>';
+      document.getElementById('cierre-feria-products-tbody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Cargando...</td></tr>';
+
+      modal.classList.remove('hidden');
+
+      try {
+        const sales = await apiFetch('/api/sales/history');
+        const eventSales = sales.filter(s => s.eventId === eventId);
+
+        if (eventSales.length === 0) {
+          document.getElementById('cierre-feria-payments-list').innerHTML = '<div class="text-center py-2 text-slate-500">No se registraron ventas en este evento.</div>';
+          document.getElementById('cierre-feria-products-tbody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos de venta</td></tr>';
+          return;
+        }
+
+        // 1. IDs de correlativos únicos (transacciones)
+        const uniqueTx = new Set(eventSales.map(s => s.correlationId));
+        document.getElementById('cierre-feria-tx-count').innerText = uniqueTx.size;
+
+        // 2. Calcular montos
+        let totalRevenue = 0;
+        const paymentsBreakdown = { efectivo: 0, tarjeta: 0, transferencia: 0, otro: 0 };
+        const productsBreakdown = {};
+
+        eventSales.forEach(s => {
+          totalRevenue += s.totalAmount;
+
+          const method = (s.paymentMethod || 'efectivo').toLowerCase();
+          if (paymentsBreakdown[method] !== undefined) {
+            paymentsBreakdown[method] += s.totalAmount;
+          } else {
+            paymentsBreakdown.otro += s.totalAmount;
+          }
+
+          const styleName = s.beerStyleName;
+          if (!productsBreakdown[styleName]) {
+            productsBreakdown[styleName] = { units: 0, revenue: 0 };
+          }
+          productsBreakdown[styleName].units += s.unitsSold;
+          productsBreakdown[styleName].revenue += s.totalAmount;
+        });
+
+        document.getElementById('cierre-feria-total').innerText = `$${totalRevenue.toLocaleString()}`;
+
+        // 3. Renderizar desglose de pagos
+        const methodLabels = {
+          efectivo: { label: 'Efectivo 💵', color: 'bg-emerald-500' },
+          tarjeta: { label: 'Tarjeta 💳', color: 'bg-indigo-500' },
+          transferencia: { label: 'Transferencia 📲', color: 'bg-amber-500' },
+          otro: { label: 'Otro / Especial ⚙', color: 'bg-slate-500' }
+        };
+
+        let paymentsHtml = '';
+        Object.keys(paymentsBreakdown).forEach(method => {
+          const amount = paymentsBreakdown[method];
+          const pct = totalRevenue > 0 ? (amount / totalRevenue) * 100 : 0;
+          const meta = methodLabels[method];
+
+          paymentsHtml += `
+            <div class="space-y-1">
+               <div class="flex items-center justify-between text-slate-300">
+                  <span class="font-medium">${meta.label}</span>
+                  <span class="font-bold font-mono">$${amount.toLocaleString()} (${pct.toFixed(1)}%)</span>
+               </div>
+               <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div class="${meta.color} h-1.5" style="width: ${pct}%"></div>
+               </div>
+            </div>
+          `;
+        });
+        document.getElementById('cierre-feria-payments-list').innerHTML = paymentsHtml;
+
+        // 4. Renderizar productos
+        let productsHtml = '';
+        Object.keys(productsBreakdown).forEach(name => {
+          const item = productsBreakdown[name];
+          productsHtml += `
+            <tr class="hover:bg-slate-900/10">
+               <td class="py-2 px-3 text-white font-medium">${name}</td>
+               <td class="py-2 px-3 text-center text-slate-300 font-bold">${item.units}</td>
+               <td class="py-2 px-3 text-right text-brand-500 font-mono font-bold">$${item.revenue.toLocaleString()}</td>
+            </tr>
+          `;
+        });
+        document.getElementById('cierre-feria-products-tbody').innerHTML = productsHtml;
+
+      } catch (err) {
+        showToast('Error al compilar resumen: ' + err.message, 'error');
+        closeCierreFeriaModal();
+      }
+    }
+
+    function closeCierreFeriaModal() {
+      document.getElementById('modal-cierre-feria').classList.add('hidden');
+    }
+
     // On Load Window
     window.addEventListener('DOMContentLoaded', () => {
+      // Registrar oyentes de red
+      window.addEventListener('online', updateNetworkStatusIndicators);
+      window.addEventListener('offline', updateNetworkStatusIndicators);
       initApp();
     });
   </script>
