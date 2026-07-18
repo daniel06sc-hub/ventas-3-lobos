@@ -59,4 +59,21 @@ export class SalesController {
       return res.status(500).json({ error: error.message || 'Error al actualizar estado de pago' });
     }
   };
+
+  /**
+   * Elimina una transacción agrupada por correlativo y devuelve las unidades al stock (Solo Admin).
+   */
+  deleteTransaction = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { correlationId } = req.params;
+      if (!correlationId) {
+        return res.status(400).json({ error: 'El correlationId de la transacción es obligatorio' });
+      }
+
+      await this.salesService.deleteTransactionByCorrelationId(correlationId);
+      return res.status(200).json({ message: 'Transacción eliminada de la bitácora y stock repuesto con éxito', correlationId });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message || 'Error al eliminar la transacción' });
+    }
+  };
 }

@@ -14,5 +14,8 @@ export function createSalesRouter(controller: SalesController): Router {
   // Permitir a vendedores y administradores actualizar el estado de pago de las cuentas
   router.put('/:id/payment', authenticateToken, controller.updatePaymentStatus);
 
+  // Permitir a administradores eliminar una transacción de venta agrupada por su correlativo y reponer stock
+  router.delete('/transaction/:correlationId', authenticateToken, authorizeRoles('admin'), controller.deleteTransaction);
+
   return router;
 }

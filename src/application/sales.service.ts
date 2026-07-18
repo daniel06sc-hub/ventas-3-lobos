@@ -215,4 +215,44 @@ export class SalesService {
   async updatePaymentStatus(id: number, status: 'pagado' | 'pendiente'): Promise<void> {
     await this.saleRepository.updatePaymentStatus(id, status);
   }
+
+  /**
+   * Elimina una transacción completa por su correlativo de venta (correlationId)
+   * y repone de manera atómica el stock físico de cada estilo de cerveza en inventario.
+   */
+  async deleteTransactionByCorrelationId(correlationId: string): Promise<void> {
+    const db = await getDatabase();
+    
+    // Iniciar transacción atómica
+    await db.run('BEGIN TRANSACTION');
+
+    try {
+      // 1. Obtener todas las líneas de venta asociadas a este correlationId
+      const sales = await db.all('SELECT beer_style_id, units_sold FROM sales WHERE correlation_id = ?', correlationId);
+
+      // 2. Reponer el stock para cada línea física de cerveza
+      for (const sale of sales) {
+        if (sale.beer_style_id) {
+          const style = await db.get('SELECT stock_bottles FROM beer_styles WHERE id = ?', sale.beer_style_id);
+          if (style) {
+            const newStock = style.stock_bottles + sale.units_sold;
+            await db.run('UPDATE beer_styles SET stock_bottles = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', newStock, sale.beer_style_id);
+          }
+        }
+      }
+
+      // 3. Eliminar los registros de auditoría de venta asociados
+      await db.run('DELETE FROM sales WHERE correlation_id = ?', correlationId);
+
+      // Confirmar cambios
+      await db.run('COMMIT');
+    } catch (error) {
+      try {
+        await db.run('ROLLBACK');
+      } catch (rollbackError) {
+        console.error('Error al realizar rollback en eliminación de transacción:', rollbackError);
+      }
+      throw error;
+    }
+  }
 }

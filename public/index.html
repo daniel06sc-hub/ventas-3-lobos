@@ -2180,6 +2180,16 @@
 
         let statusBadge = '';
         let actionButton = '';
+        let deleteButton = '';
+
+        if (user && user.role === 'admin') {
+          deleteButton = `
+            <button onclick="event.stopPropagation(); deleteSaleTransaction('${log.correlationId}')" title="Eliminar Venta y Reponer Stock" 
+                    class="ml-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 font-bold px-2 py-0.5 rounded text-[10px] uppercase border border-red-500/20 transition cursor-pointer">
+              🗑️
+            </button>
+          `;
+        }
 
         if (log.paymentStatus === 'pendiente') {
           statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/20 uppercase">Pendiente</span>`;
@@ -2222,6 +2232,7 @@
             <div class="flex items-center justify-center">
               ${statusBadge}
               ${actionButton}
+              ${deleteButton}
             </div>
           </td>
         `;
@@ -2261,6 +2272,26 @@
         });
         showToast('Pago registrado correctamente. Transacción saldada.', 'success');
         await fetchReportsAndAudit();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteSaleTransaction(correlationId) {
+      if (!confirm(`¿Estás seguro de que deseas ELIMINAR permanentemente la transacción ${correlationId}?\n\nEsta acción repondrá automáticamente el stock de las cervezas vendidas en esta orden.`)) {
+        return;
+      }
+
+      try {
+        await apiFetch(`/api/sales/transaction/${correlationId}`, {
+          method: 'DELETE'
+        });
+        showToast('Transacción eliminada de la bitácora y stock repuesto con éxito', 'success');
+        
+        // Recargar los reportes e inventarios
+        await fetchReportsAndAudit();
+        fetchPOSInventory();
+        fetchInventoryTable();
       } catch (err) {
         showToast(err.message, 'error');
       }

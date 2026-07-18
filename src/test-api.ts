@@ -577,6 +577,78 @@ async function runTests() {
     assert(saleCasoA.beerStyleName === testStyleName, 'El beerStyleName histórico debe conservarse intacto');
     console.log('✓ Auditoría histórica e integridad de datos validada tras eliminaciones.');
 
+    // ----------------------------------------------------
+    // TEST 9: Eliminación de Transacción y Reposición de Stock
+    // ----------------------------------------------------
+    console.log('\n--- TEST 9: Eliminación de Transacción y Reposición de Stock ---');
+
+    // 1. Crear un estilo de cerveza nuevo para la prueba
+    const tempStyleName = `Temp-Style-${randSuffix}`;
+    const createTempRes = await fetch(`${BASE_URL}/inventory`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        name: tempStyleName,
+        priceUnit: 3000,
+        pricePack2: 6000,
+        pricePack3: 8500,
+        pricePack4: 10000,
+        priceWholesale: 48300,
+        stockBottles: 10 // stock inicial = 10
+      })
+    });
+    const tempStyleData = await createTempRes.json() as any;
+    const tempStyleId = tempStyleData.id;
+    console.log(`✓ Cerveza temporal creada con 10 botellas. ID: ${tempStyleId}`);
+
+    // 2. Realizar una venta de 4 botellas (Pack de 4) de esta cerveza
+    const checkoutRes = await fetch(`${BASE_URL}/sales/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        items: [{
+          format: 'pack4',
+          quantity: 1,
+          styles: [{ beerStyleId: tempStyleId, bottlesCount: 4 }]
+        }]
+      })
+    });
+    const checkoutData = await checkoutRes.json() as any;
+    const correlationId = checkoutData.correlationId;
+    console.log(`✓ Venta registrada. Correlation ID: ${correlationId}`);
+
+    // 3. Verificar que el stock disminuyó de 10 a 6 botellas
+    const checkStock1Res = await fetch(`${BASE_URL}/inventory`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const checkStock1Data = await checkStock1Res.json() as any;
+    const tempStyleAfterSale = checkStock1Data.find((s: any) => s.id === tempStyleId);
+    assert(tempStyleAfterSale.stockBottles === 6, `El stock debe haber bajado a 6 botellas, actualmente: ${tempStyleAfterSale.stockBottles}`);
+    console.log('✓ Descuento de stock inicial confirmado (10 -> 6 botellas).');
+
+    // 4. Eliminar la transacción de venta como administrador
+    const deleteTxRes = await fetch(`${BASE_URL}/sales/transaction/${correlationId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    assert(deleteTxRes.status === 200, 'El Admin debe poder eliminar transacciones por su correlationId');
+    console.log('✓ Transacción de venta eliminada exitosamente por administrador.');
+
+    // 5. Verificar que el stock se repuso a 10 botellas
+    const checkStock2Res = await fetch(`${BASE_URL}/inventory`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const checkStock2Data = await checkStock2Res.json() as any;
+    const tempStyleAfterDelete = checkStock2Data.find((s: any) => s.id === tempStyleId);
+    assert(tempStyleAfterDelete.stockBottles === 10, `El stock debe haberse repuesto a 10 botellas, actualmente: ${tempStyleAfterDelete.stockBottles}`);
+    console.log('✓ Reposición de stock confirmada (6 -> 10 botellas).');
+
 
     console.log('\n==================================================');
     console.log('   ¡TODAS LAS PRUEBAS SE COMPLETARON CON ÉXITO!   ');
