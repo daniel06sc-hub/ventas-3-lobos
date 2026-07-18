@@ -1673,36 +1673,71 @@
 
   <div id="modal-cierre-feria" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
     <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeCierreFeriaModal()"></div>
-    <div class="glassmorphism w-full max-w-2xl p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
+    <div class="glassmorphism w-full max-w-4xl p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-         <h3 id="cierre-feria-title" class="text-xl font-bold font-outfit text-white">Resumen de Feria</h3>
-         <button onclick="closeCierreFeriaModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+         <div class="flex items-center gap-2">
+            <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h3 id="cierre-feria-title" class="text-xl font-bold font-outfit text-white">Monitoreo en Vivo de Feria</h3>
+         </div>
+         <div class="flex items-center gap-2">
+            <span class="text-[10px] bg-brand-500/10 text-brand-500 border border-brand-500/20 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">En Vivo 🟢</span>
+            <button onclick="closeCierreFeriaModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+         </div>
       </div>
 
-      <div class="space-y-4">
-         <div class="grid grid-cols-2 gap-4">
-            <div class="bg-slate-900/50 p-4 border border-slate-850 rounded-xl">
-               <span class="text-xs text-slate-500 uppercase font-semibold">Total Recaudado</span>
-               <span id="cierre-feria-total" class="block text-2xl font-black text-brand-500 font-mono mt-1">$0</span>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+         <!-- Left & Middle: Stats & Breakdowns -->
+         <div class="lg:col-span-2 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+               <div class="bg-slate-900/50 p-4 border border-slate-850 rounded-xl flex items-center justify-between">
+                  <div>
+                     <span class="text-xs text-slate-450 uppercase font-semibold">Total Recaudado</span>
+                     <span id="cierre-feria-total" class="block text-2xl font-black text-brand-500 font-mono mt-1">$0</span>
+                  </div>
+                  <i class="fa-solid fa-sack-dollar text-2xl text-brand-500 opacity-80"></i>
+               </div>
+               <div class="bg-slate-900/50 p-4 border border-slate-850 rounded-xl flex items-center justify-between">
+                  <div>
+                     <span class="text-xs text-slate-455 uppercase font-semibold">Transacciones</span>
+                     <span id="cierre-feria-tx-count" class="block text-2xl font-black text-white font-mono mt-1">0</span>
+                  </div>
+                  <i class="fa-solid fa-receipt text-2xl text-slate-450 opacity-80"></i>
+               </div>
             </div>
-            <div class="bg-slate-900/50 p-4 border border-slate-850 rounded-xl">
-               <span class="text-xs text-slate-500 uppercase font-semibold">Transacciones</span>
-               <span id="cierre-feria-tx-count" class="block text-2xl font-black text-white font-mono mt-1">0</span>
+
+            <!-- Payment methods breakdown -->
+            <div class="bg-slate-900/40 p-4 border border-slate-850 rounded-xl space-y-3">
+               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Desglose por Medio de Pago</h4>
+               <div id="cierre-feria-payments-list" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <!-- Payment breakdowns go here -->
+               </div>
+            </div>
+
+            <!-- Sales by Seller -->
+            <div class="space-y-2">
+               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ventas por Vendedor</h4>
+               <div class="overflow-y-auto max-h-40 bg-slate-900/30 border border-slate-800/60 rounded-xl">
+                  <table class="w-full text-left border-collapse text-xs">
+                     <thead>
+                        <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
+                           <th class="py-2 px-3">Vendedor</th>
+                           <th class="py-2 px-3 text-center">N° Transacciones</th>
+                           <th class="py-2 px-3 text-right">Recaudado</th>
+                        </tr>
+                     </thead>
+                     <tbody id="cierre-feria-sellers-tbody" class="divide-y divide-slate-800/30">
+                        <!-- Dynamically populated -->
+                     </tbody>
+                  </table>
+               </div>
             </div>
          </div>
 
-         <!-- Payment methods breakdown -->
-         <div>
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Desglose por Medio de Pago</h4>
-            <div id="cierre-feria-payments-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 bg-slate-900/30 border border-slate-800/60 rounded-xl p-3 text-xs">
-               <!-- Payment breakdowns go here -->
-            </div>
-         </div>
-
-         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <!-- Right side: Products & Recent sales -->
+         <div class="space-y-4">
             <!-- Products units sold breakdown -->
-            <div>
-               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ranking de Productos más Vendidos</h4>
+            <div class="space-y-2">
+               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Ranking de Productos más Vendidos</h4>
                <div class="overflow-y-auto max-h-48 bg-slate-900/30 border border-slate-800/60 rounded-xl">
                   <table class="w-full text-left border-collapse text-xs">
                      <thead>
@@ -1719,19 +1754,19 @@
                </div>
             </div>
 
-            <!-- Sales by Seller -->
-            <div>
-               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ventas por Vendedor</h4>
+            <!-- Recent sales -->
+            <div class="space-y-2">
+               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Últimas Ventas Registradas</h4>
                <div class="overflow-y-auto max-h-48 bg-slate-900/30 border border-slate-800/60 rounded-xl">
                   <table class="w-full text-left border-collapse text-xs">
                      <thead>
                         <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
-                           <th class="py-2 px-3">Vendedor</th>
-                           <th class="py-2 px-3 text-center">N° Transacciones</th>
-                           <th class="py-2 px-3 text-right">Recaudado</th>
+                           <th class="py-2 px-3">Hora/Vendedor</th>
+                           <th class="py-2 px-3">Productos</th>
+                           <th class="py-2 px-3 text-right">Total</th>
                         </tr>
                      </thead>
-                     <tbody id="cierre-feria-sellers-tbody" class="divide-y divide-slate-800/30">
+                     <tbody id="cierre-feria-recent-tbody" class="divide-y divide-slate-800/30">
                         <!-- Dynamically populated -->
                      </tbody>
                   </table>
@@ -1741,7 +1776,7 @@
       </div>
 
       <div class="flex justify-end pt-2 border-t border-slate-850">
-         <button type="button" onclick="closeCierreFeriaModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-5 rounded-xl text-xs transition cursor-pointer">Aceptar</button>
+         <button type="button" onclick="closeCierreFeriaModal()" class="bg-slate-850 hover:bg-slate-800 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition cursor-pointer">Cerrar</button>
       </div>
     </div>
   </div>
@@ -4307,17 +4342,6 @@
         console.error('Error al imprimir voucher:', err);
       }
 
-      // Descontar del catálogo local inmediatamente
-      transaction.items.forEach(item => {
-        const p = quickPOSProducts.find(prod => prod.id === item.beerStyleId);
-        if (p) {
-          p.stockBottles = Math.max(0, p.stockBottles - item.quantity);
-        }
-      });
-
-      // Guardar caché local de esta feria actualizada
-      localStorage.setItem(`quickpos_catalogue_${activeQuickPOSEvent.id}`, JSON.stringify(quickPOSProducts));
-
       // Intentar persistir en el servidor
       if (navigator.onLine) {
         try {
@@ -4332,6 +4356,11 @@
         }
       } else {
         enqueueOfflineSale(transaction);
+      }
+
+      // Actualizar estadísticas del monitoreo en vivo de feria inmediatamente si está abierto
+      if (activeMonitoringEventId) {
+        refreshMonitoringData(activeMonitoringEventId);
       }
 
       // Reiniciar carro y re-renderizar
@@ -4387,15 +4416,21 @@
         // Recargar stock de la base de datos de esta feria
         if (activeQuickPOSEvent) {
           const products = await apiFetch(`/api/events/${activeQuickPOSEvent.id}/products`);
-          quickPOSProducts = products.map(p => ({
+          quickPOSProducts = products.filter(p => p.status === 'activo').map(p => ({
             id: p.id,
             name: p.name,
             priceUnit: p.price,
-            stockBottles: p.stock,
-            isFavorite: false
+            imageUrl: p.image_url,
+            displayOrder: p.display_order,
+            isFavorite: p.is_favorite === 1
           }));
           localStorage.setItem(`quickpos_catalogue_${activeQuickPOSEvent.id}`, JSON.stringify(quickPOSProducts));
           renderQuickPOS();
+        }
+        
+        // Refresh live dashboard statistics immediately
+        if (activeMonitoringEventId) {
+          refreshMonitoringData(activeMonitoringEventId);
         }
       } catch (err) {
         showToast('Error en la sincronización: ' + err.message, 'error');
@@ -4591,7 +4626,6 @@
       if (!badge) return;
       if (navigator.onLine) {
         badge.className = "px-2.5 py-1 rounded text-xs font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1.5 border border-emerald-500/20";
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Online`;
         
         const queue = getOfflineQueue();
         if (queue.length > 0) {
@@ -4603,12 +4637,16 @@
       }
     }
 
+    let activeMonitoringEventId = null;
+    let monitoringInterval = null;
+
     async function openCierreFeriaModal(eventId) {
+      activeMonitoringEventId = eventId;
       const modal = document.getElementById('modal-cierre-feria');
       const targetEvent = eventsList.find(e => e.id === eventId);
       if (!targetEvent) return;
 
-      document.getElementById('cierre-feria-title').innerText = `Resumen: ${targetEvent.name}`;
+      document.getElementById('cierre-feria-title').innerText = `Monitoreo en Vivo: ${targetEvent.name}`;
       
       // Limpiar campos
       document.getElementById('cierre-feria-total').innerText = '$0';
@@ -4618,14 +4656,30 @@
 
       modal.classList.remove('hidden');
 
+      // Set interval if not already set
+      if (!monitoringInterval) {
+        monitoringInterval = setInterval(() => {
+          if (activeMonitoringEventId) {
+            refreshMonitoringData(activeMonitoringEventId);
+          }
+        }, 4000);
+      }
+
+      await refreshMonitoringData(eventId);
+    }
+
+    async function refreshMonitoringData(eventId) {
       try {
         const sales = await apiFetch('/api/sales/history');
         const eventSales = sales.filter(s => s.eventId === eventId);
 
         if (eventSales.length === 0) {
+          document.getElementById('cierre-feria-total').innerText = '$0';
+          document.getElementById('cierre-feria-tx-count').innerText = '0';
           document.getElementById('cierre-feria-payments-list').innerHTML = '<div class="text-center py-2 text-slate-500 col-span-2">No se registraron ventas en este evento.</div>';
           document.getElementById('cierre-feria-products-tbody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos de venta</td></tr>';
           document.getElementById('cierre-feria-sellers-tbody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos</td></tr>';
+          document.getElementById('cierre-feria-recent-tbody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos</td></tr>';
           return;
         }
 
@@ -4638,6 +4692,7 @@
         const paymentsBreakdown = { efectivo: 0, tarjeta: 0, transferencia: 0, otro: 0 };
         const productsBreakdown = {};
         const sellersBreakdown = {};
+        const txGroups = {};
 
         eventSales.forEach(s => {
           totalRevenue += s.totalAmount;
@@ -4662,6 +4717,19 @@
           }
           sellersBreakdown[sellerName].txs.add(s.correlationId);
           sellersBreakdown[sellerName].revenue += s.totalAmount;
+
+          if (!txGroups[s.correlationId]) {
+            txGroups[s.correlationId] = {
+              correlationId: s.correlationId,
+              transactionDate: s.transactionDate,
+              sellerName: s.sellerName,
+              paymentMethod: s.paymentMethod,
+              totalAmount: 0,
+              itemsText: []
+            };
+          }
+          txGroups[s.correlationId].totalAmount += s.totalAmount;
+          txGroups[s.correlationId].itemsText.push(`${s.unitsSold}x ${s.beerStyleName}`);
         });
 
         document.getElementById('cierre-feria-total').innerText = `$${totalRevenue.toLocaleString()}`;
@@ -4682,7 +4750,7 @@
 
           paymentsHtml += `
             <div class="space-y-1">
-               <div class="flex items-center justify-between text-slate-300">
+               <div class="flex items-center justify-between text-slate-350">
                   <span class="font-medium">${meta.label}</span>
                   <span class="font-bold font-mono">$${amount.toLocaleString()} (${pct.toFixed(1)}%)</span>
                </div>
@@ -4728,9 +4796,36 @@
         });
         document.getElementById('cierre-feria-sellers-tbody').innerHTML = sellersHtml || '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos</td></tr>';
 
+        // 6. Renderizar últimas 10 ventas
+        const sortedTxs = Object.values(txGroups).sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate)).slice(0, 10);
+        let recentHtml = '';
+        sortedTxs.forEach(tx => {
+          const timeStr = new Date(tx.transactionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const itemsStr = tx.itemsText.join(', ');
+          
+          let paySymbol = '💵';
+          if (tx.paymentMethod === 'tarjeta') paySymbol = '💳';
+          if (tx.paymentMethod === 'transferencia') paySymbol = '📲';
+          if (tx.paymentMethod === 'otro') paySymbol = '⚙';
+
+          recentHtml += `
+            <tr class="hover:bg-slate-900/10 text-[11px]">
+               <td class="py-2 px-3 text-slate-300">
+                 <span class="font-bold text-white">${timeStr}</span>
+                 <span class="block text-[9px] text-slate-500">${tx.sellerName}</span>
+               </td>
+               <td class="py-2 px-3 text-slate-300 truncate max-w-[120px]" title="${itemsStr}">${itemsStr}</td>
+               <td class="py-2 px-3 text-right text-brand-500 font-mono font-bold">
+                 $${tx.totalAmount.toLocaleString()}
+                 <span class="text-[9px] text-slate-500 block">${paySymbol}</span>
+               </td>
+            </tr>
+          `;
+        });
+        document.getElementById('cierre-feria-recent-tbody').innerHTML = recentHtml || '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos</td></tr>';
+
       } catch (err) {
-        showToast('Error al compilar resumen: ' + err.message, 'error');
-        closeCierreFeriaModal();
+        showToast('Error al actualizar monitoreo: ' + err.message, 'error');
       }
     }
 
