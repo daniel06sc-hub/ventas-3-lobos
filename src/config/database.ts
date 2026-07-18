@@ -231,17 +231,38 @@ export async function getDatabase(): Promise<IDatabase> {
 
   // Migración para tabla event_products si no existe
   try {
+    let recreateTable = false;
+    try {
+      const tableInfo = await dbInstance.all('PRAGMA table_info(event_products)');
+      if (tableInfo.length > 0) {
+        const hasStatus = tableInfo.some((col: any) => col.name === 'status');
+        if (!hasStatus) {
+          recreateTable = true;
+        }
+      }
+    } catch (e) {
+      // Ignorar si no existe
+    }
+
+    if (recreateTable) {
+      await dbInstance.exec('DROP TABLE IF EXISTS event_products;');
+      console.log('Migración: Eliminada tabla antigua "event_products" para actualización.');
+    }
+
     await dbInstance.exec(`
       CREATE TABLE IF NOT EXISTS event_products (
           id TEXT PRIMARY KEY,
           event_id TEXT NOT NULL,
           name TEXT NOT NULL,
           price REAL NOT NULL DEFAULT 0.0 CHECK(price >= 0),
-          stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0),
+          image_url TEXT,
+          status TEXT NOT NULL DEFAULT 'activo' CHECK(status IN ('activo', 'inactivo')),
+          display_order INTEGER NOT NULL DEFAULT 0,
+          is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)),
           FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE
       );
     `);
-    console.log('Migración: Tabla "event_products" verificada/creada exitosamente.');
+    console.log('Migración: Tabla "event_products" verificada/creada exitosamente con las nuevas columnas.');
   } catch (err) {
     console.error('Error al verificar/crear la tabla "event_products":', err);
   }

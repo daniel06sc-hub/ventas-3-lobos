@@ -1601,8 +1601,8 @@
          <div class="text-xs font-bold text-brand-500 uppercase tracking-wider">➕ Agregar / Configurar Producto para Feria</div>
          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Nombre (Ej: Schop Furia / Michelada)</label>
-               <input type="text" id="ev-prod-name" required list="global-styles-datalist" placeholder="Ej: Schop Furia / Michelada" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500">
+               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Nombre (Ej: Schop / Michelada)</label>
+               <input type="text" id="ev-prod-name" required list="global-styles-datalist" placeholder="Ej: Schop / Michelada" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500">
                <datalist id="global-styles-datalist">
                   <!-- Global styles filled dynamically -->
                </datalist>
@@ -1612,8 +1612,27 @@
                <input type="number" id="ev-prod-price" required min="0" placeholder="Ej: 4000" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500 font-mono">
             </div>
             <div>
-               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Stock Asignado</label>
-               <input type="number" id="ev-prod-stock" required min="0" placeholder="Ej: 100" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500 font-mono">
+               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Imagen URL (opcional)</label>
+               <input type="text" id="ev-prod-image" placeholder="Ej: /assets/schop.png" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500">
+            </div>
+         </div>
+         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Estado</label>
+               <select id="ev-prod-status" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500">
+                  <option value="activo">Activo</option>
+                  <option value="inactivo">Inactivo</option>
+               </select>
+            </div>
+            <div>
+               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Orden de Aparición</label>
+               <input type="number" id="ev-prod-order" required min="0" value="0" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500 font-mono">
+            </div>
+            <div class="flex items-center pt-5">
+               <label class="inline-flex items-center text-xs text-slate-300 font-medium cursor-pointer">
+                  <input type="checkbox" id="ev-prod-favorite" class="rounded bg-slate-900 border-slate-700 text-brand-500 focus:ring-brand-500 mr-2 h-4 w-4">
+                  Destacar como Favorito ⭐
+               </label>
             </div>
          </div>
          <div class="flex justify-end">
@@ -1633,7 +1652,9 @@
                   <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
                      <th class="py-2.5 px-4">Producto</th>
                      <th class="py-2.5 px-4 text-center">Precio</th>
-                     <th class="py-2.5 px-4 text-center">Stock</th>
+                     <th class="py-2.5 px-4 text-center">Estado</th>
+                     <th class="py-2.5 px-4 text-center">Orden</th>
+                     <th class="py-2.5 px-4 text-center">Favorito</th>
                      <th class="py-2.5 px-4 text-right">Acciones</th>
                   </tr>
                </thead>
@@ -1652,7 +1673,7 @@
 
   <div id="modal-cierre-feria" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
     <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeCierreFeriaModal()"></div>
-    <div class="glassmorphism w-full max-w-lg p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
+    <div class="glassmorphism w-full max-w-2xl p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
          <h3 id="cierre-feria-title" class="text-xl font-bold font-outfit text-white">Resumen de Feria</h3>
          <button onclick="closeCierreFeriaModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
@@ -1673,27 +1694,48 @@
          <!-- Payment methods breakdown -->
          <div>
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Desglose por Medio de Pago</h4>
-            <div id="cierre-feria-payments-list" class="space-y-2 bg-slate-900/30 border border-slate-800/60 rounded-xl p-3 text-xs">
+            <div id="cierre-feria-payments-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 bg-slate-900/30 border border-slate-800/60 rounded-xl p-3 text-xs">
                <!-- Payment breakdowns go here -->
             </div>
          </div>
 
-         <!-- Products units sold breakdown -->
-         <div>
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Productos y Existencias Vendidas</h4>
-            <div class="overflow-y-auto max-h-48 bg-slate-900/30 border border-slate-800/60 rounded-xl">
-               <table class="w-full text-left border-collapse text-xs">
-                  <thead>
-                     <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
-                        <th class="py-2 px-3">Producto</th>
-                        <th class="py-2 px-3 text-center">Unidades</th>
-                        <th class="py-2 px-3 text-right">Recaudado</th>
-                     </tr>
-                  </thead>
-                  <tbody id="cierre-feria-products-tbody" class="divide-y divide-slate-800/30">
-                     <!-- Dynamically populated -->
-                  </tbody>
-               </table>
+         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Products units sold breakdown -->
+            <div>
+               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ranking de Productos más Vendidos</h4>
+               <div class="overflow-y-auto max-h-48 bg-slate-900/30 border border-slate-800/60 rounded-xl">
+                  <table class="w-full text-left border-collapse text-xs">
+                     <thead>
+                        <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
+                           <th class="py-2 px-3">Producto</th>
+                           <th class="py-2 px-3 text-center">Unidades</th>
+                           <th class="py-2 px-3 text-right">Recaudado</th>
+                        </tr>
+                     </thead>
+                     <tbody id="cierre-feria-products-tbody" class="divide-y divide-slate-800/30">
+                        <!-- Dynamically populated -->
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+
+            <!-- Sales by Seller -->
+            <div>
+               <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ventas por Vendedor</h4>
+               <div class="overflow-y-auto max-h-48 bg-slate-900/30 border border-slate-800/60 rounded-xl">
+                  <table class="w-full text-left border-collapse text-xs">
+                     <thead>
+                        <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
+                           <th class="py-2 px-3">Vendedor</th>
+                           <th class="py-2 px-3 text-center">N° Transacciones</th>
+                           <th class="py-2 px-3 text-right">Recaudado</th>
+                        </tr>
+                     </thead>
+                     <tbody id="cierre-feria-sellers-tbody" class="divide-y divide-slate-800/30">
+                        <!-- Dynamically populated -->
+                     </tbody>
+                  </table>
+               </div>
             </div>
          </div>
       </div>
@@ -4027,16 +4069,17 @@
       quickPOSCart = [];
       updateNetworkStatusIndicators();
 
-      // Load products catalog (specifically for this event/feria)
+      // Load products catalog (specifically for this event/feria, filtering only ACTIVE ones)
       try {
         if (navigator.onLine) {
           const products = await apiFetch(`/api/events/${eventId}/products`);
-          quickPOSProducts = products.map(p => ({
+          quickPOSProducts = products.filter(p => p.status === 'activo').map(p => ({
             id: p.id,
             name: p.name,
             priceUnit: p.price,
-            stockBottles: p.stock,
-            isFavorite: false
+            imageUrl: p.image_url,
+            displayOrder: p.display_order,
+            isFavorite: p.is_favorite === 1
           }));
           // Cache catalog in localStorage
           localStorage.setItem(`quickpos_catalogue_${eventId}`, JSON.stringify(quickPOSProducts));
@@ -4054,7 +4097,7 @@
         }
         
         if (quickPOSProducts.length === 0) {
-          showToast('Esta feria no tiene productos configurados todavía. El administrador debe agregarlos primero.', 'warning');
+          showToast('Esta feria no tiene productos activos todavía.', 'warning');
         }
 
         renderQuickPOS();
@@ -4085,7 +4128,7 @@
           beerStyleId: product.id,
           beerStyleName: product.name,
           quantity: 1,
-          unitPrice: product.priceUnit, // Caja rápida vende formato unitario 'unit'
+          unitPrice: product.priceUnit, // unit format
           totalAmount: product.priceUnit
         });
       }
@@ -4113,26 +4156,19 @@
       const grid = document.getElementById('quickpos-products-grid');
       grid.innerHTML = '';
 
-      // Sort favorites first
+      // Sort products: displayOrder ASC, then favorites DESC, then name alphabetically
       const sortedProducts = [...quickPOSProducts].sort((a, b) => {
+        const orderA = a.displayOrder !== undefined ? a.displayOrder : 0;
+        const orderB = b.displayOrder !== undefined ? b.displayOrder : 0;
         const favA = a.isFavorite ? 1 : 0;
         const favB = b.isFavorite ? 1 : 0;
-        return favB - favA || a.name.localeCompare(b.name);
+        return orderA - orderB || favB - favA || a.name.localeCompare(b.name);
       });
 
       sortedProducts.forEach(p => {
-        // Calculate remaining stock based on cart deductions
-        const cartItem = quickPOSCart.find(i => i.beerStyleId === p.id);
-        const cartQty = cartItem ? cartItem.quantity : 0;
-        const currentStock = Math.max(0, p.stockBottles - cartQty);
-
         const isFav = p.isFavorite || false;
         const card = document.createElement('button');
         card.onclick = () => {
-          if (currentStock <= 0) {
-            showToast('Stock insuficiente para este producto', 'error');
-            return;
-          }
           addToQuickPOSCart(p.id);
         };
 
@@ -4142,12 +4178,10 @@
 
         card.innerHTML = `
           ${isFav ? '<span class="absolute top-2 right-2 text-amber-400 text-xs"><i class="fa-solid fa-star"></i></span>' : ''}
+          ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}" class="w-12 h-12 object-contain mb-1 rounded-lg">` : ''}
           <div class="font-bold text-white text-sm line-clamp-2 leading-snug">${p.name}</div>
           <div class="w-full flex flex-col gap-1 mt-1">
              <span class="text-brand-500 font-extrabold text-base font-mono">$${p.priceUnit}</span>
-             <span class="text-[10px] ${currentStock === 0 ? 'text-red-400 font-bold' : 'text-slate-400'}">
-                Stock: ${currentStock} uds
-             </span>
           </div>
         `;
         grid.appendChild(card);
@@ -4413,33 +4447,58 @@
 
     async function fetchEventProducts(eventId) {
       const tbody = document.getElementById('event-products-tbody');
-      tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">Cargando productos...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-500">Cargando productos...</td></tr>';
       try {
         const products = await apiFetch(`/api/events/${eventId}/products`);
         eventProductsList = products;
         
-        tbody.innerHTML = products.map(p => {
+        // Sort products inside the modal: display_order ASC, then name
+        const sortedProds = [...products].sort((a, b) => {
+          const orderA = a.display_order !== undefined ? a.display_order : 0;
+          const orderB = b.display_order !== undefined ? b.display_order : 0;
+          return orderA - orderB || a.name.localeCompare(b.name);
+        });
+
+        tbody.innerHTML = sortedProds.map(p => {
+          const isFav = p.is_favorite === 1;
           return `
             <tr class="hover:bg-slate-900/30 border-b border-slate-800/30 text-xs">
-              <td class="py-2.5 px-4 font-semibold text-white">${p.name}</td>
+              <td class="py-2.5 px-4 font-semibold text-white">
+                <div class="flex flex-col">
+                  <span>${p.name}</span>
+                  ${p.image_url ? `<span class="text-[9px] text-slate-500 italic truncate max-w-[120px]">${p.image_url}</span>` : ''}
+                </div>
+              </td>
               <td class="py-2.5 px-4 text-center">
                  <input type="number" value="${p.price}" min="0" onchange="handleUpdateEventProductPrice('${p.id}', this.value)"
                    class="bg-slate-900 border border-slate-700 text-white rounded-lg py-1 px-2 text-center text-xs font-mono font-bold focus:outline-none focus:border-brand-500 w-20">
               </td>
               <td class="py-2.5 px-4 text-center">
-                 <input type="number" value="${p.stock}" min="0" onchange="handleUpdateEventProductStock('${p.id}', this.value)"
-                   class="bg-slate-900 border border-slate-700 text-white rounded-lg py-1 px-2 text-center text-xs font-mono font-bold focus:outline-none focus:border-brand-500 w-20">
+                 <select onchange="handleUpdateEventProductStatus('${p.id}', this.value)"
+                   class="bg-slate-900 border border-slate-700 text-white rounded-lg py-1 px-2 text-xs focus:outline-none focus:border-brand-500">
+                   <option value="activo" ${p.status === 'activo' ? 'selected' : ''}>Activo</option>
+                   <option value="inactivo" ${p.status === 'inactivo' ? 'selected' : ''}>Inactivo</option>
+                 </select>
               </td>
-              <td class="py-2.5 px-4 text-right font-mono">
+              <td class="py-2.5 px-4 text-center">
+                 <input type="number" value="${p.display_order}" min="0" onchange="handleUpdateEventProductOrder('${p.id}', this.value)"
+                   class="bg-slate-900 border border-slate-700 text-white rounded-lg py-1 px-2 text-center text-xs font-mono w-16">
+              </td>
+              <td class="py-2.5 px-4 text-center">
+                 <button onclick="handleToggleEventProductFav('${p.id}', ${p.is_favorite === 1 ? 0 : 1})" class="text-base transition">
+                   ${isFav ? '<span class="text-amber-400"><i class="fa-solid fa-star"></i></span>' : '<span class="text-slate-650 hover:text-slate-400"><i class="fa-regular fa-star"></i></span>'}
+                 </button>
+              </td>
+              <td class="py-2.5 px-4 text-right">
                  <button onclick="deleteEventProduct('${p.id}')" class="text-red-400 hover:text-red-300 transition" title="Eliminar de la feria">
                     <i class="fa-solid fa-trash"></i>
                  </button>
               </td>
             </tr>
           `;
-        }).join('') || '<tr><td colspan="4" class="py-6 text-center text-slate-500">No hay productos agregados a esta feria.</td></tr>';
+        }).join('') || '<tr><td colspan="6" class="py-6 text-center text-slate-500">No hay productos agregados a esta feria.</td></tr>';
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
       }
     }
 
@@ -4449,14 +4508,17 @@
 
       const name = document.getElementById('ev-prod-name').value.trim();
       const price = parseFloat(document.getElementById('ev-prod-price').value);
-      const stock = parseInt(document.getElementById('ev-prod-stock').value, 10);
+      const imageUrl = document.getElementById('ev-prod-image').value.trim();
+      const status = document.getElementById('ev-prod-status').value;
+      const displayOrder = parseInt(document.getElementById('ev-prod-order').value, 10) || 0;
+      const isFavorite = document.getElementById('ev-prod-favorite').checked;
 
       try {
         await apiFetch(`/api/events/${activeConfigEventId}/products`, {
           method: 'POST',
-          body: JSON.stringify({ name, price, stock })
+          body: JSON.stringify({ name, price, imageUrl, status, displayOrder, isFavorite })
         });
-        showToast('Producto agregado/actualizado en la feria con éxito', 'success');
+        showToast('Producto de evento agregado con éxito', 'success');
         document.getElementById('form-event-product').reset();
         await fetchEventProducts(activeConfigEventId);
       } catch (err) {
@@ -4482,19 +4544,47 @@
       }
     }
 
-    async function handleUpdateEventProductStock(productId, newStock) {
+    async function handleUpdateEventProductStatus(productId, status) {
       if (!activeConfigEventId) return;
-      const stock = parseInt(newStock, 10);
-      if (isNaN(stock) || stock < 0) {
-        showToast('Stock inválido', 'error');
+      try {
+        await apiFetch(`/api/events/${activeConfigEventId}/products/${productId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status })
+        });
+        showToast('Estado de producto actualizado', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleUpdateEventProductOrder(productId, orderVal) {
+      if (!activeConfigEventId) return;
+      const displayOrder = parseInt(orderVal, 10);
+      if (isNaN(displayOrder) || displayOrder < 0) {
+        showToast('Orden inválida', 'error');
         return;
       }
       try {
         await apiFetch(`/api/events/${activeConfigEventId}/products/${productId}`, {
           method: 'PUT',
-          body: JSON.stringify({ stock })
+          body: JSON.stringify({ displayOrder })
         });
-        showToast('Stock de producto actualizado', 'success');
+        showToast('Orden de aparición actualizado', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleToggleEventProductFav(productId, favState) {
+      if (!activeConfigEventId) return;
+      const isFavorite = favState === 1;
+      try {
+        await apiFetch(`/api/events/${activeConfigEventId}/products/${productId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ isFavorite })
+        });
+        showToast(isFavorite ? 'Producto destacado' : 'Destacado removido', 'success');
+        await fetchEventProducts(activeConfigEventId);
       } catch (err) {
         showToast(err.message, 'error');
       }
@@ -4551,8 +4641,9 @@
         const eventSales = sales.filter(s => s.eventId === eventId);
 
         if (eventSales.length === 0) {
-          document.getElementById('cierre-feria-payments-list').innerHTML = '<div class="text-center py-2 text-slate-500">No se registraron ventas en este evento.</div>';
+          document.getElementById('cierre-feria-payments-list').innerHTML = '<div class="text-center py-2 text-slate-500 col-span-2">No se registraron ventas en este evento.</div>';
           document.getElementById('cierre-feria-products-tbody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos de venta</td></tr>';
+          document.getElementById('cierre-feria-sellers-tbody').innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos</td></tr>';
           return;
         }
 
@@ -4564,6 +4655,7 @@
         let totalRevenue = 0;
         const paymentsBreakdown = { efectivo: 0, tarjeta: 0, transferencia: 0, otro: 0 };
         const productsBreakdown = {};
+        const sellersBreakdown = {};
 
         eventSales.forEach(s => {
           totalRevenue += s.totalAmount;
@@ -4581,6 +4673,13 @@
           }
           productsBreakdown[styleName].units += s.unitsSold;
           productsBreakdown[styleName].revenue += s.totalAmount;
+
+          const sellerName = s.sellerName || 'Vendedor';
+          if (!sellersBreakdown[sellerName]) {
+            sellersBreakdown[sellerName] = { txs: new Set(), revenue: 0 };
+          }
+          sellersBreakdown[sellerName].txs.add(s.correlationId);
+          sellersBreakdown[sellerName].revenue += s.totalAmount;
         });
 
         document.getElementById('cierre-feria-total').innerText = `$${totalRevenue.toLocaleString()}`;
@@ -4613,19 +4712,39 @@
         });
         document.getElementById('cierre-feria-payments-list').innerHTML = paymentsHtml;
 
-        // 4. Renderizar productos
+        // 4. Renderizar productos ordenados por ranking (unidades vendidas desc)
+        const sortedProducts = Object.keys(productsBreakdown)
+          .map(name => ({ name, ...productsBreakdown[name] }))
+          .sort((a, b) => b.units - a.units);
+
         let productsHtml = '';
-        Object.keys(productsBreakdown).forEach(name => {
-          const item = productsBreakdown[name];
+        sortedProducts.forEach(p => {
           productsHtml += `
             <tr class="hover:bg-slate-900/10">
-               <td class="py-2 px-3 text-white font-medium">${name}</td>
-               <td class="py-2 px-3 text-center text-slate-300 font-bold">${item.units}</td>
-               <td class="py-2 px-3 text-right text-brand-500 font-mono font-bold">$${item.revenue.toLocaleString()}</td>
+               <td class="py-2 px-3 text-white font-medium">${p.name}</td>
+               <td class="py-2 px-3 text-center text-slate-300 font-bold">${p.units}</td>
+               <td class="py-2 px-3 text-right text-brand-500 font-mono font-bold">$${p.revenue.toLocaleString()}</td>
             </tr>
           `;
         });
         document.getElementById('cierre-feria-products-tbody').innerHTML = productsHtml;
+
+        // 5. Renderizar vendedores
+        const sortedSellers = Object.keys(sellersBreakdown)
+          .map(name => ({ name, ...sellersBreakdown[name] }))
+          .sort((a, b) => b.revenue - a.revenue);
+
+        let sellersHtml = '';
+        sortedSellers.forEach(s => {
+          sellersHtml += `
+            <tr class="hover:bg-slate-900/10">
+               <td class="py-2 px-3 text-white font-medium">${s.name}</td>
+               <td class="py-2 px-3 text-center text-slate-300 font-mono font-bold">${s.txs.size}</td>
+               <td class="py-2 px-3 text-right text-brand-500 font-mono font-bold">$${s.revenue.toLocaleString()}</td>
+            </tr>
+          `;
+        });
+        document.getElementById('cierre-feria-sellers-tbody').innerHTML = sellersHtml || '<tr><td colspan="3" class="text-center py-4 text-slate-500">Sin datos</td></tr>';
 
       } catch (err) {
         showToast('Error al compilar resumen: ' + err.message, 'error');

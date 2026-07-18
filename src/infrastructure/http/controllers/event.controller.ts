@@ -58,23 +58,26 @@ export class EventController {
   addEventProduct = async (req: Request, res: Response) => {
     try {
       const { eventId } = req.params;
-      const { name, price, stock } = req.body;
-      if (!name || price === undefined || stock === undefined) {
-        return res.status(400).json({ error: 'Nombre, precio y stock son campos obligatorios' });
+      const { name, price, imageUrl, status, displayOrder, isFavorite } = req.body;
+      if (!name || price === undefined) {
+        return res.status(400).json({ error: 'Nombre y precio son campos obligatorios' });
       }
 
       const db = await getDatabase();
       const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
       await db.run(
-        'INSERT INTO event_products (id, event_id, name, price, stock) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO event_products (id, event_id, name, price, image_url, status, display_order, is_favorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         id,
         eventId,
         name,
         Number(price),
-        Number(stock)
+        imageUrl || null,
+        status || 'activo',
+        displayOrder !== undefined ? Number(displayOrder) : 0,
+        isFavorite ? 1 : 0
       );
 
-      const created = { id, eventId, name, price, stock };
+      const created = { id, eventId, name, price, imageUrl, status, displayOrder, isFavorite };
       return res.status(201).json(created);
     } catch (error: any) {
       return res.status(400).json({ error: error.message || 'Error al agregar producto al evento' });
@@ -84,7 +87,7 @@ export class EventController {
   updateEventProduct = async (req: Request, res: Response) => {
     try {
       const { eventId, productId } = req.params;
-      const { price, stock } = req.body;
+      const { price, imageUrl, status, displayOrder, isFavorite } = req.body;
 
       const db = await getDatabase();
       const product = await db.get('SELECT * FROM event_products WHERE event_id = ? AND id = ?', eventId, productId);
@@ -93,16 +96,31 @@ export class EventController {
       }
 
       const newPrice = price !== undefined ? Number(price) : product.price;
-      const newStock = stock !== undefined ? Number(stock) : product.stock;
+      const newImageUrl = imageUrl !== undefined ? imageUrl : product.image_url;
+      const newStatus = status !== undefined ? status : product.status;
+      const newDisplayOrder = displayOrder !== undefined ? Number(displayOrder) : product.display_order;
+      const newIsFavorite = isFavorite !== undefined ? (isFavorite ? 1 : 0) : product.is_favorite;
 
       await db.run(
-        'UPDATE event_products SET price = ?, stock = ? WHERE id = ?',
+        'UPDATE event_products SET price = ?, image_url = ?, status = ?, display_order = ?, is_favorite = ? WHERE id = ?',
         newPrice,
-        newStock,
+        newImageUrl,
+        newStatus,
+        newDisplayOrder,
+        newIsFavorite,
         productId
       );
 
-      return res.status(200).json({ id: productId, eventId, name: product.name, price: newPrice, stock: newStock });
+      return res.status(200).json({
+        id: productId,
+        eventId,
+        name: product.name,
+        price: newPrice,
+        imageUrl: newImageUrl,
+        status: newStatus,
+        displayOrder: newDisplayOrder,
+        isFavorite: newIsFavorite === 1
+      });
     } catch (error: any) {
       return res.status(400).json({ error: error.message || 'Error al actualizar producto del evento' });
     }

@@ -114,18 +114,7 @@ export class SalesService {
               eventProdName = evProduct.name;
               eventProdPrice = evProduct.price;
 
-              // A. Validar stock
-              if (evProduct.stock < styleBreakdown.bottlesCount) {
-                throw new Error(
-                  `Stock insuficiente para "${evProduct.name}" en este evento. Solicitado: ${styleBreakdown.bottlesCount}. Disponible: ${evProduct.stock}.`
-                );
-              }
-
-              // C. Descontar stock del evento
-              const newStock = evProduct.stock - styleBreakdown.bottlesCount;
-              await db.run('UPDATE event_products SET stock = ? WHERE id = ?', newStock, evProduct.id);
-
-              // D. Registrar línea de auditoría
+              // Registrar línea de auditoría (sin descontar stock de inventario)
               const portionTotalAmount = evProduct.price * styleBreakdown.bottlesCount;
               totalPaid += portionTotalAmount;
 
@@ -508,9 +497,7 @@ export class SalesService {
             const evProduct = await db.get('SELECT * FROM event_products WHERE event_id = ? AND id = ?', eventId, item.beerStyleId);
             if (evProduct) {
               isEventProd = true;
-              let newStock = evProduct.stock - item.quantity;
-              if (newStock < 0) newStock = 0; // Clampear a 0
-              await db.run('UPDATE event_products SET stock = ? WHERE id = ?', newStock, evProduct.id);
+              // No stock updates for event products since they are not tracked as inventory
             }
           }
 

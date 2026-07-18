@@ -676,7 +676,7 @@ async function runTests() {
     const testEventId = createdEvent.id;
     console.log(`✓ Evento temporal de test creado. ID: ${testEventId}`);
 
-    // 2. Agregar un producto al evento (Schop con precio y stock modificado)
+    // 2. Agregar un producto al evento (Schop)
     const addProdRes = await fetch(`${BASE_URL}/events/${testEventId}/products`, {
       method: 'POST',
       headers: {
@@ -686,24 +686,29 @@ async function runTests() {
       body: JSON.stringify({
         name: 'Schop Furia 500cc',
         price: 4500,
-        stock: 50
+        imageUrl: '/assets/schop.png',
+        status: 'activo',
+        displayOrder: 1,
+        isFavorite: true
       })
     });
     assert(addProdRes.status === 201, 'Debería crear el producto del evento exitosamente');
     const createdProd = await addProdRes.json() as any;
     const testEventProductId = createdProd.id;
-    console.log(`✓ Producto de evento Schop Furia 500cc agregado. ID: ${testEventProductId}, Precio: 4500, Stock: 50`);
+    console.log(`✓ Producto de evento Schop Furia 500cc agregado. ID: ${testEventProductId}, Precio: 4500, Favorito: Sí`);
 
-    // 3. Listar productos del evento y comprobar existencia
+    // 3. Listar productos del evento y comprobar existencia y campos nuevos
     const listProdsRes = await fetch(`${BASE_URL}/events/${testEventId}/products`, {
       headers: { 'Authorization': `Bearer ${adminToken}` }
     });
     const eventProds = await listProdsRes.json() as any[];
     assert(eventProds.length === 1, 'Debería haber exactamente 1 producto asociado a este evento');
     assert(eventProds[0].name === 'Schop Furia 500cc', 'El nombre del producto debe coincidir');
+    assert(eventProds[0].is_favorite === 1, 'Debe registrarse como favorito');
+    assert(eventProds[0].display_order === 1, 'Debe registrarse con orden 1');
     console.log('✓ Lista de productos del evento comprobada con éxito.');
 
-    // 4. Realizar checkout online asociando el ID del evento y descontando del stock de event_products
+    // 4. Realizar checkout online asociando el ID del evento (sin restricciones de inventario)
     const evCheckoutRes = await fetch(`${BASE_URL}/sales/checkout`, {
       method: 'POST',
       headers: {
@@ -728,15 +733,7 @@ async function runTests() {
     const evCheckoutData = await evCheckoutRes.json() as any;
     console.log(`✓ Venta de feria completada con éxito. Correlation ID: ${evCheckoutData.correlationId}`);
 
-    // 5. Verificar que el stock de event_products disminuyó de 50 a 48
-    const listProds2Res = await fetch(`${BASE_URL}/events/${testEventId}/products`, {
-      headers: { 'Authorization': `Bearer ${adminToken}` }
-    });
-    const eventProdsAfter = await listProds2Res.json() as any[];
-    assert(eventProdsAfter[0].stock === 48, `El stock del producto del evento debió reducirse a 48, actual: ${eventProdsAfter[0].stock}`);
-    console.log('✓ Descuento de stock en producto del evento confirmado (50 -> 48).');
-
-    // 6. Eliminar el producto del evento
+    // 5. Eliminar el producto del evento
     const deleteProdRes = await fetch(`${BASE_URL}/events/${testEventId}/products/${testEventProductId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${adminToken}` }
