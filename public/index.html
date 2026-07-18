@@ -2083,6 +2083,39 @@
       }
     }
 
+    function groupSalesLogs(logs) {
+      const groups = {};
+      logs.forEach(log => {
+        const key = `${log.correlationId}_${log.formatSold}`;
+        if (!groups[key]) {
+          groups[key] = {
+            id: log.id,
+            correlationId: log.correlationId,
+            transactionDate: log.transactionDate,
+            sellerId: log.sellerId,
+            sellerName: log.sellerName,
+            customerId: log.customerId,
+            customerName: log.customerName,
+            formatSold: log.formatSold,
+            paymentStatus: log.paymentStatus,
+            unitsSold: 0,
+            totalAmount: 0,
+            styles: []
+          };
+        }
+        groups[key].unitsSold += log.unitsSold;
+        groups[key].totalAmount += log.totalAmount;
+        
+        const existingStyle = groups[key].styles.find(s => s.name === log.beerStyleName);
+        if (existingStyle) {
+          existingStyle.qty += log.unitsSold;
+        } else {
+          groups[key].styles.push({ name: log.beerStyleName, qty: log.unitsSold });
+        }
+      });
+      return Object.values(groups).sort((a, b) => new Date(b.transactionDate) - new Date(a.transactionDate));
+    }
+
     function filterAuditLogs() {
       const range = document.getElementById('report-range-select').value;
       const paymentFilter = document.getElementById('report-payment-select').value;
@@ -2105,7 +2138,7 @@
         startDateLimit = new Date(now.getFullYear(), now.getMonth(), 1);
       }
 
-      const filtered = rawAuditLogs.filter(log => {
+      const filteredRaw = rawAuditLogs.filter(log => {
         const transDate = new Date(log.transactionDate);
         if (transDate < startDateLimit) return false;
         
@@ -2115,6 +2148,8 @@
 
         return true;
       });
+
+      const filtered = groupSalesLogs(filteredRaw);
 
       if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="9" class="py-12 text-center text-slate-500">No se encontraron ventas para los filtros seleccionados.</td></tr>';
@@ -2162,7 +2197,7 @@
               ${log.customerName}
             </span>
           </td>
-          <td class="py-4 px-6 font-medium text-white">${log.beerStyleName}</td>
+          <td class="py-4 px-6 font-medium text-white">${log.styles.map(s => `${s.qty} ${s.name}`).join(', ')}</td>
           <td class="py-4 px-6 text-slate-300">${formatNames[log.formatSold] || log.formatSold}</td>
           <td class="py-4 px-6 text-center font-bold text-slate-200">${log.unitsSold} u.</td>
           <td class="py-4 px-6 text-right font-bold text-brand-500 font-mono text-sm">$${Number(log.totalAmount).toFixed(2)}</td>
@@ -2212,7 +2247,7 @@
         startDateLimit = new Date(now.getFullYear(), now.getMonth(), 1);
       }
 
-      const reportLogs = rawAuditLogs.filter(log => {
+      const reportLogsRaw = rawAuditLogs.filter(log => {
         const transDate = new Date(log.transactionDate);
         if (transDate < startDateLimit) return false;
         if (statusFilter !== 'all' && log.paymentStatus !== statusFilter) return false;
@@ -2225,13 +2260,15 @@
       let totalBottles = 0;
       let totalPendingDebt = 0;
       
-      reportLogs.forEach(log => {
+      reportLogsRaw.forEach(log => {
         totalRevenue += log.totalAmount;
         totalBottles += log.unitsSold;
         if (log.paymentStatus === 'pendiente') {
           totalPendingDebt += log.totalAmount;
         }
       });
+
+      const reportLogs = groupSalesLogs(reportLogsRaw);
 
       document.getElementById('print-report-date-compiled').innerText = `Fecha: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
       
@@ -2267,7 +2304,7 @@
             <td class="py-2 px-3">${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
             <td class="py-2 px-3">${log.sellerName}</td>
             <td class="py-2 px-3 font-semibold">${log.customerName}</td>
-            <td class="py-2 px-3">${log.beerStyleName}</td>
+            <td class="py-2 px-3">${log.styles.map(s => `${s.qty} ${s.name}`).join(', ')}</td>
             <td class="py-2 px-3">${formatNames[log.formatSold] || log.formatSold}</td>
             <td class="py-2 px-3 text-center">${log.unitsSold} u.</td>
             <td class="py-2 px-3 text-right font-mono font-bold">$${log.totalAmount.toFixed(2)}</td>

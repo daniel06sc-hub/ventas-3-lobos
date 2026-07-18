@@ -356,6 +356,11 @@ export class SQLiteSaleRepository implements ISaleRepository {
 
   async updatePaymentStatus(id: number, status: 'pagado' | 'pendiente'): Promise<void> {
     const db = await this.getDb();
-    await db.run('UPDATE sales SET payment_status = ? WHERE id = ?', status, id);
+    const row = await db.get('SELECT correlation_id FROM sales WHERE id = ?', id);
+    if (row && row.correlation_id) {
+      await db.run('UPDATE sales SET payment_status = ? WHERE correlation_id = ?', status, row.correlation_id);
+    } else {
+      await db.run('UPDATE sales SET payment_status = ? WHERE id = ?', status, id);
+    }
   }
 }
