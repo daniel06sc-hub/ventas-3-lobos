@@ -70,7 +70,7 @@ export interface Sale {
   sellerName: string;
   customerId: string | null;
   customerName: string;
-  beerStyleId: string;
+  beerStyleId: string | null;
   beerStyleName: string;
   formatSold: SalesFormat;
   units_sold?: number; // legacy compatibility

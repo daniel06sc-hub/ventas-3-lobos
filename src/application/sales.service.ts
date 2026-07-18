@@ -103,70 +103,118 @@ export class SalesService {
             throw new Error('La cantidad de botellas de cada estilo en un pack mixto debe ser mayor a 0');
           }
 
-          // Obtener datos del estilo en caliente dentro de la transacción
-          const beerStyle = await db.get('SELECT * FROM beer_styles WHERE id = ?', styleBreakdown.beerStyleId);
-          if (!beerStyle) {
-            throw new Error(`El estilo de cerveza solicitado no existe en catálogo`);
+          let isEventProd = false;
+          let eventProdName = '';
+          let eventProdPrice = 0;
+
+          if (eventId) {
+            const evProduct = await db.get('SELECT * FROM event_products WHERE event_id = ? AND id = ?', eventId, styleBreakdown.beerStyleId);
+            if (evProduct) {
+              isEventProd = true;
+              eventProdName = evProduct.name;
+              eventProdPrice = evProduct.price;
+
+              // A. Validar stock
+              if (evProduct.stock < styleBreakdown.bottlesCount) {
+                throw new Error(
+                  `Stock insuficiente para "${evProduct.name}" en este evento. Solicitado: ${styleBreakdown.bottlesCount}. Disponible: ${evProduct.stock}.`
+                );
+              }
+
+              // C. Descontar stock del evento
+              const newStock = evProduct.stock - styleBreakdown.bottlesCount;
+              await db.run('UPDATE event_products SET stock = ? WHERE id = ?', newStock, evProduct.id);
+
+              // D. Registrar línea de auditoría
+              const portionTotalAmount = evProduct.price * styleBreakdown.bottlesCount;
+              totalPaid += portionTotalAmount;
+
+              salesToRecord.push({
+                correlationId,
+                transactionDate: new Date(),
+                sellerId: seller.id,
+                sellerName: seller.name,
+                customerId,
+                customerName,
+                beerStyleId: null, // null para evitar fallos de FK
+                beerStyleName: evProduct.name,
+                formatSold: item.format,
+                unitsSold: styleBreakdown.bottlesCount,
+                unitPrice: evProduct.price,
+                totalAmount: portionTotalAmount,
+                paymentStatus: input.paymentStatus || 'pagado',
+                eventId,
+                eventName
+              });
+            }
           }
 
-          // Determinar precio del formato de este estilo
-          let priceOfFormat = 0;
-          switch (item.format) {
-            case 'unit':
-              priceOfFormat = beerStyle.price_unit;
-              break;
-            case 'pack2':
-              priceOfFormat = beerStyle.price_pack2;
-              break;
-            case 'pack3':
-              priceOfFormat = beerStyle.price_pack3;
-              break;
-            case 'pack4':
-              priceOfFormat = beerStyle.price_pack4;
-              break;
-            case 'wholesale':
-              priceOfFormat = beerStyle.price_wholesale;
-              break;
-          }
+          if (!isEventProd) {
+            // Obtener datos del estilo en caliente dentro de la transacción
+            const beerStyle = await db.get('SELECT * FROM beer_styles WHERE id = ?', styleBreakdown.beerStyleId);
+            if (!beerStyle) {
+              throw new Error(`El estilo de cerveza solicitado no existe en catálogo`);
+            }
 
-          // A. Validar stock disponible para este estilo en particular
-          if (beerStyle.stock_bottles < styleBreakdown.bottlesCount) {
-            throw new Error(
-              `Stock insuficiente para el estilo "${beerStyle.name}". Solicitado en pack mixto/simple: ${styleBreakdown.bottlesCount} botellas. Stock disponible actual: ${beerStyle.stock_bottles} botellas.`
+            // Determinar precio del formato de este estilo
+            let priceOfFormat = 0;
+            switch (item.format) {
+              case 'unit':
+                priceOfFormat = beerStyle.price_unit;
+                break;
+              case 'pack2':
+                priceOfFormat = beerStyle.price_pack2;
+                break;
+              case 'pack3':
+                priceOfFormat = beerStyle.price_pack3;
+                break;
+              case 'pack4':
+                priceOfFormat = beerStyle.price_pack4;
+                break;
+              case 'wholesale':
+                priceOfFormat = beerStyle.price_wholesale;
+                break;
+            }
+
+            // A. Validar stock disponible para este estilo en particular
+            if (beerStyle.stock_bottles < styleBreakdown.bottlesCount) {
+              throw new Error(
+                `Stock insuficiente para el estilo "${beerStyle.name}". Solicitado en pack mixto/simple: ${styleBreakdown.bottlesCount} botellas. Stock disponible actual: ${beerStyle.stock_bottles} botellas.`
+              );
+            }
+
+            // B. Calcular precios (proporcional si es un pack mixto)
+            const pricePerBottleInFormat = priceOfFormat / bottlesPerFormat;
+            const portionTotalAmount = pricePerBottleInFormat * styleBreakdown.bottlesCount;
+            totalPaid += portionTotalAmount;
+
+            // C. Descontar stock
+            const newStock = beerStyle.stock_bottles - styleBreakdown.bottlesCount;
+            await db.run(
+              'UPDATE beer_styles SET stock_bottles = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+              newStock,
+              beerStyle.id
             );
+
+            // D. Registrar línea de auditoría
+            salesToRecord.push({
+              correlationId,
+              transactionDate: new Date(),
+              sellerId: seller.id,
+              sellerName: seller.name,
+              customerId,
+              customerName,
+              beerStyleId: beerStyle.id,
+              beerStyleName: beerStyle.name,
+              formatSold: item.format,
+              unitsSold: styleBreakdown.bottlesCount,
+              unitPrice: pricePerBottleInFormat,
+              totalAmount: portionTotalAmount,
+              paymentStatus: input.paymentStatus || 'pagado',
+              eventId,
+              eventName
+            });
           }
-
-          // B. Calcular precios (proporcional si es un pack mixto)
-          const pricePerBottleInFormat = priceOfFormat / bottlesPerFormat;
-          const portionTotalAmount = pricePerBottleInFormat * styleBreakdown.bottlesCount;
-          totalPaid += portionTotalAmount;
-
-          // C. Descontar stock
-          const newStock = beerStyle.stock_bottles - styleBreakdown.bottlesCount;
-          await db.run(
-            'UPDATE beer_styles SET stock_bottles = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            newStock,
-            beerStyle.id
-          );
-
-          // D. Registrar línea de auditoría
-          salesToRecord.push({
-            correlationId,
-            transactionDate: new Date(),
-            sellerId: seller.id,
-            sellerName: seller.name,
-            customerId,
-            customerName,
-            beerStyleId: beerStyle.id,
-            beerStyleName: beerStyle.name,
-            formatSold: item.format,
-            unitsSold: styleBreakdown.bottlesCount,
-            unitPrice: pricePerBottleInFormat,
-            totalAmount: portionTotalAmount,
-            paymentStatus: input.paymentStatus || 'pagado',
-            eventId,
-            eventName
-          });
         }
       }
 
@@ -453,23 +501,36 @@ export class SalesService {
         for (const item of t.items) {
           if (item.quantity <= 0) continue;
 
-          // Obtener stock actual
-          const beerStyle = await db.get('SELECT * FROM beer_styles WHERE id = ?', item.beerStyleId);
-          if (!beerStyle) {
-            throw new Error(`El estilo de cerveza "${item.beerStyleName}" (ID: ${item.beerStyleId}) no existe en catálogo`);
+          let isEventProd = false;
+          let dbStyleId = null;
+
+          if (eventId) {
+            const evProduct = await db.get('SELECT * FROM event_products WHERE event_id = ? AND id = ?', eventId, item.beerStyleId);
+            if (evProduct) {
+              isEventProd = true;
+              let newStock = evProduct.stock - item.quantity;
+              if (newStock < 0) newStock = 0; // Clampear a 0
+              await db.run('UPDATE event_products SET stock = ? WHERE id = ?', newStock, evProduct.id);
+            }
           }
 
-          // Descontar stock con clampeo a 0
-          let newStock = beerStyle.stock_bottles - item.quantity;
-          if (newStock < 0) {
-            newStock = 0; // clampear a 0 para no romper la restricción CHECK(stock_bottles >= 0)
+          if (!isEventProd) {
+            // Obtener stock actual
+            const beerStyle = await db.get('SELECT * FROM beer_styles WHERE id = ?', item.beerStyleId);
+            if (beerStyle) {
+              dbStyleId = beerStyle.id;
+              // Descontar stock con clampeo a 0
+              let newStock = beerStyle.stock_bottles - item.quantity;
+              if (newStock < 0) {
+                newStock = 0; // clampear a 0 para no romper la restricción CHECK(stock_bottles >= 0)
+              }
+              await db.run(
+                'UPDATE beer_styles SET stock_bottles = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                newStock,
+                beerStyle.id
+              );
+            }
           }
-
-          await db.run(
-            'UPDATE beer_styles SET stock_bottles = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            newStock,
-            beerStyle.id
-          );
 
           // Registrar en la tabla sales
           await db.run(
@@ -480,10 +541,8 @@ export class SalesService {
             t.correlationId,
             seller.id,
             seller.name,
-            customerId,
-            customerName,
-            beerStyle.id,
-            beerStyle.name,
+            dbStyleId,
+            item.beerStyleName,
             'unit', // Las ventas rápidas de festival se registran como formato individual 'unit'
             item.quantity,
             item.unitPrice,

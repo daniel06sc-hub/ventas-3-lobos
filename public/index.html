@@ -1587,6 +1587,69 @@
     </div>
   </div>
 
+  <!-- Modal Configurar Productos del Evento -->
+  <div id="modal-event-products" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
+    <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeEventProductsConfig()"></div>
+    <div class="glassmorphism w-full max-w-2xl p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+         <h3 id="event-products-config-title" class="text-xl font-bold font-outfit text-white">Configurar Productos del Evento</h3>
+         <button onclick="closeEventProductsConfig()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Add product sub-form (inline) -->
+      <form id="form-event-product" onsubmit="handleAddEventProduct(event)" class="bg-slate-900/40 p-4 border border-slate-850 rounded-xl space-y-3">
+         <div class="text-xs font-bold text-brand-500 uppercase tracking-wider">➕ Agregar / Configurar Producto para Feria</div>
+         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Nombre (Ej: Schop Furia / Michelada)</label>
+               <input type="text" id="ev-prod-name" required list="global-styles-datalist" placeholder="Ej: Schop Furia / Michelada" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500">
+               <datalist id="global-styles-datalist">
+                  <!-- Global styles filled dynamically -->
+               </datalist>
+            </div>
+            <div>
+               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Precio en Feria ($)</label>
+               <input type="number" id="ev-prod-price" required min="0" placeholder="Ej: 4000" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500 font-mono">
+            </div>
+            <div>
+               <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Stock Asignado</label>
+               <input type="number" id="ev-prod-stock" required min="0" placeholder="Ej: 100" class="w-full bg-slate-900 border border-slate-700 text-white rounded-xl py-2 px-3 text-xs focus:outline-none focus:border-brand-500 font-mono">
+            </div>
+         </div>
+         <div class="flex justify-end">
+            <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold py-2 px-4 rounded-xl text-xs transition flex items-center gap-1">
+               <i class="fa-solid fa-plus"></i>
+               <span>Agregar a Feria</span>
+            </button>
+         </div>
+      </form>
+
+      <!-- Configured products list -->
+      <div class="space-y-2">
+         <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Productos Actuales en la Feria</div>
+         <div class="overflow-y-auto max-h-60 bg-slate-900/30 border border-slate-800/60 rounded-xl">
+            <table class="w-full text-left border-collapse text-xs">
+               <thead>
+                  <tr class="bg-slate-900/60 text-slate-400 font-semibold border-b border-slate-800">
+                     <th class="py-2.5 px-4">Producto</th>
+                     <th class="py-2.5 px-4 text-center">Precio</th>
+                     <th class="py-2.5 px-4 text-center">Stock</th>
+                     <th class="py-2.5 px-4 text-right">Acciones</th>
+                  </tr>
+               </thead>
+               <tbody id="event-products-tbody" class="divide-y divide-slate-800/30">
+                  <!-- Dynamically populated -->
+               </tbody>
+            </table>
+         </div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-850">
+         <button type="button" onclick="closeEventProductsConfig()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-5 rounded-xl text-xs transition cursor-pointer">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modal-cierre-feria" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 no-print">
     <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeCierreFeriaModal()"></div>
     <div class="glassmorphism w-full max-w-lg p-6 rounded-2xl border border-slate-800 shadow-2xl relative z-10 space-y-4">
@@ -3495,6 +3558,7 @@
             actionBtns += `<button onclick="startQuickPOS('${e.id}')" class="text-emerald-400 hover:underline mr-3"><i class="fa-solid fa-bolt"></i> Caja Rápida</button>`;
           }
           if (user.role === 'admin' || user.role === 'supervisor') {
+            actionBtns += `<button onclick="openEventProductsConfig('${e.id}')" class="text-amber-500 hover:underline mr-3"><i class="fa-solid fa-boxes-packing"></i> Productos</button>`;
             actionBtns += `<button onclick="openCierreFeriaModal('${e.id}')" class="text-brand-500 hover:underline mr-3"><i class="fa-solid fa-chart-pie"></i> Resumen</button>`;
             actionBtns += `<button onclick="openEventModal('${e.id}')" class="text-slate-300 hover:underline mr-3"><i class="fa-solid fa-pen-to-square"></i> Editar</button>`;
             if (user.role === 'admin') {
@@ -3963,30 +4027,40 @@
       quickPOSCart = [];
       updateNetworkStatusIndicators();
 
-      // Load products catalog
+      // Load products catalog (specifically for this event/feria)
       try {
         if (navigator.onLine) {
-          const styles = await apiFetch('/api/inventory');
-          quickPOSProducts = styles;
+          const products = await apiFetch(`/api/events/${eventId}/products`);
+          quickPOSProducts = products.map(p => ({
+            id: p.id,
+            name: p.name,
+            priceUnit: p.price,
+            stockBottles: p.stock,
+            isFavorite: false
+          }));
           // Cache catalog in localStorage
-          localStorage.setItem('quickpos_catalogue', JSON.stringify(styles));
+          localStorage.setItem(`quickpos_catalogue_${eventId}`, JSON.stringify(quickPOSProducts));
           localStorage.setItem(`quickpos_event_${eventId}`, JSON.stringify(activeQuickPOSEvent));
         } else {
-          const cachedStyles = localStorage.getItem('quickpos_catalogue');
+          const cachedStyles = localStorage.getItem(`quickpos_catalogue_${eventId}`);
           if (cachedStyles) {
             quickPOSProducts = JSON.parse(cachedStyles);
-            showToast('Catálogo cargado desde caché local (Modo Offline)', 'warning');
+            showToast('Productos del evento cargados desde caché local (Modo Offline)', 'warning');
           } else {
-            showToast('Sin catálogo en caché. Debe conectarse a internet al menos una vez.', 'error');
+            showToast('Sin productos configurados en caché. Debe conectarse a internet al menos una vez.', 'error');
             closeQuickPOS();
             return;
           }
         }
         
+        if (quickPOSProducts.length === 0) {
+          showToast('Esta feria no tiene productos configurados todavía. El administrador debe agregarlos primero.', 'warning');
+        }
+
         renderQuickPOS();
         updateOfflineQueueWidget();
       } catch (err) {
-        showToast('Error al cargar catálogo: ' + err.message, 'error');
+        showToast('Error al cargar catálogo de feria: ' + err.message, 'error');
       }
     }
 
@@ -4204,8 +4278,8 @@
         }
       });
 
-      // Guardar caché local actualizada
-      localStorage.setItem('quickpos_catalogue', JSON.stringify(quickPOSProducts));
+      // Guardar caché local de esta feria actualizada
+      localStorage.setItem(`quickpos_catalogue_${activeQuickPOSEvent.id}`, JSON.stringify(quickPOSProducts));
 
       // Intentar persistir en el servidor
       if (navigator.onLine) {
@@ -4273,15 +4347,170 @@
         showToast('Sincronización de ventas offline completada', 'success');
         updateOfflineQueueWidget();
         
-        // Recargar stock de la base de datos
+        // Recargar stock de la base de datos de esta feria
         if (activeQuickPOSEvent) {
-          const styles = await apiFetch('/api/inventory');
-          quickPOSProducts = styles;
-          localStorage.setItem('quickpos_catalogue', JSON.stringify(styles));
+          const products = await apiFetch(`/api/events/${activeQuickPOSEvent.id}/products`);
+          quickPOSProducts = products.map(p => ({
+            id: p.id,
+            name: p.name,
+            priceUnit: p.price,
+            stockBottles: p.stock,
+            isFavorite: false
+          }));
+          localStorage.setItem(`quickpos_catalogue_${activeQuickPOSEvent.id}`, JSON.stringify(quickPOSProducts));
           renderQuickPOS();
         }
       } catch (err) {
         showToast('Error en la sincronización: ' + err.message, 'error');
+      }
+    }
+
+    // --- GESTION DE PRODUCTOS DE EVENTO ---
+    let activeConfigEventId = null;
+    let eventProductsList = [];
+
+    async function openEventProductsConfig(eventId) {
+      activeConfigEventId = eventId;
+      const targetEvent = eventsList.find(e => e.id === eventId);
+      if (!targetEvent) return;
+
+      document.getElementById('event-products-config-title').innerText = `Productos de Feria: ${targetEvent.name}`;
+      
+      // Reset form
+      document.getElementById('form-event-product').reset();
+      
+      // Open modal
+      document.getElementById('modal-event-products').classList.remove('hidden');
+
+      // Populate datalist of global styles
+      populateGlobalStylesDatalist();
+
+      // Fetch current event products
+      await fetchEventProducts(eventId);
+    }
+
+    function closeEventProductsConfig() {
+      document.getElementById('modal-event-products').classList.add('hidden');
+      activeConfigEventId = null;
+      eventProductsList = [];
+    }
+
+    async function populateGlobalStylesDatalist() {
+      const datalist = document.getElementById('global-styles-datalist');
+      if (!datalist) return;
+      datalist.innerHTML = '';
+      try {
+        const styles = await apiFetch('/api/inventory');
+        styles.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.name;
+          datalist.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Error al cargar estilos globales para datalist:', err);
+      }
+    }
+
+    async function fetchEventProducts(eventId) {
+      const tbody = document.getElementById('event-products-tbody');
+      tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">Cargando productos...</td></tr>';
+      try {
+        const products = await apiFetch(`/api/events/${eventId}/products`);
+        eventProductsList = products;
+        
+        tbody.innerHTML = products.map(p => {
+          return `
+            <tr class="hover:bg-slate-900/30 border-b border-slate-800/30 text-xs">
+              <td class="py-2.5 px-4 font-semibold text-white">${p.name}</td>
+              <td class="py-2.5 px-4 text-center">
+                 <input type="number" value="${p.price}" min="0" onchange="handleUpdateEventProductPrice('${p.id}', this.value)"
+                   class="bg-slate-900 border border-slate-700 text-white rounded-lg py-1 px-2 text-center text-xs font-mono font-bold focus:outline-none focus:border-brand-500 w-20">
+              </td>
+              <td class="py-2.5 px-4 text-center">
+                 <input type="number" value="${p.stock}" min="0" onchange="handleUpdateEventProductStock('${p.id}', this.value)"
+                   class="bg-slate-900 border border-slate-700 text-white rounded-lg py-1 px-2 text-center text-xs font-mono font-bold focus:outline-none focus:border-brand-500 w-20">
+              </td>
+              <td class="py-2.5 px-4 text-right font-mono">
+                 <button onclick="deleteEventProduct('${p.id}')" class="text-red-400 hover:text-red-300 transition" title="Eliminar de la feria">
+                    <i class="fa-solid fa-trash"></i>
+                 </button>
+              </td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="4" class="py-6 text-center text-slate-500">No hay productos agregados a esta feria.</td></tr>';
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-red-500">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function handleAddEventProduct(event) {
+      event.preventDefault();
+      if (!activeConfigEventId) return;
+
+      const name = document.getElementById('ev-prod-name').value.trim();
+      const price = parseFloat(document.getElementById('ev-prod-price').value);
+      const stock = parseInt(document.getElementById('ev-prod-stock').value, 10);
+
+      try {
+        await apiFetch(`/api/events/${activeConfigEventId}/products`, {
+          method: 'POST',
+          body: JSON.stringify({ name, price, stock })
+        });
+        showToast('Producto agregado/actualizado en la feria con éxito', 'success');
+        document.getElementById('form-event-product').reset();
+        await fetchEventProducts(activeConfigEventId);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleUpdateEventProductPrice(productId, newPrice) {
+      if (!activeConfigEventId) return;
+      const price = parseFloat(newPrice);
+      if (isNaN(price) || price < 0) {
+        showToast('Precio inválido', 'error');
+        return;
+      }
+      try {
+        await apiFetch(`/api/events/${activeConfigEventId}/products/${productId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ price })
+        });
+        showToast('Precio de producto actualizado', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function handleUpdateEventProductStock(productId, newStock) {
+      if (!activeConfigEventId) return;
+      const stock = parseInt(newStock, 10);
+      if (isNaN(stock) || stock < 0) {
+        showToast('Stock inválido', 'error');
+        return;
+      }
+      try {
+        await apiFetch(`/api/events/${activeConfigEventId}/products/${productId}`, {
+          method: 'PUT',
+          body: JSON.stringify({ stock })
+        });
+        showToast('Stock de producto actualizado', 'success');
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function deleteEventProduct(productId) {
+      if (!activeConfigEventId) return;
+      if (!confirm('¿Deseas quitar este producto de la feria?')) return;
+      try {
+        await apiFetch(`/api/events/${activeConfigEventId}/products/${productId}`, {
+          method: 'DELETE'
+        });
+        showToast('Producto quitado de la feria', 'success');
+        await fetchEventProducts(activeConfigEventId);
+      } catch (err) {
+        showToast(err.message, 'error');
       }
     }
 

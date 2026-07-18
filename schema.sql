@@ -83,3 +83,13 @@ CREATE TABLE IF NOT EXISTS sales (
     FOREIGN KEY(beer_style_id) REFERENCES beer_styles(id) ON DELETE SET NULL,
     FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE SET NULL
 );
+
+-- 7. Productos del Evento (Feria / Festival) con precios y stock modificado
+CREATE TABLE IF NOT EXISTS event_products (
+    id TEXT PRIMARY KEY,
+    event_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    price REAL NOT NULL DEFAULT 0.0 CHECK(price >= 0),
+    stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0),
+    FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE
+);

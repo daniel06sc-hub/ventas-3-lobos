@@ -229,6 +229,23 @@ export async function getDatabase(): Promise<IDatabase> {
     console.error('Error al migrar la tabla "sales" para payment_method:', err);
   }
 
+  // Migración para tabla event_products si no existe
+  try {
+    await dbInstance.exec(`
+      CREATE TABLE IF NOT EXISTS event_products (
+          id TEXT PRIMARY KEY,
+          event_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          price REAL NOT NULL DEFAULT 0.0 CHECK(price >= 0),
+          stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0),
+          FOREIGN KEY(event_id) REFERENCES events(id) ON DELETE CASCADE
+      );
+    `);
+    console.log('Migración: Tabla "event_products" verificada/creada exitosamente.');
+  } catch (err) {
+    console.error('Error al verificar/crear la tabla "event_products":', err);
+  }
+
   // Migración del CHECK constraint de roles en la tabla "users" (aplica para SQLite y Turso)
   try {
     const usersTableInfo = await dbInstance.all('PRAGMA table_info(users)');

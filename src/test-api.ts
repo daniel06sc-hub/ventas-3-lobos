@@ -652,6 +652,97 @@ async function runTests() {
     assert(tempStyleAfterDelete.stockBottles === 10, `El stock debe haberse repuesto a 10 botellas, actualmente: ${tempStyleAfterDelete.stockBottles}`);
     console.log('✓ Reposición de stock confirmada (6 -> 10 botellas).');
 
+    // ----------------------------------------------------
+    // TEST 10: Gestión de Productos de Evento (Feria / Festival)
+    // ----------------------------------------------------
+    console.log('\n--- TEST 10: Gestión de Productos de Evento (Feria / Festival) ---');
+
+    // 1. Crear un evento temporal
+    const testEventName = `Feria-Test-${randSuffix}`;
+    const createEventRes = await fetch(`${BASE_URL}/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        name: testEventName,
+        city: 'Curicó',
+        startDate: '2026-07-20',
+        endDate: '2026-07-22'
+      })
+    });
+    const createdEvent = await createEventRes.json() as any;
+    const testEventId = createdEvent.id;
+    console.log(`✓ Evento temporal de test creado. ID: ${testEventId}`);
+
+    // 2. Agregar un producto al evento (Schop con precio y stock modificado)
+    const addProdRes = await fetch(`${BASE_URL}/events/${testEventId}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        name: 'Schop Furia 500cc',
+        price: 4500,
+        stock: 50
+      })
+    });
+    assert(addProdRes.status === 201, 'Debería crear el producto del evento exitosamente');
+    const createdProd = await addProdRes.json() as any;
+    const testEventProductId = createdProd.id;
+    console.log(`✓ Producto de evento Schop Furia 500cc agregado. ID: ${testEventProductId}, Precio: 4500, Stock: 50`);
+
+    // 3. Listar productos del evento y comprobar existencia
+    const listProdsRes = await fetch(`${BASE_URL}/events/${testEventId}/products`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const eventProds = await listProdsRes.json() as any[];
+    assert(eventProds.length === 1, 'Debería haber exactamente 1 producto asociado a este evento');
+    assert(eventProds[0].name === 'Schop Furia 500cc', 'El nombre del producto debe coincidir');
+    console.log('✓ Lista de productos del evento comprobada con éxito.');
+
+    // 4. Realizar checkout online asociando el ID del evento y descontando del stock de event_products
+    const evCheckoutRes = await fetch(`${BASE_URL}/sales/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        eventId: testEventId,
+        paymentMethod: 'transferencia',
+        items: [{
+          format: 'unit',
+          quantity: 2,
+          styles: [{ beerStyleId: testEventProductId, bottlesCount: 2 }] // vender 2 schops
+        }]
+      })
+    });
+    if (evCheckoutRes.status !== 201) {
+      const errBody = await evCheckoutRes.json();
+      console.error('Checkout error response:', errBody);
+    }
+    assert(evCheckoutRes.status === 201, 'El checkout de venta del evento debería ser exitoso');
+    const evCheckoutData = await evCheckoutRes.json() as any;
+    console.log(`✓ Venta de feria completada con éxito. Correlation ID: ${evCheckoutData.correlationId}`);
+
+    // 5. Verificar que el stock de event_products disminuyó de 50 a 48
+    const listProds2Res = await fetch(`${BASE_URL}/events/${testEventId}/products`, {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    const eventProdsAfter = await listProds2Res.json() as any[];
+    assert(eventProdsAfter[0].stock === 48, `El stock del producto del evento debió reducirse a 48, actual: ${eventProdsAfter[0].stock}`);
+    console.log('✓ Descuento de stock en producto del evento confirmado (50 -> 48).');
+
+    // 6. Eliminar el producto del evento
+    const deleteProdRes = await fetch(`${BASE_URL}/events/${testEventId}/products/${testEventProductId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+    assert(deleteProdRes.status === 200, 'Debería eliminar el producto de feria exitosamente');
+    console.log('✓ Producto eliminado del evento con éxito.');
 
     console.log('\n==================================================');
     console.log('   ¡TODAS LAS PRUEBAS SE COMPLETARON CON ÉXITO!   ');
